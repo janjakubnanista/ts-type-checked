@@ -4,6 +4,7 @@ import {
   Program,
   PropertyAssignment,
   SourceFile,
+  SymbolFlags,
   SyntaxKind,
   TransformationContext,
   TransformerFactory,
@@ -18,6 +19,7 @@ import {
   createLogicalOr,
   createNull,
   createParameter,
+  createParen,
   createPropertyAccess,
   createPropertyAssignment,
   createReturn,
@@ -153,7 +155,15 @@ export default (program: Program): TransformerFactory<SourceFile> => {
           }
 
           const type = typeChecker.getTypeFromTypeNode(declaration.type);
-          return createLogicalAnd(expression, createValueTypeCheck(type, createPropertyAccess(value, property.name)));
+          const propertyAccess = createPropertyAccess(value, property.name);
+          const valueTypeCheck = createValueTypeCheck(type, propertyAccess);
+          const isOptional = property.getFlags() & SymbolFlags.Optional;
+          if (!isOptional) {
+            return createLogicalAnd(expression, valueTypeCheck);
+          }
+
+          const optionalCheck = createStrictEquality(createTypeOf(propertyAccess), createStringLiteral('undefined'));
+          return createLogicalAnd(expression, createParen(createLogicalOr(optionalCheck, valueTypeCheck)));
         }, isObject);
       });
     };
