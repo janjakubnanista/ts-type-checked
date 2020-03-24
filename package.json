@@ -1,5 +1,5 @@
 {
-  "name": "ts-type-check",
+  "name": "ts-type-checked",
   "version": "0.0.1",
   "description": "Runtime duck type checking utilities for TypeScript.",
   "main": "index.js",
@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/janjakubnanista/ts-type-check.git"
+    "url": "git+https://github.com/janjakubnanista/ts-type-checked.git"
   },
   "keywords": [
     "TypeScript",
@@ -27,14 +27,14 @@
   "author": "Jan Jakub Nanista <jan.jakub.nanista@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/janjakubnanista/ts-type-check/issues"
+    "url": "https://github.com/janjakubnanista/ts-type-checked/issues"
   },
   "files": [
     "index.js",
     "index.d.ts",
     "transformer/*.js"
   ],
-  "homepage": "https://github.com/janjakubnanista/ts-type-check#readme",
+  "homepage": "https://github.com/janjakubnanista/ts-type-checked#readme",
   "devDependencies": {
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.8.7",
