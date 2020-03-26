@@ -52,22 +52,36 @@ export default (program: Program): TransformerFactory<SourceFile> => {
 
     // Main type check generator method
     const createTypeCheckMethodDefinition = (typeNode: TypeNode): FunctionExpression => {
-      console.warn('typeNode', typeNode.getFullText(), typeNode.kind);
-
-      if (ts.isLiteralTypeNode(typeNode)) {
-        console.log('literal type node', typeNode.literal);
-
-        return createTypeCheckerFunction(value => createStrictEquality(value, typeNode.literal));
-      }
-
       if (ts.isTypeLiteralNode(typeNode)) {
-        console.log('type literal node');
+        console.log('\ttype literal node');
       }
 
       if (ts.isTypeReferenceNode(typeNode)) {
-        typeNode.typeArguments;
         const type = typeChecker.getTypeFromTypeNode(typeNode);
         const properties = type.getProperties();
+
+        return createTypeCheckerFunction(value => {
+          const isObject = createLogicalAnd(
+            createStrictEquality(createTypeOf(value), createStringLiteral('object')),
+            createStrictInequality(value, createNull()),
+          );
+
+          return properties.reduce((typeCheckExpression, property) => {
+            const propertyType = typeChecker.getTypeOfSymbolAtLocation(property, typeNode);
+            const propertyTypeNode = typeChecker.typeToTypeNode(propertyType);
+            if (!propertyTypeNode) {
+              throw new Error(`Could not determine the type of property ${property.getName()} of type`);
+            }
+
+            console.warn('property type', property.getName(), propertyTypeNode.flags, propertyTypeNode, propertyType);
+
+            const propertyAccess = createPropertyAccess(value, property.name);
+            const valueTypeCheck = createValueTypeCheck(propertyTypeNode, propertyAccess);
+
+            // return createLogicalAnd(typeCheckExpression, createParen(createLogicalOr(optionalCheck, valueTypeCheck)));
+            return createLogicalAnd(typeCheckExpression, createParen(valueTypeCheck));
+          }, isObject);
+        });
 
         // let type = checker.getTypeAtLocation(node.type);
         // const props = typeChecker.getPropertiesOfType(type);
@@ -78,26 +92,29 @@ export default (program: Program): TransformerFactory<SourceFile> => {
 
         properties.forEach(property => {
           const resolvedPropertyType = typeChecker.getTypeOfSymbolAtLocation(property, typeNode);
-          console.warn('resolved', resolvedPropertyType);
+          const propertyTypeNode = typeChecker.typeToTypeNode(resolvedPropertyType);
+
+          console.warn('resolved', resolvedPropertyType, propertyTypeNode);
+          debugger;
 
           const declaration = property.valueDeclaration;
-          if (ts.isMethodDeclaration(declaration)) {
-            console.warn(
-              `When checking methods, ts-type-checked will only check whether method is a function (checking method ${property.getName()} of ${typeNode.getFullText()})`,
-            );
-          }
+          // if (ts.isMethodDeclaration(declaration)) {
+          //   console.warn(
+          //     `When checking methods, ts-type-checked will only check whether method is a function (checking method ${property.getName()} of ${typeNode.getFullText()})`,
+          //   );
+          // }
 
-          if (ts.isPropertyDeclaration(declaration)) {
-            console.log('Property declaration', declaration.getFullText());
-          }
+          // if (ts.isPropertyDeclaration(declaration)) {
+          //   console.log('Property declaration', declaration.getFullText());
+          // }
 
-          if (ts.isPropertySignature(declaration)) {
-            console.log('Property signature', declaration.getFullText(), declaration.type);
+          // if (ts.isPropertySignature(declaration)) {
+          //   console.log('Property signature', declaration.getFullText(), declaration.type);
 
-            const tc = typeChecker;
+          //   const tc = typeChecker;
 
-            debugger;
-          }
+          //   // debugger;
+          // }
           // // TODO Properties without a type, just an initializer
           // if (
           //   !isPropertySignature(declaration) &&
@@ -260,13 +277,21 @@ export default (program: Program): TransformerFactory<SourceFile> => {
     };
 
     const createValueTypeCheck: ValueTypeCheckCreator = (typeNode, value) => {
+      try {
+        console.warn('createValueTypeCheck', typeNode.getFullText(), typeNode.kind);
+      } catch (error) {
+        console.warn('createValueTypeCheck', '[UNKNOWN]', typeNode.kind);
+      }
+
+      // First let's check for types that will not create a new method on typechecker map
       if (
         typeNode.kind === ts.SyntaxKind.StringKeyword ||
         typeNode.kind === ts.SyntaxKind.NumberKeyword ||
         typeNode.kind === ts.SyntaxKind.BooleanKeyword ||
+        typeNode.kind === ts.SyntaxKind.ObjectKeyword ||
         typeNode.kind === ts.SyntaxKind.UndefinedKeyword
       ) {
-        console.log('typeof kinda keyword', typeNode.getText());
+        console.log('typeof kinda keyword');
 
         return createStrictEquality(createTypeOf(value), createStringLiteral(typeNode.getText()));
       }
@@ -277,8 +302,42 @@ export default (program: Program): TransformerFactory<SourceFile> => {
         return createStrictEquality(value, typeNode.literal);
       }
 
-      const method = typeCheckMethods.get(typeNode) || createTypeCheckMethod(typeNode);
+      if (ts.isArrayTypeNode(typeNode)) {
+        console.log('\tarray kinda node');
 
+        // First let's do Array.isArray(value)
+        const isArray = createCall(createPropertyAccess(createIdentifier('Array'), 'isArray'), [], [value]);
+
+        // Then let's define a element type checker function that can be passed to Array.every
+        const element = createIdentifier('element');
+        const checkElement = createFunctionExpression(
+          undefined /* modifiers */,
+          undefined /* asteriskToken */,
+          undefined /* name */,
+          undefined /* typeParameters */,
+          [
+            createParameter(
+              undefined /* decorators */,
+              undefined /* modifiers */,
+              undefined /* dotDotDotToken */,
+              element /* name */,
+              undefined /* questionToken */,
+              undefined /* type */,
+              undefined /* initializer */,
+            ),
+          ],
+          undefined,
+          createBlock([createReturn(createValueTypeCheck(typeNode.elementType, element))], false),
+        );
+
+        // Now let's do value.every(<element type checker>)
+        const checkElements = createCall(createPropertyAccess(value, 'every'), [], [checkElement]);
+
+        return createLogicalAnd(isArray, checkElements);
+      }
+
+      // Now the ones that will
+      const method = typeCheckMethods.get(typeNode) || createTypeCheckMethod(typeNode);
       return createCall(
         createPropertyAccess(typeCheckerObjectIdentfifier, method.name),
         /* typeArguments */ undefined,
