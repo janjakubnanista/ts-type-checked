@@ -1,7 +1,7 @@
-import { Expression, Node, Program, SourceFile, TransformationContext, Type, visitEachChild } from 'typescript';
+import { Expression, Node, Program, SourceFile, TransformationContext, TypeNode, visitEachChild } from 'typescript';
 import { isOurCallExpression, isOurImportExpression } from './utils';
 
-export type ValueTypeCheckCreator = (type: Type, value: Expression) => Expression;
+export type ValueTypeCheckCreator = (type: TypeNode, value: Expression) => Expression;
 
 function visitNode(node: SourceFile, program: Program, typeCheckValue: ValueTypeCheckCreator): SourceFile;
 function visitNode(node: Node, program: Program, typeCheckValue: ValueTypeCheckCreator): Node | undefined;
@@ -23,8 +23,8 @@ function visitNode(node: Node, program: Program, typeCheckValue: ValueTypeCheckC
       throw new Error('isA<T>() requires one argument, none specified');
     }
 
-    const type = typeChecker.getTypeFromTypeNode(typeNode);
-    return typeCheckValue(type, valueNode);
+    // const type = typeChecker.getTypeFromTypeNode(typeNode);
+    return typeCheckValue(typeNode, valueNode);
   }
 
   return node;
