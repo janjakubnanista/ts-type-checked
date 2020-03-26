@@ -48,7 +48,7 @@ export default (program: Program): TransformerFactory<SourceFile> => {
 
     // Main type check generator method
     const createTypeCheckMethodDefinition = (type: Type): FunctionExpression => {
-      console.warn('type', type.symbol?.getName(), type.flags);
+      console.warn('type', type.symbol?.getName(), type.flags, type.symbol?.getDeclarations());
 
       if (type.flags & TypeFlags.Boolean) {
         return createTypeCheckerFunction(value =>
@@ -95,6 +95,8 @@ export default (program: Program): TransformerFactory<SourceFile> => {
             .reduce((expression, unionMemberExpression) => createLogicalOr(expression, unionMemberExpression));
         });
       }
+
+      debugger;
 
       const typeNode = typeChecker.typeToTypeNode(type);
       if (typeNode && isArrayTypeNode(typeNode)) {
