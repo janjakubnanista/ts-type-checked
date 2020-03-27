@@ -1,6 +1,33 @@
 import path from 'path';
 import ts from 'typescript';
 
+export const getTypeOf = (typeNode: ts.TypeNode): string | undefined => {
+  switch (typeNode.kind) {
+    case ts.SyntaxKind.BooleanKeyword:
+      return 'boolean';
+
+    case ts.SyntaxKind.NumberKeyword:
+      return 'number';
+
+    case ts.SyntaxKind.ObjectKeyword:
+      return 'object';
+
+    case ts.SyntaxKind.StringKeyword:
+      return 'string';
+
+    case ts.SyntaxKind.UndefinedKeyword:
+      return 'undefined';
+
+    case ts.SyntaxKind.FunctionType:
+      console.warn('Due to the nature of functions their return types cannot be checked');
+
+      return 'function';
+
+    default:
+      return undefined;
+  }
+};
+
 // Create an empty object declaration
 export const addTypeCheckerMap = (
   file: ts.SourceFile,

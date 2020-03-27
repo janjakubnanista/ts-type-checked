@@ -23,7 +23,7 @@ describe('generics', () => {
       const isASomething = (value: unknown) => isA<'something'>(value);
       const isAFalse = (value: unknown) => isA<false>(value);
       const isAStringArray = (value: unknown) => isA<string[]>(value);
-      // const isAStringArrayButNotBrackets = (value: unknown) => isA<Array<string>>(value);
+      const isAStringArrayButNotBrackets = (value: unknown) => isA<Array<string>>(value);
       const isASomethingArray = (value: unknown) => isA<'something'[]>(value);
 
       testValues(fc.string(), isAString);

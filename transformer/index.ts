@@ -35,7 +35,7 @@ import {
   isPropertySignature,
 } from 'typescript';
 import { ValueTypeCheckCreator, visitNodeAndChildren } from './visitor';
-import { addTypeCheckerMap, createTypeCheckerFunction } from './utils';
+import { addTypeCheckerMap, createTypeCheckerFunction, getTypeOf } from './utils';
 import { isInterfaceWithOptionalsCheck } from '../test/e2e/utils';
 import ts from 'typescript';
 
@@ -52,18 +52,18 @@ export default (program: Program): TransformerFactory<SourceFile> => {
 
     // Main type check generator method
     const createTypeCheckMethodDefinition = (typeNode: TypeNode): FunctionExpression => {
-      if (ts.isTypeLiteralNode(typeNode)) {
-        console.log('\ttype literal node');
-      }
+      // if (ts.isTypeLiteralNode(typeNode)) {
+      //   console.log('\ttype literal node');
+      // }
 
-      if (ts.isTypeReferenceNode(typeNode)) {
+      if (ts.isTypeReferenceNode(typeNode) || ts.isTypeLiteralNode(typeNode)) {
         const type = typeChecker.getTypeFromTypeNode(typeNode);
         const properties = type.getProperties();
 
         return createTypeCheckerFunction(value => {
           const isObject = createLogicalAnd(
-            createStrictEquality(createTypeOf(value), createStringLiteral('object')),
-            createStrictInequality(value, createNull()),
+            createParen(createStrictEquality(createTypeOf(value), createStringLiteral('object'))),
+            createParen(createStrictInequality(value, createNull())),
           );
 
           return properties.reduce((typeCheckExpression, property) => {
@@ -73,73 +73,18 @@ export default (program: Program): TransformerFactory<SourceFile> => {
               throw new Error(`Could not determine the type of property ${property.getName()} of type`);
             }
 
-            console.warn('property type', property.getName(), propertyTypeNode.flags, propertyTypeNode, propertyType);
+            console.warn('\t\tproperty type', property.getName(), propertyTypeNode.kind);
 
-            const propertyAccess = createPropertyAccess(value, property.name);
+            const propertyAccess = ts.createElementAccess(value, ts.createStringLiteral(property.name));
             const valueTypeCheck = createValueTypeCheck(propertyTypeNode, propertyAccess);
 
             // return createLogicalAnd(typeCheckExpression, createParen(createLogicalOr(optionalCheck, valueTypeCheck)));
             return createLogicalAnd(typeCheckExpression, createParen(valueTypeCheck));
           }, isObject);
         });
-
-        // let type = checker.getTypeAtLocation(node.type);
-        // const props = typeChecker.getPropertiesOfType(type);
-        // props.forEach(prop => {
-        //   const resolvedPropertyType = typeChecker.getTypeOfSymbolAtLocation(prop, undefined as any);
-        //   // console.log(resolverPropertyType);
-        // });
-
-        properties.forEach(property => {
-          const resolvedPropertyType = typeChecker.getTypeOfSymbolAtLocation(property, typeNode);
-          const propertyTypeNode = typeChecker.typeToTypeNode(resolvedPropertyType);
-
-          console.warn('resolved', resolvedPropertyType, propertyTypeNode);
-          debugger;
-
-          const declaration = property.valueDeclaration;
-          // if (ts.isMethodDeclaration(declaration)) {
-          //   console.warn(
-          //     `When checking methods, ts-type-checked will only check whether method is a function (checking method ${property.getName()} of ${typeNode.getFullText()})`,
-          //   );
-          // }
-
-          // if (ts.isPropertyDeclaration(declaration)) {
-          //   console.log('Property declaration', declaration.getFullText());
-          // }
-
-          // if (ts.isPropertySignature(declaration)) {
-          //   console.log('Property signature', declaration.getFullText(), declaration.type);
-
-          //   const tc = typeChecker;
-
-          //   // debugger;
-          // }
-          // // TODO Properties without a type, just an initializer
-          // if (
-          //   !isPropertySignature(declaration) &&
-          //   !isMethodSignature(declaration) &&
-          //   !isPropertyDeclaration(declaration)
-          // ) {
-          //   console.warn('declaration', declaration.kind);
-          //   throw new Error(`Property ${property.name} does not have a property declaration`);
-          // }
-          // if (!declaration.type) {
-          //   throw new Error(`Could not determine the type of property ${property.name}`);
-          // }
-          // const type = typeChecker.getTypeFromTypeNode(declaration.type);
-          // const propertyAccess = createPropertyAccess(value, property.name);
-          // const valueTypeCheck = createValueTypeCheck(type, propertyAccess);
-          // const isOptional = property.getFlags() & SymbolFlags.Optional;
-          // if (!isOptional) {
-          //   return createLogicalAnd(expression, valueTypeCheck);
-          // }
-          // const optionalCheck = createStrictEquality(createTypeOf(propertyAccess), createStringLiteral('undefined'));
-          // return createLogicalAnd(expression, createParen(createLogicalOr(optionalCheck, valueTypeCheck)));
-        });
-
-        debugger;
       }
+
+      debugger;
 
       return createTypeCheckerFunction(() => createFalse());
 
@@ -284,22 +229,21 @@ export default (program: Program): TransformerFactory<SourceFile> => {
       }
 
       // First let's check for types that will not create a new method on typechecker map
-      if (
-        typeNode.kind === ts.SyntaxKind.StringKeyword ||
-        typeNode.kind === ts.SyntaxKind.NumberKeyword ||
-        typeNode.kind === ts.SyntaxKind.BooleanKeyword ||
-        typeNode.kind === ts.SyntaxKind.ObjectKeyword ||
-        typeNode.kind === ts.SyntaxKind.UndefinedKeyword
-      ) {
-        console.log('typeof kinda keyword');
-
-        return createStrictEquality(createTypeOf(value), createStringLiteral(typeNode.getText()));
+      const typeOfNode = getTypeOf(typeNode);
+      if (typeOfNode) {
+        return createStrictEquality(createTypeOf(value), createStringLiteral(typeOfNode));
       }
 
       if (ts.isLiteralTypeNode(typeNode)) {
         console.log('literal type node', typeNode.literal);
 
         return createStrictEquality(value, typeNode.literal);
+      }
+
+      if (ts.isIndexedAccessTypeNode(typeNode)) {
+        console.log('\tindexed access kinda node', typeNode.indexType.kind, typeNode.objectType.kind);
+
+        return ts.createTrue();
       }
 
       if (ts.isArrayTypeNode(typeNode)) {
@@ -339,7 +283,7 @@ export default (program: Program): TransformerFactory<SourceFile> => {
       // Now the ones that will
       const method = typeCheckMethods.get(typeNode) || createTypeCheckMethod(typeNode);
       return createCall(
-        createPropertyAccess(typeCheckerObjectIdentfifier, method.name),
+        ts.createPropertyAccess(typeCheckerObjectIdentfifier, method.name),
         /* typeArguments */ undefined,
         /* arguments */ [value],
       );
