@@ -24,6 +24,7 @@ import {
 import { ValueTypeCheckCreator, visitNodeAndChildren } from './visitor';
 import {
   addTypeCheckerMap,
+  createArrayElementsCheck,
   createIsPlainObjectCheck,
   createObjectIndexedPropertiesCheck,
   createObjectPropertiesCheck,
@@ -78,8 +79,6 @@ export default (program: Program): TransformerFactory<SourceFile> => {
           return isObject;
         });
       }
-
-      debugger;
 
       return createTypeCheckerFunction(() => createFalse());
 
@@ -193,10 +192,12 @@ export default (program: Program): TransformerFactory<SourceFile> => {
     };
 
     const createValueTypeCheck: ValueTypeCheckCreator = (typeNode, value) => {
-      try {
-        console.warn('createValueTypeCheck', typeNode.getFullText(), typeNode.kind);
-      } catch (error) {
-        console.warn('createValueTypeCheck', '[UNKNOWN]', typeNode.kind);
+      const type = typeChecker.getTypeFromTypeNode(typeNode);
+      const baseContraintType = typeChecker.getBaseConstraintOfType(type);
+
+      console.warn('[createValueTypeCheck]', typeChecker.typeToString(type));
+      if (baseContraintType) {
+        debugger;
       }
 
       // First let's check for types that will not create a new method on typechecker map
@@ -211,47 +212,17 @@ export default (program: Program): TransformerFactory<SourceFile> => {
         return ts.createStrictEquality(value, booleanLiteral);
       }
 
-      if (ts.isLiteralTypeNode(typeNode)) {
-        console.log('literal type node', typeNode.literal);
-
-        return createStrictEquality(value, typeNode.literal);
-      }
-
+      // Next we check for an array
       if (ts.isArrayTypeNode(typeNode)) {
-        console.log('\tarray kinda node');
-
-        // First let's do Array.isArray(value)
-        const isArray = createCall(createPropertyAccess(createIdentifier('Array'), 'isArray'), [], [value]);
-
-        // Then let's define a element type checker function that can be passed to Array.every
-        const element = createIdentifier('element');
-        const checkElement = createFunctionExpression(
-          undefined /* modifiers */,
-          undefined /* asteriskToken */,
-          undefined /* name */,
-          undefined /* typeParameters */,
-          [
-            createParameter(
-              undefined /* decorators */,
-              undefined /* modifiers */,
-              undefined /* dotDotDotToken */,
-              element /* name */,
-              undefined /* questionToken */,
-              undefined /* type */,
-              undefined /* initializer */,
-            ),
-          ],
-          undefined,
-          createBlock([createReturn(createValueTypeCheck(typeNode.elementType, element))], false),
-        );
-
-        // Now let's do value.every(<element type checker>)
-        const checkElements = createCall(createPropertyAccess(value, 'every'), [], [checkElement]);
-
-        return createLogicalAnd(isArray, checkElements);
+        return createArrayElementsCheck(typeChecker, createValueTypeCheck, typeNode, value);
       }
 
-      const type = typeChecker.getTypeFromTypeNode(typeNode);
+      // if (ts.isLiteralTypeNode(typeNode)) {
+      //   console.log('literal type node', typeNode.literal);
+
+      //   return createStrictEquality(value, typeNode.literal);
+      // }
+
       if (type.isUnion()) {
         console.log('union type node');
 

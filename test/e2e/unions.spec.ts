@@ -19,39 +19,39 @@ import { isA } from '../..';
 import fc from 'fast-check';
 
 describe('union types', () => {
-  describe('string literal unions', () => {
-    const isAStringLiteralUnion = (value: unknown) => isA<StringLiteralUnion>(value);
-    const invalidStringLiteralUnionArbitrary = fc.anything().filter(value => !isStringLiteralUnionCheck(value));
+  // describe('string literal unions', () => {
+  //   const isAStringLiteralUnion = (value: unknown) => isA<StringLiteralUnion>(value);
+  //   const invalidStringLiteralUnionArbitrary = fc.anything().filter(value => !isStringLiteralUnionCheck(value));
 
-    it('should return true when valid string is passed', () => {
-      testValues(stringLiteralUnionArbitrary, isAStringLiteralUnion);
-    });
+  //   it('should return true when valid string is passed', () => {
+  //     testValues(stringLiteralUnionArbitrary, isAStringLiteralUnion);
+  //   });
 
-    it('should return false when invalid string is passed', () => {
-      testValues(invalidStringLiteralUnionArbitrary, isAStringLiteralUnion, false);
-    });
+  //   it('should return false when invalid string is passed', () => {
+  //     testValues(invalidStringLiteralUnionArbitrary, isAStringLiteralUnion, false);
+  //   });
 
-    it('should return false when an array of valid strings is passed', () => {
-      testValues(fc.array(invalidStringLiteralUnionArbitrary), isAStringLiteralUnion, false);
-    });
-  });
+  //   it('should return false when an array of valid strings is passed', () => {
+  //     testValues(fc.array(invalidStringLiteralUnionArbitrary), isAStringLiteralUnion, false);
+  //   });
+  // });
 
-  describe('number literal unions', () => {
-    const isNumberLiteralUnion = (value: unknown) => isA<NumberLiteralUnion>(value);
-    const invalidNumberLiteralUnionArbitrary = fc.anything().filter(value => !isNumberLiteralUnionCheck(value));
+  // describe('number literal unions', () => {
+  //   const isNumberLiteralUnion = (value: unknown) => isA<NumberLiteralUnion>(value);
+  //   const invalidNumberLiteralUnionArbitrary = fc.anything().filter(value => !isNumberLiteralUnionCheck(value));
 
-    it('should return true when valid number is passed', () => {
-      testValues(numberLiteralUnionArbitrary, isNumberLiteralUnion);
-    });
+  //   it('should return true when valid number is passed', () => {
+  //     testValues(numberLiteralUnionArbitrary, isNumberLiteralUnion);
+  //   });
 
-    it('should return false when invalid number is passed', () => {
-      testValues(invalidNumberLiteralUnionArbitrary, isNumberLiteralUnion, false);
-    });
+  //   it('should return false when invalid number is passed', () => {
+  //     testValues(invalidNumberLiteralUnionArbitrary, isNumberLiteralUnion, false);
+  //   });
 
-    it('should return false when an array of valid numbers is passed', () => {
-      testValues(fc.array(numberLiteralUnionArbitrary), isNumberLiteralUnion, false);
-    });
-  });
+  //   it('should return false when an array of valid numbers is passed', () => {
+  //     testValues(fc.array(numberLiteralUnionArbitrary), isNumberLiteralUnion, false);
+  //   });
+  // });
 
   describe('object literal unions', () => {
     type ObjectB = {
@@ -110,20 +110,20 @@ describe('union types', () => {
     });
   });
 
-  describe('mixed unions with literals', () => {
-    const isMixedUnionWithLiterals = (value: unknown) => isA<MixedUnionWithLiterals>(value);
-    const invalidObjectLiteralUnionArbitrary = fc.anything().filter(value => !isMixedUnionWithLiteralsCheck(value));
+  // describe('mixed unions with literals', () => {
+  //   const isMixedUnionWithLiterals = (value: unknown) => isA<MixedUnionWithLiterals>(value);
+  //   const invalidObjectLiteralUnionArbitrary = fc.anything().filter(value => !isMixedUnionWithLiteralsCheck(value));
 
-    it('should return true when valid object is passed', () => {
-      testValues(mixedUnionWithLiteralsArbitrary, isMixedUnionWithLiterals);
-    });
+  //   it('should return true when valid object is passed', () => {
+  //     testValues(mixedUnionWithLiteralsArbitrary, isMixedUnionWithLiterals);
+  //   });
 
-    it('should return false when invalid object is passed', () => {
-      testValues(invalidObjectLiteralUnionArbitrary, isMixedUnionWithLiterals, false);
-    });
+  //   it('should return false when invalid object is passed', () => {
+  //     testValues(invalidObjectLiteralUnionArbitrary, isMixedUnionWithLiterals, false);
+  //   });
 
-    it('should return false when an array of valid objects is passed', () => {
-      testValues(fc.array(mixedUnionWithLiteralsArbitrary), isMixedUnionWithLiterals, false);
-    });
-  });
+  //   it('should return false when an array of valid objects is passed', () => {
+  //     testValues(fc.array(mixedUnionWithLiteralsArbitrary), isMixedUnionWithLiterals, false);
+  //   });
+  // });
 });

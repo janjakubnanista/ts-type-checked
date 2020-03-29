@@ -195,6 +195,44 @@ export const createObjectIndexedPropertiesCheck = (
   return ts.createCall(ts.createPropertyAccess(objectKeysCall, 'every'), [], [checkKey]);
 };
 
+// Array.isArray(value) && value.every(element => isA(element))
+export const createArrayElementsCheck = (
+  typeChecker: ts.TypeChecker,
+  createValueTypeCheck: ValueTypeCheckCreator,
+  typeNode: ts.ArrayTypeNode,
+  value: ts.Expression,
+): ts.Expression => {
+  // First let's do Array.isArray(value)
+  const isArray = ts.createCall(ts.createPropertyAccess(ts.createIdentifier('Array'), 'isArray'), [], [value]);
+
+  // Then let's define a element type checker function that can be passed to Array.every
+  const element = ts.createIdentifier('element');
+  const checkElement = ts.createFunctionExpression(
+    undefined /* modifiers */,
+    undefined /* asteriskToken */,
+    undefined /* name */,
+    undefined /* typeParameters */,
+    [
+      ts.createParameter(
+        undefined /* decorators */,
+        undefined /* modifiers */,
+        undefined /* dotDotDotToken */,
+        element /* name */,
+        undefined /* questionToken */,
+        undefined /* type */,
+        undefined /* initializer */,
+      ),
+    ],
+    undefined,
+    ts.createBlock([ts.createReturn(createValueTypeCheck(typeNode.elementType, element))], false),
+  );
+
+  // Now let's do value.every(<element type checker>)
+  const checkElements = ts.createCall(ts.createPropertyAccess(value, 'every'), [], [checkElement]);
+
+  return ts.createLogicalAnd(isArray, checkElements);
+};
+
 // Create an empty object declaration
 export const addTypeCheckerMap = (
   file: ts.SourceFile,
