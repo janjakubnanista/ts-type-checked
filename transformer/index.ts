@@ -4,40 +4,28 @@ import {
   Program,
   PropertyAssignment,
   SourceFile,
-  SymbolFlags,
-  SyntaxKind,
   TransformationContext,
   TransformerFactory,
-  Type,
-  TypeFlags,
   TypeNode,
   createBlock,
   createCall,
   createFalse,
   createFunctionExpression,
   createIdentifier,
-  createLiteral,
   createLogicalAnd,
-  createLogicalOr,
-  createNull,
   createParameter,
-  createParen,
   createPropertyAccess,
   createPropertyAssignment,
   createReturn,
   createStrictEquality,
-  createStrictInequality,
   createStringLiteral,
   createTypeOf,
-  isArrayTypeNode,
-  isMethodSignature,
-  isPropertyDeclaration,
-  isPropertySignature,
 } from 'typescript';
 import { ValueTypeCheckCreator, visitNodeAndChildren } from './visitor';
 import {
   addTypeCheckerMap,
   createIsPlainObjectCheck,
+  createObjectIndexedPropertiesCheck,
   createObjectPropertiesCheck,
   createTypeCheckerFunction,
   getTypeOf,
@@ -58,59 +46,35 @@ export default (program: Program): TransformerFactory<SourceFile> => {
     // Main type check generator method
     const createTypeCheckMethodDefinition = (typeNode: TypeNode): FunctionExpression => {
       if (ts.isTypeReferenceNode(typeNode) || ts.isTypeLiteralNode(typeNode)) {
-        const type = typeChecker.getTypeFromTypeNode(typeNode);
-        const stringIndexType = type.getStringIndexType();
-        const stringIndexTypeNode = stringIndexType ? typeChecker.typeToTypeNode(stringIndexType) : undefined;
-
-        const numberIndexType = type.getNumberIndexType();
-
-        if (stringIndexType || numberIndexType) {
-          console.warn('\t\tindex type', stringIndexType, numberIndexType);
-
-          debugger;
-        }
-
         return createTypeCheckerFunction(value => {
           // First we check whether the thing is an object
           const isObject = createIsPlainObjectCheck(value);
-          const propertyChecks = createObjectPropertiesCheck(typeChecker, createValueTypeCheck, typeNode, value);
+          const explicitPropertyChecks = createObjectPropertiesCheck(
+            typeChecker,
+            createValueTypeCheck,
+            typeNode,
+            value,
+          );
+          const indexedPropertyChecks = createObjectIndexedPropertiesCheck(
+            typeChecker,
+            createValueTypeCheck,
+            typeNode,
+            value,
+          );
 
-          if (stringIndexTypeNode) {
-            const valueKeysCall = ts.createCall(
-              ts.createPropertyAccess(ts.createIdentifier('Object'), 'keys'),
-              [],
-              [value],
-            );
-            const key = ts.createIdentifier('key');
-            const checkKey = ts.createFunctionExpression(
-              undefined /* modifiers */,
-              undefined /* asteriskToken */,
-              undefined /* name */,
-              undefined /* typeParameters */,
-              [
-                ts.createParameter(
-                  undefined /* decorators */,
-                  undefined /* modifiers */,
-                  undefined /* dotDotDotToken */,
-                  key /* name */,
-                  undefined /* questionToken */,
-                  undefined /* type */,
-                  undefined /* initializer */,
-                ),
-              ],
-              undefined,
-              ts.createBlock(
-                [ts.createReturn(createValueTypeCheck(stringIndexTypeNode, ts.createElementAccess(value, key)))],
-                false,
-              ),
+          if (explicitPropertyChecks && indexedPropertyChecks)
+            return ts.createLogicalAnd(
+              ts.createParen(isObject),
+              ts.createLogicalAnd(ts.createParen(explicitPropertyChecks), ts.createParen(indexedPropertyChecks)),
             );
 
-            const checkKeys = ts.createCall(ts.createPropertyAccess(valueKeysCall, 'every'), [], [checkKey]);
+          if (explicitPropertyChecks)
+            return ts.createLogicalAnd(ts.createParen(isObject), ts.createParen(explicitPropertyChecks));
 
-            return createLogicalAnd(ts.createParen(propertyChecks), checkKeys);
-          }
+          if (indexedPropertyChecks)
+            return ts.createLogicalAnd(ts.createParen(isObject), ts.createParen(indexedPropertyChecks));
 
-          return propertyChecks;
+          return isObject;
         });
       }
 
@@ -118,35 +82,11 @@ export default (program: Program): TransformerFactory<SourceFile> => {
 
       return createTypeCheckerFunction(() => createFalse());
 
-      // if (type.flags & TypeFlags.Boolean) {
-      //   return createTypeCheckerFunction(value =>
-      //     createStrictEquality(createTypeOf(value), createStringLiteral('boolean')),
-      //   );
-      // }
-
       // if (type.flags & TypeFlags.BooleanLiteral) {
       //   const typeNode = typeChecker.typeToTypeNode(type);
 
       //   return createTypeCheckerFunction(value =>
       //     createStrictEquality(value, createLiteral(typeNode?.kind === SyntaxKind.TrueKeyword)),
-      //   );
-      // }
-
-      // if (type.flags & TypeFlags.Number) {
-      //   return createTypeCheckerFunction(value =>
-      //     createStrictEquality(createTypeOf(value), createStringLiteral('number')),
-      //   );
-      // }
-
-      // if (type.flags & TypeFlags.String) {
-      //   return createTypeCheckerFunction(value =>
-      //     createStrictEquality(createTypeOf(value), createStringLiteral('string')),
-      //   );
-      // }
-
-      // if (type.flags & TypeFlags.Undefined) {
-      //   return createTypeCheckerFunction(value =>
-      //     createStrictEquality(createTypeOf(value), createStringLiteral('undefined')),
       //   );
       // }
 
@@ -257,9 +197,6 @@ export default (program: Program): TransformerFactory<SourceFile> => {
       } catch (error) {
         console.warn('createValueTypeCheck', '[UNKNOWN]', typeNode.kind);
       }
-
-      const tc = typeChecker;
-      debugger;
 
       // First let's check for types that will not create a new method on typechecker map
       const typeOfNode = getTypeOf(typeNode);

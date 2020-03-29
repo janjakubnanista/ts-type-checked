@@ -79,6 +79,29 @@ export const createObjectIndexedPropertiesCheck = (
   const stringIndexTypeNode = stringIndexType ? typeChecker.typeToTypeNode(stringIndexType) : undefined;
   if (!numberIndexTypeNode && !stringIndexTypeNode) return undefined;
 
+  const properties: ts.Symbol[] = type.getProperties() || [];
+  const propertyMapIdentifier = ts.createIdentifier('properties');
+
+  // Map of explicitly defined properties
+  const propertyMap = ts.createVariableStatement(
+    undefined /* modifiers */,
+    ts.createVariableDeclarationList(
+      [
+        ts.createVariableDeclaration(
+          propertyMapIdentifier,
+          undefined,
+          ts.createObjectLiteral(
+            properties.map(property => {
+              return ts.createPropertyAssignment(ts.createStringLiteral(property.getName()), ts.createTrue());
+            }),
+            true,
+          ),
+        ),
+      ],
+      ts.NodeFlags.Const,
+    ),
+  );
+
   // Object.keys(value).every(key => {
   //   // Both are defined
   //   return (!isNaN(value[key]) && isA<NumberType>(value[key])) || isA<StringType>(value[key]);
@@ -143,7 +166,12 @@ export const createObjectIndexedPropertiesCheck = (
       [
         // If numberIndexTypeNode is defined we need to check whether a key is numberic
         // which in case of plain objects means the key is still a string but can be converted to a number
+        propertyMap,
 
+        // If the property has been defined explicitly then we skip it
+        ts.createIf(ts.createElementAccess(propertyMapIdentifier, key), ts.createReturn(ts.createTrue())),
+
+        // If it is an indexed property then it is checked using the checks above
         ts.createReturn(ts.createLogicalOr(ts.createParen(numberIndexTypeCheck), ts.createParen(stringIndexTypeCheck))),
       ],
       false,
