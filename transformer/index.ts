@@ -28,6 +28,7 @@ import {
   createObjectIndexedPropertiesCheck,
   createObjectPropertiesCheck,
   createTypeCheckerFunction,
+  getBooleanLiteral,
   getTypeOf,
 } from './utils';
 import ts from 'typescript';
@@ -201,19 +202,19 @@ export default (program: Program): TransformerFactory<SourceFile> => {
       // First let's check for types that will not create a new method on typechecker map
       const typeOfNode = getTypeOf(typeNode);
       if (typeOfNode) {
-        return createStrictEquality(createTypeOf(value), createStringLiteral(typeOfNode));
+        return ts.createStrictEquality(ts.createTypeOf(value), ts.createStringLiteral(typeOfNode));
+      }
+
+      // Now let's check true/false keywords
+      const booleanLiteral = getBooleanLiteral(typeNode);
+      if (booleanLiteral) {
+        return ts.createStrictEquality(value, booleanLiteral);
       }
 
       if (ts.isLiteralTypeNode(typeNode)) {
         console.log('literal type node', typeNode.literal);
 
         return createStrictEquality(value, typeNode.literal);
-      }
-
-      if (ts.isIndexedAccessTypeNode(typeNode)) {
-        console.log('\tindexed access kinda node', typeNode.indexType.kind, typeNode.objectType.kind);
-
-        return ts.createTrue();
       }
 
       if (ts.isArrayTypeNode(typeNode)) {
@@ -248,6 +249,22 @@ export default (program: Program): TransformerFactory<SourceFile> => {
         const checkElements = createCall(createPropertyAccess(value, 'every'), [], [checkElement]);
 
         return createLogicalAnd(isArray, checkElements);
+      }
+
+      const type = typeChecker.getTypeFromTypeNode(typeNode);
+      if (type.isUnion()) {
+        console.log('union type node');
+
+        return type.types
+          .map(unionMemberType => {
+            const unionMemberTypeNode = typeChecker.typeToTypeNode(unionMemberType, typeNode);
+            if (!unionMemberTypeNode) {
+              throw new Error(`Could not resolve union member type node`);
+            }
+
+            return createValueTypeCheck(unionMemberTypeNode, value);
+          })
+          .reduce((expression, unionMemberExpression) => ts.createLogicalOr(expression, unionMemberExpression));
       }
 
       // Now the ones that will

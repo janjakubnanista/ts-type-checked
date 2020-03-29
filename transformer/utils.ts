@@ -29,6 +29,19 @@ export const getTypeOf = (typeNode: ts.TypeNode): string | undefined => {
   }
 };
 
+export const getBooleanLiteral = (typeNode: ts.TypeNode): ts.BooleanLiteral | undefined => {
+  switch (typeNode.kind) {
+    case ts.SyntaxKind.TrueKeyword:
+      return ts.createTrue();
+
+    case ts.SyntaxKind.FalseKeyword:
+      return ts.createFalse();
+
+    default:
+      return undefined;
+  }
+};
+
 export const createIsPlainObjectCheck = (value: ts.Expression): ts.Expression =>
   ts.createLogicalAnd(
     ts.createParen(ts.createStrictEquality(ts.createTypeOf(value), ts.createStringLiteral('object'))),
@@ -77,6 +90,7 @@ export const createObjectIndexedPropertiesCheck = (
   const stringIndexType = type.getStringIndexType();
   const numberIndexTypeNode = numberIndexType ? typeChecker.typeToTypeNode(numberIndexType) : undefined;
   const stringIndexTypeNode = stringIndexType ? typeChecker.typeToTypeNode(stringIndexType) : undefined;
+  debugger;
   if (!numberIndexTypeNode && !stringIndexTypeNode) return undefined;
 
   const properties: ts.Symbol[] = type.getProperties() || [];
@@ -143,7 +157,7 @@ export const createObjectIndexedPropertiesCheck = (
   // isA<StringType>(value[key])
   const stringIndexTypeCheck: ts.Expression = stringIndexTypeNode
     ? createValueTypeCheck(stringIndexTypeNode, valueForKey)
-    : ts.createTrue();
+    : ts.createFalse();
 
   const checkKey = ts.createFunctionExpression(
     undefined /* modifiers */,
@@ -178,34 +192,7 @@ export const createObjectIndexedPropertiesCheck = (
     ),
   );
 
-  ts.createExpressionStatement(
-    ts.createBinary(
-      ts.createParen(
-        ts.createBinary(
-          ts.createPrefix(
-            ts.SyntaxKind.ExclamationToken,
-            ts.createCall(ts.createIdentifier('isNaN'), undefined, [
-              ts.createElementAccess(ts.createIdentifier('value'), ts.createIdentifier('key')),
-            ]),
-          ),
-          ts.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-          ts.createCall(
-            ts.createIdentifier('isA'),
-            [ts.createTypeReferenceNode(ts.createIdentifier('NumberType'), undefined)],
-            [ts.createElementAccess(ts.createIdentifier('value'), ts.createIdentifier('key'))],
-          ),
-        ),
-      ),
-      ts.createToken(ts.SyntaxKind.BarBarToken),
-      ts.createCall(
-        ts.createIdentifier('isA'),
-        [ts.createTypeReferenceNode(ts.createIdentifier('StringType'), undefined)],
-        [ts.createElementAccess(ts.createIdentifier('value'), ts.createIdentifier('key'))],
-      ),
-    ),
-  );
-
-  const checkKeys = ts.createCall(ts.createPropertyAccess(objectKeysCall, 'every'), [], [checkKey]);
+  return ts.createCall(ts.createPropertyAccess(objectKeysCall, 'every'), [], [checkKey]);
 };
 
 // Create an empty object declaration
