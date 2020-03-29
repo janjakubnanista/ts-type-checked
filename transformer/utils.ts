@@ -16,9 +16,6 @@ export const getTypeOf = (typeNode: ts.TypeNode): string | undefined => {
     case ts.SyntaxKind.StringKeyword:
       return 'string';
 
-    case ts.SyntaxKind.UndefinedKeyword:
-      return 'undefined';
-
     case ts.SyntaxKind.FunctionType:
       console.warn('Due to the nature of functions their return types cannot be checked');
 
@@ -29,7 +26,11 @@ export const getTypeOf = (typeNode: ts.TypeNode): string | undefined => {
   }
 };
 
-export const getBooleanLiteral = (typeNode: ts.TypeNode): ts.BooleanLiteral | undefined => {
+export const getLiteral = (typeNode: ts.TypeNode): ts.Expression | undefined => {
+  if (ts.isLiteralTypeNode(typeNode)) {
+    return typeNode.literal;
+  }
+
   switch (typeNode.kind) {
     case ts.SyntaxKind.TrueKeyword:
       return ts.createTrue();
@@ -37,9 +38,19 @@ export const getBooleanLiteral = (typeNode: ts.TypeNode): ts.BooleanLiteral | un
     case ts.SyntaxKind.FalseKeyword:
       return ts.createFalse();
 
+    case ts.SyntaxKind.NullKeyword:
+      return ts.createNull();
+
+    case ts.SyntaxKind.UndefinedKeyword:
+      return ts.createIdentifier('undefined');
+
     default:
       return undefined;
   }
+};
+
+export const hasNoConstraint = (typeNode: ts.TypeNode): boolean => {
+  return typeNode.kind === ts.SyntaxKind.AnyKeyword || typeNode.kind === ts.SyntaxKind.UnknownKeyword;
 };
 
 export const createIsPlainObjectCheck = (value: ts.Expression): ts.Expression =>

@@ -7,6 +7,6 @@
     ]
   },
   "include": [
-    "test/e2e/unions.spec.ts"
+    "test/e2e/basics.spec.ts"
   ]
 }

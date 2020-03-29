@@ -29,8 +29,9 @@ import {
   createObjectIndexedPropertiesCheck,
   createObjectPropertiesCheck,
   createTypeCheckerFunction,
-  getBooleanLiteral,
+  getLiteral,
   getTypeOf,
+  hasNoConstraint,
 } from './utils';
 import ts from 'typescript';
 
@@ -193,24 +194,39 @@ export default (program: Program): TransformerFactory<SourceFile> => {
 
     const createValueTypeCheck: ValueTypeCheckCreator = (typeNode, value) => {
       const type = typeChecker.getTypeFromTypeNode(typeNode);
-      const baseContraintType = typeChecker.getBaseConstraintOfType(type);
+      console.warn('[createValueTypeCheck]', typeChecker.typeToString(type), typeNode.kind);
 
-      console.warn('[createValueTypeCheck]', typeChecker.typeToString(type));
-      if (baseContraintType) {
-        debugger;
+      // Checks for any/unknown types
+      if (hasNoConstraint(typeNode)) {
+        return ts.createTrue();
       }
 
-      // First let's check for types that will not create a new method on typechecker map
+      // Checks for types that can be asserted using the "typeof" keyword
       const typeOfNode = getTypeOf(typeNode);
       if (typeOfNode) {
         return ts.createStrictEquality(ts.createTypeOf(value), ts.createStringLiteral(typeOfNode));
       }
 
-      // Now let's check true/false keywords
-      const booleanLiteral = getBooleanLiteral(typeNode);
-      if (booleanLiteral) {
-        return ts.createStrictEquality(value, booleanLiteral);
+      // Checks for any kind of literal
+      // - true / false
+      // - null
+      // - undefined
+      // - "string literal"
+      const literal = getLiteral(typeNode);
+      if (literal) {
+        return ts.createStrictEquality(value, literal);
       }
+
+      const baseContraintType = typeChecker.getBaseConstraintOfType(type);
+      // if (baseContraintType) {
+      //   debugger;
+      // }
+
+      // // Now let's check true/false keywords
+      // const booleanLiteral = getBooleanLiteral(typeNode);
+      // if (booleanLiteral) {
+      //   return ts.createStrictEquality(value, booleanLiteral);
+      // }
 
       // Next we check for an array
       if (ts.isArrayTypeNode(typeNode)) {
