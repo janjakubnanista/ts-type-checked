@@ -1,7 +1,7 @@
 import { Expression, Node, Program, SourceFile, TransformationContext, TypeNode, visitEachChild } from 'typescript';
-import { isOurCallExpression, isOurImportExpression } from './utils';
+import { Logger, isOurCallExpression, isOurImportExpression } from './utils';
 
-export type ValueTypeCheckCreator = (type: TypeNode, value: Expression) => Expression;
+export type ValueTypeCheckCreator = (type: TypeNode, value: Expression, logger?: Logger) => Expression;
 
 function visitNode(node: SourceFile, program: Program, typeCheckValue: ValueTypeCheckCreator): SourceFile;
 function visitNode(node: Node, program: Program, typeCheckValue: ValueTypeCheckCreator): Node | undefined;

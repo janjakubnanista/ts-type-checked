@@ -2,6 +2,17 @@ import { ValueTypeCheckCreator } from './visitor';
 import path from 'path';
 import ts from 'typescript';
 
+export interface Logger {
+  (message: string, ...args: unknown[]): void;
+  indent: () => Logger;
+}
+
+export const createLogger = (prefix = ''): Logger => {
+  return Object.assign((message: string, ...args: unknown[]) => console.log(prefix + message, ...args), {
+    indent: () => createLogger('\t' + prefix),
+  });
+};
+
 export const getTypeOf = (typeNode: ts.TypeNode): string | undefined => {
   switch (typeNode.kind) {
     case ts.SyntaxKind.BooleanKeyword:
@@ -9,9 +20,6 @@ export const getTypeOf = (typeNode: ts.TypeNode): string | undefined => {
 
     case ts.SyntaxKind.NumberKeyword:
       return 'number';
-
-    case ts.SyntaxKind.ObjectKeyword:
-      return 'object';
 
     case ts.SyntaxKind.StringKeyword:
       return 'string';

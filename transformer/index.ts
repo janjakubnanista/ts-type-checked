@@ -7,25 +7,17 @@ import {
   TransformationContext,
   TransformerFactory,
   TypeNode,
-  createBlock,
   createCall,
   createFalse,
-  createFunctionExpression,
   createIdentifier,
-  createLogicalAnd,
-  createParameter,
-  createPropertyAccess,
   createPropertyAssignment,
-  createReturn,
-  createStrictEquality,
-  createStringLiteral,
-  createTypeOf,
 } from 'typescript';
 import { ValueTypeCheckCreator, visitNodeAndChildren } from './visitor';
 import {
   addTypeCheckerMap,
   createArrayElementsCheck,
   createIsPlainObjectCheck,
+  createLogger,
   createObjectIndexedPropertiesCheck,
   createObjectPropertiesCheck,
   createTypeCheckerFunction,
@@ -82,99 +74,6 @@ export default (program: Program): TransformerFactory<SourceFile> => {
       }
 
       return createTypeCheckerFunction(() => createFalse());
-
-      // if (type.flags & TypeFlags.BooleanLiteral) {
-      //   const typeNode = typeChecker.typeToTypeNode(type);
-
-      //   return createTypeCheckerFunction(value =>
-      //     createStrictEquality(value, createLiteral(typeNode?.kind === SyntaxKind.TrueKeyword)),
-      //   );
-      // }
-
-      // if (type.isLiteral()) {
-      //   return createTypeCheckerFunction(value => createStrictEquality(value, createLiteral(type.value)));
-      // }
-
-      // if (type.isUnion()) {
-      //   return createTypeCheckerFunction(value => {
-      //     return type.types
-      //       .map(unionMemberType => {
-      //         return createValueTypeCheck(unionMemberType, value);
-      //       })
-      //       .reduce((expression, unionMemberExpression) => createLogicalOr(expression, unionMemberExpression));
-      //   });
-      // }
-
-      // // const typeNode = typeChecker.typeToTypeNode(type);
-      // if (typeNode && isArrayTypeNode(typeNode)) {
-      //   const indexType = type.getNumberIndexType();
-      //   if (!indexType) {
-      //     throw new Error('Could not find array type for ' + typeNode.getFullText());
-      //   }
-
-      //   return createTypeCheckerFunction(value => {
-      //     const isArray = createCall(createPropertyAccess(createIdentifier('Array'), 'isArray'), [], [value]);
-      //     const element = createIdentifier('element');
-      //     const checkElement = createFunctionExpression(
-      //       undefined,
-      //       undefined,
-      //       undefined,
-      //       undefined,
-      //       [
-      //         createParameter(
-      //           /* decorators */ undefined,
-      //           /* modifiers */ undefined,
-      //           /* dotDotDotToken */ undefined,
-      //           /* name */ element,
-      //           undefined,
-      //           undefined,
-      //           undefined,
-      //         ),
-      //       ],
-      //       undefined,
-      //       createBlock([createReturn(createValueTypeCheck(indexType, element))], false),
-      //     );
-      //     const checkElements = createCall(createPropertyAccess(value, 'every'), [], [checkElement]);
-
-      //     return createLogicalAnd(isArray, checkElements);
-      //   });
-      // }
-
-      // return createTypeCheckerFunction(value => {
-      //   const isObject = createLogicalAnd(
-      //     createStrictEquality(createTypeOf(value), createStringLiteral('object')),
-      //     createStrictInequality(value, createNull()),
-      //   );
-
-      //   return type.getProperties().reduce((expression, property) => {
-      //     const declaration = property.valueDeclaration;
-      //     // TODO Properties without a type, just an initializer
-      //     if (
-      //       !isPropertySignature(declaration) &&
-      //       !isMethodSignature(declaration) &&
-      //       !isPropertyDeclaration(declaration)
-      //     ) {
-      //       console.warn('declaration', declaration.kind);
-
-      //       throw new Error(`Property ${property.name} does not have a property declaration`);
-      //     }
-
-      //     if (!declaration.type) {
-      //       throw new Error(`Could not determine the type of property ${property.name}`);
-      //     }
-
-      //     const type = typeChecker.getTypeFromTypeNode(declaration.type);
-      //     const propertyAccess = createPropertyAccess(value, property.name);
-      //     const valueTypeCheck = createValueTypeCheck(type, propertyAccess);
-      //     const isOptional = property.getFlags() & SymbolFlags.Optional;
-      //     if (!isOptional) {
-      //       return createLogicalAnd(expression, valueTypeCheck);
-      //     }
-
-      //     const optionalCheck = createStrictEquality(createTypeOf(propertyAccess), createStringLiteral('undefined'));
-      //     return createLogicalAnd(expression, createParen(createLogicalOr(optionalCheck, valueTypeCheck)));
-      //   }, isObject);
-      // });
     };
 
     let lastMethodId = 0;
@@ -192,9 +91,10 @@ export default (program: Program): TransformerFactory<SourceFile> => {
       return method;
     };
 
-    const createValueTypeCheck: ValueTypeCheckCreator = (typeNode, value) => {
+    const createValueTypeCheck: ValueTypeCheckCreator = (typeNode, value, logger = createLogger()) => {
       const type = typeChecker.getTypeFromTypeNode(typeNode);
-      console.warn('[createValueTypeCheck]', typeChecker.typeToString(type), typeNode.kind);
+
+      logger('[createValueTypeCheck]', typeChecker.typeToString(type), typeNode.kind);
 
       // Checks for any/unknown types
       if (hasNoConstraint(typeNode)) {
@@ -223,15 +123,26 @@ export default (program: Program): TransformerFactory<SourceFile> => {
       }
 
       if (ts.isTypeReferenceNode(typeNode)) {
-        console.warn('\tType reference node');
+        logger('\tType reference node');
       }
 
       if (ts.isTypeLiteralNode(typeNode)) {
-        console.warn('\tType literal node');
+        logger('\tType literal node');
+      }
+
+      if (ts.isUnionTypeNode(typeNode)) {
+        logger('\tUnion type node');
+
+        return typeNode.types
+          .map(memberTypeNode => {
+            return createValueTypeCheck(memberTypeNode, value, logger.indent());
+          })
+          .reduce((expression, unionMemberExpression) => ts.createLogicalOr(expression, unionMemberExpression));
       }
 
       if (type.isUnion()) {
-        console.warn('\tUnion type node');
+        logger('\tUnion type');
+
         return type.types
           .map(unionMemberType => {
             const unionMemberTypeNode = typeChecker.typeToTypeNode(unionMemberType, typeNode);
@@ -239,7 +150,7 @@ export default (program: Program): TransformerFactory<SourceFile> => {
               throw new Error(`Could not resolve union member type node`);
             }
 
-            return createValueTypeCheck(unionMemberTypeNode, value);
+            return createValueTypeCheck(unionMemberTypeNode, value, logger.indent());
           })
           .reduce((expression, unionMemberExpression) => ts.createLogicalOr(expression, unionMemberExpression));
       }
