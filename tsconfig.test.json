@@ -7,6 +7,6 @@
     ]
   },
   "include": [
-    "test/e2e/*.ts"
+    "test/e2e/generics.spec.ts"
   ]
 }
