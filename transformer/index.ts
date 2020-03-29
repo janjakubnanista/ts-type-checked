@@ -217,31 +217,21 @@ export default (program: Program): TransformerFactory<SourceFile> => {
         return ts.createStrictEquality(value, literal);
       }
 
-      const baseContraintType = typeChecker.getBaseConstraintOfType(type);
-      // if (baseContraintType) {
-      //   debugger;
-      // }
-
-      // // Now let's check true/false keywords
-      // const booleanLiteral = getBooleanLiteral(typeNode);
-      // if (booleanLiteral) {
-      //   return ts.createStrictEquality(value, booleanLiteral);
-      // }
-
-      // Next we check for an array
+      // Check for an array of any kind (the element type check is created by calling )
       if (ts.isArrayTypeNode(typeNode)) {
         return createArrayElementsCheck(typeChecker, createValueTypeCheck, typeNode, value);
       }
 
-      // if (ts.isLiteralTypeNode(typeNode)) {
-      //   console.log('literal type node', typeNode.literal);
+      if (ts.isTypeReferenceNode(typeNode)) {
+        console.warn('\tType reference node');
+      }
 
-      //   return createStrictEquality(value, typeNode.literal);
-      // }
+      if (ts.isTypeLiteralNode(typeNode)) {
+        console.warn('\tType literal node');
+      }
 
       if (type.isUnion()) {
-        console.log('union type node');
-
+        console.warn('\tUnion type node');
         return type.types
           .map(unionMemberType => {
             const unionMemberTypeNode = typeChecker.typeToTypeNode(unionMemberType, typeNode);

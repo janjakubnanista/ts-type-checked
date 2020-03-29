@@ -106,4 +106,20 @@ describe('basics', () => {
       testValues(invalidUndefinedArbitrary, isUndefined, false);
     });
   });
+
+  // FIXME How to handle global classes (Array, Date etc.)?
+  //
+  // describe('Date', () => {
+  //   const isADate = (value: unknown) => isA<Date>(value);
+  //   const validDateArbitrary = fc.date();
+  //   const invalidDateArbitrary = fc.anything().filter(value => !(value instanceof Date));
+
+  //   it('should return true when a Date object is passed', () => {
+  //     testValues(validDateArbitrary, isADate);
+  //   });
+
+  //   it('should return false when not a Date object is passed', () => {
+  //     testValues(invalidDateArbitrary, isADate, false);
+  //   });
+  // });
 });
