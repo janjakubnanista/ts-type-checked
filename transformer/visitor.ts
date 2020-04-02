@@ -1,11 +1,12 @@
 import { Expression, Node, Program, SourceFile, TransformationContext, TypeNode, visitEachChild } from 'typescript';
-import { Logger, isOurCallExpression, isOurImportExpression } from './utils';
+import { isOurCallExpression, isOurImportExpression } from './utils';
+import ts from 'typescript';
 
-export type ValueTypeCheckCreator = (type: TypeNode, value: Expression, logger?: Logger) => Expression;
+export type IsACallVisitor = (typeNode: ts.TypeNode, value: ts.Expression) => ts.Expression;
 
-function visitNode(node: SourceFile, program: Program, typeCheckValue: ValueTypeCheckCreator): SourceFile;
-function visitNode(node: Node, program: Program, typeCheckValue: ValueTypeCheckCreator): Node | undefined;
-function visitNode(node: Node, program: Program, typeCheckValue: ValueTypeCheckCreator): Node | undefined {
+function visitNode(node: SourceFile, program: Program, isACallVisitor: IsACallVisitor): SourceFile;
+function visitNode(node: Node, program: Program, isACallVisitor: IsACallVisitor): Node | undefined;
+function visitNode(node: Node, program: Program, isACallVisitor: IsACallVisitor): Node | undefined {
   // Discard all the imports from this module
   if (isOurImportExpression(node)) {
     return;
@@ -24,7 +25,7 @@ function visitNode(node: Node, program: Program, typeCheckValue: ValueTypeCheckC
     }
 
     // const type = typeChecker.getTypeFromTypeNode(typeNode);
-    return typeCheckValue(typeNode, valueNode);
+    return isACallVisitor(typeNode, valueNode);
   }
 
   return node;
@@ -34,23 +35,23 @@ export function visitNodeAndChildren(
   node: SourceFile,
   program: Program,
   context: TransformationContext,
-  typeCheckValue: ValueTypeCheckCreator,
+  isACallVisitor: IsACallVisitor,
 ): SourceFile;
 export function visitNodeAndChildren(
   node: Node,
   program: Program,
   context: TransformationContext,
-  typeCheckValue: ValueTypeCheckCreator,
+  isACallVisitor: IsACallVisitor,
 ): Node | undefined;
 export function visitNodeAndChildren(
   node: Node,
   program: Program,
   context: TransformationContext,
-  typeCheckValue: ValueTypeCheckCreator,
+  isACallVisitor: IsACallVisitor,
 ): Node | undefined {
   return visitEachChild(
-    visitNode(node, program, typeCheckValue),
-    childNode => visitNodeAndChildren(childNode, program, context, typeCheckValue),
+    visitNode(node, program, isACallVisitor),
+    childNode => visitNodeAndChildren(childNode, program, context, isACallVisitor),
     context,
   );
 }

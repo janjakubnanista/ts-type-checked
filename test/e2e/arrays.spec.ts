@@ -19,8 +19,14 @@ import { isA } from '../..';
 import fc from 'fast-check';
 
 describe('array types', () => {
+  type ArrayOf<T> = T[];
+
   describe('string arrays', () => {
+    type StringArray = string[];
     const isAStringArrayWithBrackets = (value: unknown) => isA<string[]>(value);
+    const isAStringArrayWithReference = (value: unknown) => isA<StringArray>(value);
+    const isAStringArrayWithGenerics = (value: unknown) => isA<ArrayOf<string>>(value);
+
     const validStringArrayArbitrary = fc.array(fc.string());
     const invalidStringArrayArbitrary = fc.oneof(
       fc.array(fc.anything().filter(value => typeof value !== 'string')).filter(array => !!array.length),
@@ -29,14 +35,20 @@ describe('array types', () => {
 
     it('should return true when a string array is passed', () => {
       testValues(validStringArrayArbitrary, isAStringArrayWithBrackets);
+      testValues(validStringArrayArbitrary, isAStringArrayWithReference);
+      testValues(validStringArrayArbitrary, isAStringArrayWithGenerics);
     });
 
     it('should return false when a non-string array is passed', () => {
       testValues(invalidStringArrayArbitrary, isAStringArrayWithBrackets, false);
+      testValues(invalidStringArrayArbitrary, isAStringArrayWithReference, false);
+      testValues(invalidStringArrayArbitrary, isAStringArrayWithGenerics, false);
     });
   });
 
   describe('numeric arrays', () => {
+    type NumberArray = string[];
+
     const isANumberArrayWithBrackets = (value: unknown) => isA<number[]>(value);
     const validNumberArrayArbitrary = fc.array(fc.integer());
     const invalidNumberArrayArbitrary = fc.oneof(

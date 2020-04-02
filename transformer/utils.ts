@@ -1,17 +1,5 @@
-import { ValueTypeCheckCreator } from './visitor';
 import path from 'path';
 import ts from 'typescript';
-
-export interface Logger {
-  (message: string, ...args: unknown[]): void;
-  indent: () => Logger;
-}
-
-export const createLogger = (prefix = ''): Logger => {
-  return Object.assign((message: string, ...args: unknown[]) => console.log(prefix + message, ...args), {
-    indent: () => createLogger('\t' + prefix),
-  });
-};
 
 export const getTypeOf = (typeNode: ts.TypeNode): string | undefined => {
   switch (typeNode.kind) {
@@ -216,10 +204,8 @@ export const createObjectIndexedPropertiesCheck = (
 
 // Array.isArray(value) && value.every(element => isA(element))
 export const createArrayElementsCheck = (
-  typeChecker: ts.TypeChecker,
-  createValueTypeCheck: ValueTypeCheckCreator,
-  typeNode: ts.ArrayTypeNode,
   value: ts.Expression,
+  elementTypeCheck: (value: ts.Expression) => ts.Expression,
 ): ts.Expression => {
   // First let's do Array.isArray(value)
   const isArray = ts.createCall(ts.createPropertyAccess(ts.createIdentifier('Array'), 'isArray'), [], [value]);
@@ -243,7 +229,7 @@ export const createArrayElementsCheck = (
       ),
     ],
     undefined,
-    ts.createBlock([ts.createReturn(createValueTypeCheck(typeNode.elementType, element))], false),
+    ts.createBlock([ts.createReturn(elementTypeCheck(element))], false),
   );
 
   // Now let's do value.every(<element type checker>)
@@ -340,4 +326,18 @@ export const isOurCallExpression = (
     !!declaration.name &&
     declaration.name.getText() === name
   );
+};
+
+export const isTypeReference = (type: ts.Type): type is ts.TypeReference => {
+  const { node, target } = type as ts.TypeReference;
+
+  // FIXME Maybe more checks on the target
+  if (!target) return false;
+  if (node && !ts.isTypeNode(node)) return false;
+
+  return true;
+};
+
+export const typeFlags = (type: ts.Type): string[] => {
+  return Object.keys(ts.TypeFlags).filter(flagName => !!((ts.TypeFlags[flagName as any] as any) & type.flags));
 };
