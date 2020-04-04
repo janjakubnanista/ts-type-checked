@@ -152,6 +152,7 @@ describe('basics', () => {
 
     describe('string arrays', () => {
       type StringArray = string[];
+
       const isAStringArrayWithBrackets = (value: unknown) => isA<string[]>(value);
       const isAStringArrayWithReference = (value: unknown) => isA<StringArray>(value);
       const isAStringArrayWithGenerics = (value: unknown) => isA<ArrayOf<string>>(value);

@@ -299,6 +299,24 @@ export default (program: Program): TransformerFactory<SourceFile> => {
         return ts.createStrictEquality(value, literal);
       }
 
+      if (type.isUnion()) {
+        return type.types
+          .map(unionMemberType => {
+            const unionMemberTypeNode = typeChecker.typeToTypeNode(unionMemberType, root);
+            if (!unionMemberTypeNode) {
+              throw new Error(
+                `Could not resolve member type '${typeChecker.typeToString(
+                  unionMemberType,
+                  root,
+                )}' of union '${typeChecker.typeToString(type, root)}'`,
+              );
+            }
+
+            return createCheckForType(root, unionMemberTypeNode, value);
+          })
+          .reduce((expression, unionMemberExpression) => ts.createLogicalOr(expression, unionMemberExpression));
+      }
+
       // if (type.isUnion()) {
       //   logger('\tUnion type');
 
@@ -341,31 +359,40 @@ export default (program: Program): TransformerFactory<SourceFile> => {
         logger('\tType reference node');
 
         const node = (type as ts.TypeReference)?.node;
-        if (!node) {
-          throw new Error(`Cannot resolve type reference ${typeChecker.typeToString(type, root)}`);
-        }
+        const target = (type as ts.TypeReference)?.target;
+        // if (!node) {
+        //   throw new Error(`Cannot resolve type reference ${typeChecker.typeToString(type, root)}`);
+        // }
 
-        if (ts.isTypeReferenceNode(node)) {
+        if (node && ts.isTypeReferenceNode(node)) {
           logger('\t\tNode', node);
+
+          debugger;
         }
 
-        if (ts.isArrayTypeNode(node)) {
+        if (node && ts.isArrayTypeNode(node)) {
           logger('\t\tArray', node, node.elementType);
           const elementType = typeChecker.getTypeFromTypeNode(node.elementType);
+
           if (elementType.isTypeParameter()) {
             logger('\t\tWith type parameter');
+
+            // FIXME Not like this ofc
+            const resolvedNode = ts.updateArrayTypeNode(node, typeNode.typeArguments?.[0]!);
+
+            return createCheckForType(root, resolvedNode, value);
           }
           // if (ts.isTypeParameterDeclaration(node.elementType)) {
           //   logger('\t\tWith type parameter');
           // }
-
-          debugger;
           // const resolvedNode = ts.updateTypeReferenceNode(node, typeNode.typeName)
           // const resolvedNode = ts.updateArrayTypeNode(node, typeNode.typeArguments?.[0]!);
           // debugger;
 
           return createCheckForType(root, node, value);
         }
+
+        debugger;
 
         // const targetType = (type as ts.TypeReference)?.target;
         // const targetTypeNode = typeChecker.typeToTypeNode(targetType, root);
