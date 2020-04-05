@@ -7,25 +7,21 @@ import {
   TransformationContext,
   TransformerFactory,
   TypeNode,
-  createCall,
-  createFalse,
   createIdentifier,
   createPropertyAssignment,
 } from 'typescript';
-import { ValueTypeCheckCreator, visitNodeAndChildren } from './visitor';
 import {
   addTypeCheckerMap,
   createArrayElementsCheck,
   createIsPlainObjectCheck,
-  createObjectIndexedPropertiesCheck,
   createObjectPropertiesCheck,
-  createTypeCheckerFunction,
   getLiteral,
   getTypeOf,
   hasNoConstraint,
   typeFlags,
 } from './utils';
 import { createLogger } from './logger';
+import { visitNodeAndChildren } from './visitor';
 import ts from 'typescript';
 
 interface TypeCheckMethod {
@@ -210,7 +206,14 @@ export default (program: Program): TransformerFactory<SourceFile> => {
 
     const createCheckForType = (root: ts.TypeNode, typeNode: ts.TypeNode, value: ts.Expression): ts.Expression => {
       const type = typeChecker.getTypeFromTypeNode(typeNode);
-      logger('\tChecking', typeChecker.typeToString(type, root), typeNode.kind, type.flags, typeFlags(type));
+      const resolvedTypeNode = typeChecker.typeToTypeNode(type, root);
+      if (!resolvedTypeNode) {
+        logger(`Could not resolve`, typeChecker.typeToString(type, root), typeNode?.kind);
+
+        return ts.createFalse();
+      }
+
+      logger('\tChecking', typeChecker.typeToString(type, root), typeNode?.kind);
 
       // function getTypeOfGlobalSymbol(symbol: Symbol, arity: number): ObjectType {
 
@@ -282,7 +285,7 @@ export default (program: Program): TransformerFactory<SourceFile> => {
       // Checks for types that can be asserted using the "typeof" keyword
       const typeOfNode = getTypeOf(typeNode);
       if (typeOfNode) {
-        logger('\tTypeofable');
+        logger('\tTypeofable: ', typeOfNode);
 
         return ts.createStrictEquality(ts.createTypeOf(value), ts.createStringLiteral(typeOfNode));
       }
@@ -347,6 +350,24 @@ export default (program: Program): TransformerFactory<SourceFile> => {
         logger('\tArray type node');
 
         return createArrayElementsCheck(value, element => createCheckForType(root, typeNode.elementType, element));
+      }
+
+      if (type.isClassOrInterface()) {
+        logger('\tClass or interface');
+      }
+
+      if (ts.isTypeLiteralNode(typeNode)) {
+        logger('\tType literal');
+
+        const objectTypeCheck = createIsPlainObjectCheck(value);
+        const propertiesCheck = createObjectPropertiesCheck(
+          typeChecker,
+          typeNode,
+          (propertyTypeNode, propertyValue) => createCheckForType(root, propertyTypeNode, propertyValue),
+          value,
+        );
+
+        return propertiesCheck ? ts.createLogicalAnd(objectTypeCheck, propertiesCheck) : objectTypeCheck;
       }
 
       // if (type.isTypeParameter()) {

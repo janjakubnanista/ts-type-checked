@@ -9,22 +9,67 @@ import {
   stringLiteralUnionArbitrary,
   testValues,
 } from './utils';
-import { isA } from '../..';
+import { isA, makeIsA } from '../..';
 import fc from 'fast-check';
 
 describe('basics', () => {
-  describe('string', () => {
-    const isAString = (value: unknown) => isA<string>(value);
+  describe('arrays', () => {
+    type ArrayOf<T> = T[];
+    type InterfaceOf<T> = {
+      property: T;
+    };
+    type GenericOf<T> = ArrayOf<T> | InterfaceOf<T> | T;
+
+    describe('string arrays', () => {
+      type StringArray = string[];
+
+      const isAStringArrayWithBrackets = (value: unknown) => isA<string[]>(value);
+      const isAStringArrayWithReference = (value: unknown) => isA<StringArray>(value);
+      const isAStringArrayWithGenerics = (value: unknown) => isA<ArrayOf<string>>(value);
+      const isGenericOfString = (value: unknown) => isA<GenericOf<string>>(value);
+
+      const validStringArrayArbitrary = fc.array(fc.string());
+      const invalidStringArrayArbitrary = fc.oneof(
+        fc.array(fc.anything().filter(value => typeof value !== 'string')).filter(array => !!array.length),
+        fc.anything().filter(value => !Array.isArray(value)),
+      );
+
+      it('should return true when a string array is passed', () => {
+        testValues(validStringArrayArbitrary, isAStringArrayWithBrackets);
+        testValues(validStringArrayArbitrary, isAStringArrayWithReference);
+        testValues(validStringArrayArbitrary, isAStringArrayWithGenerics);
+      });
+
+      it('should return false when a non-string array is passed', () => {
+        testValues(invalidStringArrayArbitrary, isAStringArrayWithBrackets, false);
+        testValues(invalidStringArrayArbitrary, isAStringArrayWithReference, false);
+        testValues(invalidStringArrayArbitrary, isAStringArrayWithGenerics, false);
+      });
+    });
+  });
+
+  test('string', () => {
+    type StringType = string;
+
     const validStringArbitrary = fc.string();
     const invalidStringArbitrary = fc.anything().filter(value => typeof value !== 'string');
 
-    it('should return true when a string is passed', () => {
-      testValues(validStringArbitrary, isAString);
-    });
+    testValues(validStringArbitrary, makeIsA<string>());
+    testValues(validStringArbitrary, makeIsA<StringType>());
+    testValues(invalidStringArbitrary, makeIsA<string>(), false);
+    testValues(invalidStringArbitrary, makeIsA<StringType>(), false);
+  });
 
-    it('should return false when not a string is passed', () => {
-      testValues(invalidStringArbitrary, isAString, false);
-    });
+  test('number', () => {
+    type NumberType = number;
+
+    const validNumberArbitrary = fc.oneof(fc.integer(), fc.float());
+    const invalidNumberArbitrary = fc.anything().filter(value => typeof value !== 'number');
+
+    testValues(validNumberArbitrary, makeIsA<number>());
+    testValues(validNumberArbitrary, makeIsA<NumberType>());
+    testValues(invalidNumberArbitrary, makeIsA<number>(), false);
+    testValues(invalidNumberArbitrary, makeIsA<NumberType>(), false);
   });
 
   // describe('number', () => {

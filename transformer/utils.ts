@@ -1,3 +1,4 @@
+import { IsACallVisitor } from './visitor';
 import path from 'path';
 import ts from 'typescript';
 
@@ -58,8 +59,8 @@ export const createIsPlainObjectCheck = (value: ts.Expression): ts.Expression =>
 // Creates a check for all explicitly defined properties of a type
 export const createObjectPropertiesCheck = (
   typeChecker: ts.TypeChecker,
-  createValueTypeCheck: ValueTypeCheckCreator,
   typeNode: ts.TypeReferenceNode | ts.TypeLiteralNode,
+  propertyTypeCheck: (typeNode: ts.TypeNode, value: ts.Expression) => ts.Expression,
   value: ts.Expression,
 ): ts.Expression | undefined => {
   const type: ts.Type = typeChecker.getTypeFromTypeNode(typeNode);
@@ -68,7 +69,7 @@ export const createObjectPropertiesCheck = (
 
   const propertyChecks = properties.map<ts.Expression>(property => {
     const propertyType = typeChecker.getTypeOfSymbolAtLocation(property, typeNode);
-    const propertyTypeNode = typeChecker.typeToTypeNode(propertyType);
+    const propertyTypeNode = typeChecker.typeToTypeNode(propertyType, typeNode);
     if (!propertyTypeNode) {
       throw new Error(`Could not determine the type of property ${property.getName()} of type`);
     }
@@ -76,7 +77,7 @@ export const createObjectPropertiesCheck = (
     console.warn('\t\tproperty type', property.getName(), propertyTypeNode.kind);
 
     const propertyAccess = ts.createElementAccess(value, ts.createStringLiteral(property.name));
-    const valueTypeCheck = createValueTypeCheck(propertyTypeNode, propertyAccess);
+    const valueTypeCheck = propertyTypeCheck(propertyTypeNode, propertyAccess);
 
     // return createLogicalAnd(typeCheckExpression, createParen(createLogicalOr(optionalCheck, valueTypeCheck)));
     return ts.createParen(valueTypeCheck);
@@ -88,7 +89,7 @@ export const createObjectPropertiesCheck = (
 // Creates a check for indexed access properties
 export const createObjectIndexedPropertiesCheck = (
   typeChecker: ts.TypeChecker,
-  createValueTypeCheck: ValueTypeCheckCreator,
+  createValueTypeCheck: IsACallVisitor,
   typeNode: ts.TypeReferenceNode | ts.TypeLiteralNode,
   value: ts.Expression,
 ): ts.Expression | undefined => {
