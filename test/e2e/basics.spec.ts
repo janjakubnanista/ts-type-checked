@@ -15,11 +15,16 @@ import fc from 'fast-check';
 describe('basics', () => {
   describe('arrays', () => {
     type ArrayOf<T> = T[];
-    type InterfaceOf<T> = {
+    type TypeInterfaceOf<T> = {
       propertyForSure: T;
       maybeProperty?: T;
       num: number;
     };
+    interface InterfaceOf<T> {
+      propertyForSure: T;
+      maybeProperty?: T;
+      num: number;
+    }
     type GenericOf<T> = ArrayOf<T> | InterfaceOf<T> | T;
 
     describe('string arrays', () => {
@@ -29,6 +34,7 @@ describe('basics', () => {
       const isAStringArrayWithReference = (value: unknown) => isA<StringArray>(value);
       const isAStringArrayWithGenerics = (value: unknown) => isA<ArrayOf<string>>(value);
       const isGenericOfString = (value: unknown) => isA<GenericOf<string>>(value);
+      const isInterfaceOfString = (value: unknown) => isA<InterfaceOf<string>>(value);
 
       const validStringArrayArbitrary = fc.array(fc.string());
       const invalidStringArrayArbitrary = fc.oneof(
@@ -72,6 +78,32 @@ describe('basics', () => {
     testValues(validNumberArbitrary, makeIsA<NumberType>());
     testValues(invalidNumberArbitrary, makeIsA<number>(), false);
     testValues(invalidNumberArbitrary, makeIsA<NumberType>(), false);
+  });
+
+  test('boolean', () => {
+    type BooleanType = boolean;
+
+    const validBooleanArbitrary = fc.boolean();
+    const invalidBooleanArbitrary = fc.anything().filter(value => typeof value !== 'boolean');
+
+    testValues(validBooleanArbitrary, makeIsA<boolean>());
+    testValues(validBooleanArbitrary, makeIsA<BooleanType>());
+    testValues(invalidBooleanArbitrary, makeIsA<boolean>(), false);
+    testValues(invalidBooleanArbitrary, makeIsA<BooleanType>(), false);
+  });
+
+  test('string literal', () => {
+    type StringLiteralType = 'a' | 'b' | 'c';
+
+    const validStringLiteralArbitrary = fc.constantFrom('a', 'b', 'c');
+    const invalidStringLiteralArbitrary = fc
+      .anything()
+      .filter(value => value !== 'a' && value !== 'b' && value !== 'c');
+
+    testValues(validStringLiteralArbitrary, makeIsA<'a' | 'b' | 'c'>());
+    testValues(validStringLiteralArbitrary, makeIsA<StringLiteralType>());
+    testValues(invalidStringLiteralArbitrary, makeIsA<'a' | 'b' | 'c'>(), false);
+    testValues(invalidStringLiteralArbitrary, makeIsA<StringLiteralType>(), false);
   });
 
   // describe('number', () => {
