@@ -214,6 +214,7 @@ export default (program: Program): TransformerFactory<SourceFile> => {
       }
 
       logger('\tChecking', typeChecker.typeToString(type, root), typeNode?.kind);
+      logger('\t\tType flags', typeFlags(type).join(', '));
 
       // function getTypeOfGlobalSymbol(symbol: Symbol, arity: number): ObjectType {
 
@@ -356,8 +357,17 @@ export default (program: Program): TransformerFactory<SourceFile> => {
         logger('\tClass or interface');
       }
 
+      // if (type.getApparentProperties()) {
+      //   logger('\tApparent properties', type.getApparentProperties());
+      // }
+
       if (ts.isTypeLiteralNode(typeNode)) {
-        logger('\tType literal');
+        logger(
+          '\tType literal',
+          typeNode.members.map(({ name }) => name),
+        );
+
+        debugger;
 
         const objectTypeCheck = createIsPlainObjectCheck(value);
         const propertiesCheck = createObjectPropertiesCheck(

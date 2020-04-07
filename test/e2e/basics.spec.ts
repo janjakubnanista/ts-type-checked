@@ -16,7 +16,9 @@ describe('basics', () => {
   describe('arrays', () => {
     type ArrayOf<T> = T[];
     type InterfaceOf<T> = {
-      property: T;
+      propertyForSure: T;
+      maybeProperty?: T;
+      num: number;
     };
     type GenericOf<T> = ArrayOf<T> | InterfaceOf<T> | T;
 
@@ -188,40 +190,40 @@ describe('basics', () => {
   //   });
   // });
 
-  describe('arrays', () => {
-    type ArrayOf<T> = T[];
-    type InterfaceOf<T> = {
-      property: T;
-    };
-    type GenericOf<T> = ArrayOf<T> | InterfaceOf<T> | T;
+  // describe('arrays', () => {
+  //   type ArrayOf<T> = T[];
+  //   type InterfaceOf<T> = {
+  //     property: T;
+  //   };
+  //   type GenericOf<T> = ArrayOf<T> | InterfaceOf<T> | T;
 
-    describe('string arrays', () => {
-      type StringArray = string[];
+  //   describe('string arrays', () => {
+  //     type StringArray = string[];
 
-      const isAStringArrayWithBrackets = (value: unknown) => isA<string[]>(value);
-      const isAStringArrayWithReference = (value: unknown) => isA<StringArray>(value);
-      const isAStringArrayWithGenerics = (value: unknown) => isA<ArrayOf<string>>(value);
-      const isGenericOfString = (value: unknown) => isA<GenericOf<string>>(value);
+  //     const isAStringArrayWithBrackets = (value: unknown) => isA<string[]>(value);
+  //     const isAStringArrayWithReference = (value: unknown) => isA<StringArray>(value);
+  //     const isAStringArrayWithGenerics = (value: unknown) => isA<ArrayOf<string>>(value);
+  //     const isGenericOfString = (value: unknown) => isA<GenericOf<string>>(value);
 
-      const validStringArrayArbitrary = fc.array(fc.string());
-      const invalidStringArrayArbitrary = fc.oneof(
-        fc.array(fc.anything().filter(value => typeof value !== 'string')).filter(array => !!array.length),
-        fc.anything().filter(value => !Array.isArray(value)),
-      );
+  //     const validStringArrayArbitrary = fc.array(fc.string());
+  //     const invalidStringArrayArbitrary = fc.oneof(
+  //       fc.array(fc.anything().filter(value => typeof value !== 'string')).filter(array => !!array.length),
+  //       fc.anything().filter(value => !Array.isArray(value)),
+  //     );
 
-      it('should return true when a string array is passed', () => {
-        testValues(validStringArrayArbitrary, isAStringArrayWithBrackets);
-        testValues(validStringArrayArbitrary, isAStringArrayWithReference);
-        testValues(validStringArrayArbitrary, isAStringArrayWithGenerics);
-      });
+  //     it('should return true when a string array is passed', () => {
+  //       testValues(validStringArrayArbitrary, isAStringArrayWithBrackets);
+  //       testValues(validStringArrayArbitrary, isAStringArrayWithReference);
+  //       testValues(validStringArrayArbitrary, isAStringArrayWithGenerics);
+  //     });
 
-      it('should return false when a non-string array is passed', () => {
-        testValues(invalidStringArrayArbitrary, isAStringArrayWithBrackets, false);
-        testValues(invalidStringArrayArbitrary, isAStringArrayWithReference, false);
-        testValues(invalidStringArrayArbitrary, isAStringArrayWithGenerics, false);
-      });
-    });
-  });
+  //     it('should return false when a non-string array is passed', () => {
+  //       testValues(invalidStringArrayArbitrary, isAStringArrayWithBrackets, false);
+  //       testValues(invalidStringArrayArbitrary, isAStringArrayWithReference, false);
+  //       testValues(invalidStringArrayArbitrary, isAStringArrayWithGenerics, false);
+  //     });
+  //   });
+  // });
 
   // FIXME How to handle global classes (Array, Date etc.)?
   //
