@@ -35,6 +35,10 @@ export default (program: Program): TransformerFactory<SourceFile> => {
     const typeCheckerObjectIdentfifier: Identifier = createIdentifier('__typeCheckerMap__');
     const typeCheckMethods: Map<TypeNode, TypeCheckMethod> = new Map();
 
+    const isTrueType = (type: ts.Type): boolean => (typeChecker as any).getTrueType?.() === type;
+    const isFalseType = (type: ts.Type): boolean => (typeChecker as any).getFalseType?.() === type;
+    const isArrayType = (type: ts.Type): boolean => (typeChecker as any).isArrayType?.(type) || false;
+
     // // Main type check generator method
     // const createTypeCheckMethodDefinition = (typeNode: TypeNode): FunctionExpression => {
     //   if (ts.isTypeReferenceNode(typeNode) || ts.isTypeLiteralNode(typeNode)) {
@@ -205,12 +209,34 @@ export default (program: Program): TransformerFactory<SourceFile> => {
     // logger('TypeFlags', Object.keys(ts.TypeFlags));
 
     const createCheckForType = (root: ts.TypeNode, type: ts.Type, value: ts.Expression): ts.Expression => {
-      logger('Type', typeChecker.typeToString(type, root), typeFlags(type).join(', '));
+      const typeName = typeChecker.typeToString(type, root);
+      const typeNode = typeChecker.typeToTypeNode(type, root);
 
-      if (type.flags & ts.TypeFlags.Boolean) {
-        logger('\tBoolean');
+      logger('Type', typeName, typeFlags(type).join(', '), typeNode?.kind);
 
-        return ts.createStrictEquality(ts.createTypeOf(value), ts.createLiteral('boolean'));
+      if (typeNode?.kind === ts.SyntaxKind.FalseKeyword) {
+        logger('\tFalse type');
+
+        return ts.createStrictEquality(value, ts.createFalse());
+      }
+
+      if (typeNode?.kind === ts.SyntaxKind.TrueKeyword) {
+        logger('\tTrue type');
+
+        return ts.createStrictEquality(value, ts.createTrue());
+      }
+
+      if (isArrayType(type)) {
+        logger('\tArray type');
+
+        const elementType = (type as ts.TypeReference).typeArguments?.[0];
+        if (!elementType) {
+          throw new Error('Unable to find element type of ' + typeName);
+        }
+
+        return createArrayElementsCheck(value, (element: ts.Expression) =>
+          createCheckForType(root, elementType, element),
+        );
       }
 
       if (type.isLiteral()) {
@@ -219,7 +245,24 @@ export default (program: Program): TransformerFactory<SourceFile> => {
         return ts.createStrictEquality(value, ts.createLiteral(type.value));
       }
 
-      // logger(type as ts.TypeReference).target;
+      if (type.flags & ts.TypeFlags.BooleanLiteral) {
+        logger('\tBoolean literal');
+        debugger;
+
+        return ts.createStrictEquality(ts.createTypeOf(value), ts.createLiteral('boolean'));
+      }
+
+      if (type.flags & ts.TypeFlags.Null) {
+        logger('\tNull');
+
+        return ts.createStrictEquality(value, ts.createNull());
+      }
+
+      if (type.flags & ts.TypeFlags.Boolean) {
+        logger('\tBoolean');
+
+        return ts.createStrictEquality(ts.createTypeOf(value), ts.createLiteral('boolean'));
+      }
 
       if (type.isUnion()) {
         logger('\tUnion type');
@@ -231,9 +274,15 @@ export default (program: Program): TransformerFactory<SourceFile> => {
           });
       }
 
-      // if (type.isStringLiteral()) {
-      //   logger('\tString literal type');
-      // }
+      if (type.isIntersection()) {
+        logger('\tIntersection type');
+
+        return type.types
+          .map(unionMemberType => createCheckForType(root, unionMemberType, value))
+          .reduce((expression, comparison) => {
+            return ts.createLogicalAnd(expression, comparison);
+          });
+      }
 
       if (type.flags & ts.TypeFlags.Number) {
         logger('\tNumber');
@@ -247,64 +296,46 @@ export default (program: Program): TransformerFactory<SourceFile> => {
         return ts.createStrictEquality(ts.createTypeOf(value), ts.createLiteral('string'));
       }
 
-      if (type.flags & ts.TypeFlags.Null) {
-        logger('\tNull');
-
-        return ts.createStrictEquality(value, ts.createNull());
-      }
-
       if (type.flags & ts.TypeFlags.Undefined) {
         logger('\tUndefined');
 
         return ts.createStrictEquality(value, ts.createIdentifier('undefined'));
       }
 
-      logger('');
-      debugger;
+      if (type.flags & ts.TypeFlags.Object) {
+        logger('\tObject');
 
-      // // TS CODE START
-      // function getTypeOfGlobalSymbol(symbol: symbol, arity: number): ObjectType {
-      //   function getTypeDeclaration(symbol: symbol): Declaration {
-      //     const declarations = symbol.declarations;
-      //     for (const declaration of declarations) {
-      //       switch (declaration.kind) {
-      //         case ts.SyntaxKind.ClassDeclaration:
-      //         case ts.SyntaxKind.InterfaceDeclaration:
-      //         case ts.SyntaxKind.EnumDeclaration:
-      //           return declaration;
-      //       }
-      //     }
-      //   }
+        const properties: ts.Symbol[] = type.getProperties();
+        const checkAllProperties = properties.map<ts.Expression>(property => {
+          const propertyType = typeChecker.getTypeOfSymbolAtLocation(property, root);
 
-      //   if (!symbol) {
-      //     return arity ? emptyGenericType : emptyObjectType;
-      //   }
-      //   const type = getDeclaredTypeOfSymbol(symbol);
-      //   if (!(type.flags & TypeFlags.ObjectType)) {
-      //     error(getTypeDeclaration(symbol), Diagnostics.Global_type_0_must_be_a_class_or_interface_type, symbol.name);
-      //     return arity ? emptyGenericType : emptyObjectType;
-      //   }
-      //   if (((<InterfaceType>type).typeParameters ? (<InterfaceType>type).typeParameters.length : 0) !== arity) {
-      //     error(getTypeDeclaration(symbol), Diagnostics.Global_type_0_must_have_1_type_parameter_s, symbol.name, arity);
-      //     return arity ? emptyGenericType : emptyObjectType;
-      //   }
-      //   return <ObjectType>type;
-      // }
+          logger('\t\tProperty', property.getName());
 
-      // function getGlobalSymbol(name: string, meaning: SymbolFlags, diagnostic: DiagnosticMessage): symbol {
-      //   return resolveName(undefined, name, meaning, diagnostic, name);
-      // }
+          const propertyAccess = ts.createElementAccess(value, ts.createStringLiteral(property.name));
+          const valueTypeCheck = createCheckForType(root, propertyType, propertyAccess);
 
-      // function getGlobalTypeSymbol(name: string): symbol {
-      //   return getGlobalSymbol(name, SymbolFlags.Type, Diagnostics.Cannot_find_global_type_0);
-      // }
-      // function getGlobalType(name: string, arity = 0): ObjectType {
-      //   return getTypeOfGlobalSymbol(getGlobalTypeSymbol(name), arity);
-      // }
-      // // TS CODE END
+          // return createLogicalAnd(typeCheckExpression, createParen(createLogicalOr(optionalCheck, valueTypeCheck)));
+          return ts.createParen(valueTypeCheck);
+        }).reduce((expression, propertyCheck) => ts.createLogicalAnd(expression, propertyCheck));
 
-      // getGlobalType('Array', /*arity*/ 1);
+        return ts.createLogicalAnd(
+          ts.createLogicalAnd(
+            ts.createParen(ts.createStrictEquality(ts.createTypeOf(value), ts.createLiteral('object'))),
+            ts.createParen(ts.createStrictInequality(value, ts.createNull()))
+          ),
+          checkAllProperties
+        );
+      }
 
+      // This one should most probably always be one of the last ones or the last one
+      // since it's the most permissive one
+      if (type.flags & ts.TypeFlags.Any) {
+        logger('\tAny');
+
+        return ts.createTrue();
+      }
+
+      // FIXME Throw an exception here
       return ts.createFalse();
     };
 
