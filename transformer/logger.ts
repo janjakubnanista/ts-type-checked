@@ -1,16 +1,4 @@
-// const SILENT = false;
-const SILENT = true;
+export type Logger = (...args: unknown[]) => void;
 
-export interface Logger {
-  (message: string, ...args: unknown[]): void;
-  indent: () => Logger;
-}
-
-export const createLogger = (prefix = ''): Logger => {
-  return Object.assign(
-    (message: string, ...args: unknown[]) => (SILENT ? undefined : console.log(prefix + message, ...args)),
-    {
-      indent: () => createLogger('\t' + prefix),
-    },
-  );
-};
+export const createLogger = (name = '', silent = false): Logger =>
+  silent ? () => undefined : (...args: unknown[]) => console.log(name, ...args); // eslint-disable-line no-console

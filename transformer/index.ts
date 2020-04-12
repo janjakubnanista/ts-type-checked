@@ -19,9 +19,14 @@ interface TypeCheckMethod {
   definition: FunctionExpression;
 }
 
-export default (program: Program): TransformerFactory<SourceFile> => {
+export interface TransformerOptions {
+  debug?: boolean;
+}
+
+export default (program: Program, options: TransformerOptions = {}): TransformerFactory<SourceFile> => {
   return (context: TransformationContext) => (file: SourceFile) => {
-    const logger = createLogger('[isACallVisitor]');
+    // Make the logger silent unless options.debug is true
+    const logger = createLogger(`[${file.fileName}]`, !options.debug);
     const typeChecker = program.getTypeChecker();
 
     // I believe this is the only hack in the whole codebase
@@ -33,6 +38,7 @@ export default (program: Program): TransformerFactory<SourceFile> => {
       logger('Processing', typeNode.getFullText());
 
       const type = typeChecker.getTypeFromTypeNode(typeNode);
+
       // A runtime object that will hold the type checks for object types. Since they can reference themselves
       // (or create cycles in general) they could create endless recursion when creating type checks
       //
