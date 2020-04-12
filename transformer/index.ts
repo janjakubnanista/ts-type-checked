@@ -7,7 +7,12 @@ import {
   createIdentifier,
   createPropertyAssignment,
 } from 'typescript';
-import { createArrayElementsCheck, createTypeCheckerFunction, typeFlags } from './utils';
+import {
+  createArrayElementsCheck,
+  createObjectIndexedPropertiesCheck,
+  createTypeCheckerFunction,
+  typeFlags,
+} from './utils';
 import { createLogger } from './logger';
 import { visitNodeAndChildren } from './visitor';
 import ts from 'typescript';
@@ -151,7 +156,16 @@ export default (program: Program, options: TransformerOptions = {}): ts.Transfor
               ts.createParen(ts.createStrictInequality(value, ts.createNull())),
             );
 
-            return ts.createLogicalAnd(checkIsObject, checkAllProperties);
+            const checkIndexedProperties = createObjectIndexedPropertiesCheck(type, value, (type, value) =>
+              createCheckForType(root, type, value),
+            );
+
+            return ts.createLogicalAnd(
+              checkIsObject,
+              checkIndexedProperties
+                ? ts.createLogicalAnd(checkAllProperties, checkIndexedProperties)
+                : checkAllProperties,
+            );
           });
 
           // Finally fill in the undefined value for the method definition

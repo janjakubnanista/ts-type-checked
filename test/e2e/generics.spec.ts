@@ -56,18 +56,18 @@ describe('generics', () => {
       );
     });
 
-    it('should allow number keyed Record', () => {
-      const isAStringRecord = (value: unknown) => isA<Record<number, boolean>>(value);
-      testValues(indexedRecordArbitrary(fc.integer(), fc.boolean()), isAStringRecord);
-      testValues(
-        indexedRecordArbitrary(
-          fc.integer(),
-          fc.oneof(fc.integer(), fc.string(), fc.object(), nullableArbitrary),
-        ).filter(isNonEmptyObjectFilter),
-        isAStringRecord,
-        false,
-      );
-    });
+    // it('should allow number keyed Record', () => {
+    //   const isAStringRecord = (value: unknown) => isA<Record<number, boolean>>(value);
+    //   testValues(indexedRecordArbitrary(fc.integer(), fc.boolean()), isAStringRecord);
+    //   testValues(
+    //     indexedRecordArbitrary(
+    //       fc.integer(),
+    //       fc.oneof(fc.integer(), fc.string(), fc.object(), nullableArbitrary),
+    //     ).filter(isNonEmptyObjectFilter),
+    //     isAStringRecord,
+    //     false,
+    //   );
+    // });
 
     // it('should allow fully defined generics', () => {
     //   // const isAStringArrayButNotBrackets = (value: unknown) => isA<Array<string>>(value);

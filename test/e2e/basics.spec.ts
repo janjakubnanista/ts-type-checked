@@ -2,7 +2,7 @@ import 'jest';
 
 import { isA, makeIsA } from '../..';
 import { optionalOf, testValues } from './utils';
-import fc from 'fast-check';
+import fc, { integer } from 'fast-check';
 
 describe('basics', () => {
   type GenericReference<T> = T;
@@ -316,6 +316,25 @@ describe('basics', () => {
       );
       testValues(invalidObjectArbitrary, makeIsA<IntersectionType>(), false);
       testValues(invalidObjectArbitrary, makeIsA<GenericReference<IntersectionType>>(), false);
+    });
+
+    test('string records', () => {
+      type StringRecord = Record<string, number | boolean>;
+
+      const stringRecordArbitrary = fc.array(fc.string()).chain(keys => {
+        return fc.record<StringRecord>(
+          keys.reduce(
+            (recordOptions, key) => ({
+              ...recordOptions,
+              [key]: fc.oneof(fc.integer(), fc.boolean()),
+            }),
+            {},
+          ),
+        );
+      });
+
+      testValues(stringRecordArbitrary, makeIsA<StringRecord>());
+      testValues(stringRecordArbitrary, makeIsA<GenericReference<StringRecord>>());
     });
   });
 

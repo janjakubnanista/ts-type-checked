@@ -91,121 +91,107 @@ export const createObjectPropertiesCheck = (
 };
 
 // Creates a check for indexed access properties
-// export const createObjectIndexedPropertiesCheck = (
-//   typeChecker: ts.TypeChecker,
-//   createValueTypeCheck: IsACallVisitor,
-//   typeNode: ts.TypeReferenceNode | ts.TypeLiteralNode,
-//   value: ts.Expression,
-// ): ts.Expression | undefined => {
-//   const type = typeChecker.getTypeFromTypeNode(typeNode);
-//   const numberIndexType = type.getNumberIndexType();
-//   const stringIndexType = type.getStringIndexType();
-//   const numberIndexTypeNode = numberIndexType ? typeChecker.typeToTypeNode(numberIndexType) : undefined;
-//   const stringIndexTypeNode = stringIndexType ? typeChecker.typeToTypeNode(stringIndexType) : undefined;
-//   debugger;
-//   if (!numberIndexTypeNode && !stringIndexTypeNode) return undefined;
+export const createObjectIndexedPropertiesCheck = (
+  type: ts.Type,
+  value: ts.Expression,
+  createValueTypeCheck: (type: ts.Type, value: ts.Expression) => ts.Expression,
+): ts.Expression | undefined => {
+  const numberIndexType = type.getNumberIndexType();
+  if (numberIndexType) {
+    throw new Error(`Number-indexed records are not supported since object keys are always converted to string`);
+  }
 
-//   const properties: ts.Symbol[] = type.getProperties() || [];
-//   const propertyMapIdentifier = ts.createIdentifier('properties');
+  const stringIndexType = type.getStringIndexType();
+  if (!stringIndexType) return undefined;
 
-//   // Map of explicitly defined properties
-//   const propertyMap = ts.createVariableStatement(
-//     undefined /* modifiers */,
-//     ts.createVariableDeclarationList(
-//       [
-//         ts.createVariableDeclaration(
-//           propertyMapIdentifier,
-//           undefined,
-//           ts.createObjectLiteral(
-//             properties.map(property => {
-//               return ts.createPropertyAssignment(ts.createStringLiteral(property.getName()), ts.createTrue());
-//             }),
-//             true,
-//           ),
-//         ),
-//       ],
-//       ts.NodeFlags.Const,
-//     ),
-//   );
+  const properties: ts.Symbol[] = type.getProperties() || [];
+  const propertyMapIdentifier = ts.createIdentifier('properties');
 
-//   // Object.keys(value).every(key => {
-//   //   // Both are defined
-//   //   return (!isNaN(value[key]) && isA<NumberType>(value[key])) || isA<StringType>(value[key]);
+  // Map of explicitly defined properties
+  const propertyMap = ts.createVariableStatement(
+    undefined /* modifiers */,
+    ts.createVariableDeclarationList(
+      [
+        ts.createVariableDeclaration(
+          propertyMapIdentifier,
+          undefined,
+          ts.createObjectLiteral(
+            properties.map(property => {
+              return ts.createPropertyAssignment(ts.createStringLiteral(property.getName()), ts.createTrue());
+            }),
+            true,
+          ),
+        ),
+      ],
+      ts.NodeFlags.Const,
+    ),
+  );
 
-//   //   // StringType is defined
-//   //   return false || isA<StringType>(value[key]);
+  // Object.keys(value).every(key => {
+  //   // Both are defined
+  //   return (!isNaN(value[key]) && isA<NumberType>(value[key])) || isA<StringType>(value[key]);
 
-//   //   // NumberType is defined
-//   //   return (!isNaN(value[key]) && isA<NumberType>(value[key])) || true;
+  //   // StringType is defined
+  //   return false || isA<StringType>(value[key]);
 
-//   //   // isNaN(value[key]) ? 7 : 1;
-//   //   // // If numberIndexTypeNode is defined
-//   //   // if (!isNaN(value[key])) return isA<NumberType>(value[key]);
+  //   // NumberType is defined
+  //   return (!isNaN(value[key]) && isA<NumberType>(value[key])) || true;
 
-//   //   // // If stringIndexTypeNode
-//   //   // return isA<StringType>(value[key]);
-//   // })
+  //   // isNaN(value[key]) ? 7 : 1;
+  //   // // If numberIndexTypeNode is defined
+  //   // if (!isNaN(value[key])) return isA<NumberType>(value[key]);
 
-//   // The Object.keys(value) call
-//   const objectKeysCall = ts.createCall(ts.createPropertyAccess(ts.createIdentifier('Object'), 'keys'), [], [value]);
+  //   // // If stringIndexTypeNode
+  //   // return isA<StringType>(value[key]);
+  // })
 
-//   // Callback parameter for the .every(key => {}) call
-//   const key = ts.createIdentifier('key');
+  // The Object.keys(value) call
+  const objectKeysCall = ts.createCall(ts.createPropertyAccess(ts.createIdentifier('Object'), 'keys'), [], [value]);
 
-//   // value[key] access
-//   const valueForKey = ts.createElementAccess(value, key);
+  // Callback parameter for the .every(key => {}) call
+  const key = ts.createIdentifier('key');
 
-//   // !isNaN(key) && isA<NumberType>(value[key])
-//   const numberIndexTypeCheck: ts.Expression = numberIndexTypeNode
-//     ? ts.createLogicalAnd(
-//         ts.createPrefix(
-//           ts.SyntaxKind.ExclamationToken,
-//           ts.createCall(ts.createIdentifier('isNaN'), undefined /* typeParameters */, [key] /* argumentsArray */),
-//         ),
-//         createValueTypeCheck(numberIndexTypeNode, valueForKey),
-//       )
-//     : ts.createFalse();
+  // value[key] access
+  const valueForKey = ts.createElementAccess(value, key);
 
-//   // isA<StringType>(value[key])
-//   const stringIndexTypeCheck: ts.Expression = stringIndexTypeNode
-//     ? createValueTypeCheck(stringIndexTypeNode, valueForKey)
-//     : ts.createFalse();
+  // isA<StringType>(value[key])
+  const stringIndexTypeCheck: ts.Expression = createValueTypeCheck(stringIndexType, valueForKey);
 
-//   const checkKey = ts.createFunctionExpression(
-//     undefined /* modifiers */,
-//     undefined /* asteriskToken */,
-//     undefined /* name */,
-//     undefined /* typeParameters */,
-//     [
-//       ts.createParameter(
-//         undefined /* decorators */,
-//         undefined /* modifiers */,
-//         undefined /* dotDotDotToken */,
-//         key /* name */,
-//         undefined /* questionToken */,
-//         undefined /* type */,
-//         undefined /* initializer */,
-//       ),
-//     ],
-//     undefined,
-//     ts.createBlock(
-//       [
-//         // If numberIndexTypeNode is defined we need to check whether a key is numberic
-//         // which in case of plain objects means the key is still a string but can be converted to a number
-//         propertyMap,
+  const checkKey = ts.createFunctionExpression(
+    undefined /* modifiers */,
+    undefined /* asteriskToken */,
+    undefined /* name */,
+    undefined /* typeParameters */,
+    [
+      ts.createParameter(
+        undefined /* decorators */,
+        undefined /* modifiers */,
+        undefined /* dotDotDotToken */,
+        key /* name */,
+        undefined /* questionToken */,
+        undefined /* type */,
+        undefined /* initializer */,
+      ),
+    ],
+    undefined,
+    ts.createBlock(
+      [
+        // If numberIndexTypeNode is defined we need to check whether a key is numberic
+        // which in case of plain objects means the key is still a string but can be converted to a number
+        propertyMap,
 
-//         // If the property has been defined explicitly then we skip it
-//         ts.createIf(ts.createElementAccess(propertyMapIdentifier, key), ts.createReturn(ts.createTrue())),
+        // If the property has been defined explicitly then we skip it
+        ts.createIf(ts.createElementAccess(propertyMapIdentifier, key), ts.createReturn(ts.createTrue())),
 
-//         // If it is an indexed property then it is checked using the checks above
-//         ts.createReturn(ts.createLogicalOr(ts.createParen(numberIndexTypeCheck), ts.createParen(stringIndexTypeCheck))),
-//       ],
-//       false,
-//     ),
-//   );
+        // If it is an indexed property then it is checked using the checks above
+        ts.createReturn(stringIndexTypeCheck),
+      ],
+      false,
+    ),
+  );
 
-//   return ts.createCall(ts.createPropertyAccess(objectKeysCall, 'every'), [], [checkKey]);
-// };
+  return ts.createCall(ts.createPropertyAccess(objectKeysCall, 'every'), [], [checkKey]);
+};
 
 // Array.isArray(value) && value.every(element => isA(element))
 export const createArrayElementsCheck = (
