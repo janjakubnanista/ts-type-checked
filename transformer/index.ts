@@ -10,16 +10,7 @@ import {
   createIdentifier,
   createPropertyAssignment,
 } from 'typescript';
-import {
-  addTypeCheckerMap,
-  createArrayElementsCheck,
-  createIsPlainObjectCheck,
-  createObjectPropertiesCheck,
-  getLiteral,
-  getTypeOf,
-  hasNoConstraint,
-  typeFlags,
-} from './utils';
+import { addTypeCheckerMap, createArrayElementsCheck, createTypeCheckerFunction, typeFlags } from './utils';
 import { createLogger } from './logger';
 import { visitNodeAndChildren } from './visitor';
 import ts from 'typescript';
@@ -33,10 +24,8 @@ export default (program: Program): TransformerFactory<SourceFile> => {
   return (context: TransformationContext) => (file: SourceFile) => {
     const typeChecker = program.getTypeChecker();
     const typeCheckerObjectIdentfifier: Identifier = createIdentifier('__typeCheckerMap__');
-    const typeCheckMethods: Map<TypeNode, TypeCheckMethod> = new Map();
+    const typeCheckMethods: Map<ts.Type, TypeCheckMethod> = new Map();
 
-    const isTrueType = (type: ts.Type): boolean => (typeChecker as any).getTrueType?.() === type;
-    const isFalseType = (type: ts.Type): boolean => (typeChecker as any).getFalseType?.() === type;
     const isArrayType = (type: ts.Type): boolean => (typeChecker as any).isArrayType?.(type) || false;
 
     // // Main type check generator method
@@ -206,25 +195,31 @@ export default (program: Program): TransformerFactory<SourceFile> => {
     // };
 
     const logger = createLogger('[isACallVisitor]');
-    // logger('TypeFlags', Object.keys(ts.TypeFlags));
+
+    let lastMethodId = 0;
+    const createTypeCheckMethod = (type: ts.Type): TypeCheckMethod => {
+      const name = `__${lastMethodId++}`;
+      const defaultMethod = { name, definition: undefined };
+
+      // FIXME We first need to mark this node, then create its definition to prevent recursion
+      typeCheckMethods.set(type, defaultMethod as any);
+
+      const definition = createTypeCheckMethodDefinition(typeNode);
+      const method = { name, definition };
+      typeCheckMethods.set(type, method);
+
+      return method;
+    };
 
     const createCheckForType = (root: ts.TypeNode, type: ts.Type, value: ts.Expression): ts.Expression => {
       const typeName = typeChecker.typeToString(type, root);
-      const typeNode = typeChecker.typeToTypeNode(type, root);
+      logger('Type', typeName, typeFlags(type).join(', '));
 
-      logger('Type', typeName, typeFlags(type).join(', '), typeNode?.kind);
-
-      // if (typeNode?.kind === ts.SyntaxKind.FalseKeyword) {
-      //   logger('\tFalse type');
-
-      //   return ts.createStrictEquality(value, ts.createFalse());
-      // }
-
-      // if (typeNode?.kind === ts.SyntaxKind.TrueKeyword) {
-      //   logger('\tTrue type');
-
-      //   return ts.createStrictEquality(value, ts.createTrue());
-      // }
+      // If the checker already exists don't make a new one, instead just call an existing one
+      const typeCheck = typeCheckMethods.get(type);
+      if (typeCheck) {
+        return ts.createCall(ts.createPropertyAccess(typeCheckerObjectIdentfifier, typeCheck.name), undefined, [value]);
+      }
 
       if (isArrayType(type)) {
         logger('\tArray type');
@@ -290,27 +285,41 @@ export default (program: Program): TransformerFactory<SourceFile> => {
       if (type.flags & ts.TypeFlags.Object) {
         logger('\tObject');
 
-        const properties: ts.Symbol[] = type.getProperties();
-        const checkAllProperties = properties
-          .map<ts.Expression>(property => {
-            const propertyType = typeChecker.getTypeOfSymbolAtLocation(property, root);
+        // Add a new entry to the global type checker map
+        const methodName = `__${lastMethodId++}`;
+        const defaultMethod = { name: methodName, definition: undefined };
 
-            logger('\t\tProperty', property.getName());
+        // Make sure that it gets inserted (albeit incomplete) before we start digging deeper into the object properties
+        // otherwise we will not get rid of any possible recursion
+        typeCheckMethods.set(type, defaultMethod as any);
 
-            const propertyAccess = ts.createElementAccess(value, ts.createStringLiteral(property.name));
-            const valueTypeCheck = createCheckForType(root, propertyType, propertyAccess);
+        const methodDefinition = createTypeCheckerFunction(value => {
+          const properties: ts.Symbol[] = type.getProperties();
+          const checkAllProperties = properties
+            .map<ts.Expression>(property => {
+              const propertyType = typeChecker.getTypeOfSymbolAtLocation(property, root);
 
-            return ts.createParen(valueTypeCheck);
-          })
-          .reduce((expression, propertyCheck) => ts.createLogicalAnd(expression, propertyCheck));
+              logger('\t\tProperty', property.getName());
 
-        return ts.createLogicalAnd(
-          ts.createLogicalAnd(
+              const propertyAccess = ts.createElementAccess(value, ts.createStringLiteral(property.name));
+              const valueTypeCheck = createCheckForType(root, propertyType, propertyAccess);
+
+              return ts.createParen(valueTypeCheck);
+            })
+            .reduce((expression, propertyCheck) => ts.createLogicalAnd(expression, propertyCheck), ts.createTrue());
+
+          const checkIsObject = ts.createLogicalAnd(
             ts.createParen(ts.createStrictEquality(ts.createTypeOf(value), ts.createLiteral('object'))),
             ts.createParen(ts.createStrictInequality(value, ts.createNull())),
-          ),
-          checkAllProperties,
-        );
+          );
+
+          return ts.createLogicalAnd(checkIsObject, checkAllProperties);
+        });
+
+        // Finally fill in the undefined value for the method definition
+        typeCheckMethods.set(type, { name: methodName, definition: methodDefinition });
+
+        return ts.createCall(ts.createPropertyAccess(typeCheckerObjectIdentfifier, methodName), undefined, [value]);
       }
 
       // This one should most probably always be one of the last ones or the last one
@@ -321,12 +330,15 @@ export default (program: Program): TransformerFactory<SourceFile> => {
         return ts.createTrue();
       }
 
+      logger('\tCould not find anything');
+
       // FIXME Throw an exception here
       return ts.createFalse();
     };
 
     const isACallVisitor = (typeNode: ts.TypeNode, value: ts.Expression): ts.Expression => {
       logger('Processing', typeNode.getFullText());
+
       const typeChecker = program.getTypeChecker();
       const type = typeChecker.getTypeFromTypeNode(typeNode);
 

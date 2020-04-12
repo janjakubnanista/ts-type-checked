@@ -6,9 +6,9 @@ import {
   isNumberLiteralUnionCheck,
   isStringLiteralUnionCheck,
   numberLiteralUnionArbitrary,
+  optionalOf,
   stringLiteralUnionArbitrary,
   testValues,
-  optionalOf,
 } from './utils';
 import { isA, makeIsA } from '../..';
 import fc, { property } from 'fast-check';
@@ -23,7 +23,12 @@ describe('basics', () => {
   }
 
   interface InterfaceWithArrayPropertyOfType<T> {
-    property: T[];
+    property: ArrayReference<T>;
+  }
+
+  interface InterfaceWithPropertiesOfTypes<T, U> {
+    property1: T;
+    property2: U;
   }
 
   interface InterfaceWithDifferentPropertyOfType<T> {
@@ -166,7 +171,7 @@ describe('basics', () => {
       type NumberPropertyObjectType = InterfaceWithPropertyOfType<number>;
 
       const validObjectArbitrary = fc.integer().map<InterfaceWithPropertyOfType<number>>(property => ({ property }));
-      const invalidObjectArbitrary = fc.anything().filter((value: any) => typeof(value?.property) !== 'number');
+      const invalidObjectArbitrary = fc.anything().filter((value: any) => typeof value?.property !== 'number');
 
       testValues(validObjectArbitrary, makeIsA<{ property: number }>());
       testValues(validObjectArbitrary, makeIsA<NumberPropertyObjectType>());
@@ -180,9 +185,11 @@ describe('basics', () => {
       type BooleanArrayPropertyObjectType = InterfaceWithArrayPropertyOfType<boolean>;
 
       const validObjectArbitrary = fc.record<BooleanArrayPropertyObjectType>({
-        property: fc.array(fc.boolean())
-      })
-      const invalidObjectArbitrary = fc.anything().filter((value: any) => !Array.isArray(value) || value.some(element => typeof(element) !== 'boolean'));
+        property: fc.array(fc.boolean()),
+      });
+      const invalidObjectArbitrary = fc
+        .anything()
+        .filter((value: any) => !Array.isArray(value) || value.some(element => typeof element !== 'boolean'));
 
       testValues(validObjectArbitrary, makeIsA<{ property: boolean[] }>());
       testValues(validObjectArbitrary, makeIsA<BooleanArrayPropertyObjectType>());
@@ -196,9 +203,15 @@ describe('basics', () => {
       type StringOptionalPropertyObjectType = InterfaceWithOptionalPropertyOfType<string>;
 
       const validObjectArbitrary = fc.record<StringOptionalPropertyObjectType>({
-        property: optionalOf(fc.string())
-      })
-      const invalidObjectArbitrary = fc.anything().filter((value: any) => typeof value !== 'object' || (typeof value?.property !== 'undefined' && typeof value?.property !== 'number'));
+        property: optionalOf(fc.string()),
+      });
+      const invalidObjectArbitrary = fc
+        .anything()
+        .filter(
+          (value: any) =>
+            typeof value !== 'object' ||
+            (typeof value?.property !== 'undefined' && typeof value?.property !== 'number'),
+        );
 
       testValues(validObjectArbitrary, makeIsA<{ property?: string }>());
       testValues(validObjectArbitrary, makeIsA<StringOptionalPropertyObjectType>());
@@ -208,6 +221,37 @@ describe('basics', () => {
       testValues(invalidObjectArbitrary, makeIsA<GenericReference<StringOptionalPropertyObjectType>>(), false);
     });
 
+    test('multiple properties', () => {
+      type Property1 = string | number | boolean;
+      type Property2 = InterfaceWithPropertiesOfTypes<string, {}>;
+      type MultiplePropertiesObjectType = InterfaceWithPropertiesOfTypes<Property1, Property2>;
+
+      const validObjectArbitrary = fc.record<MultiplePropertiesObjectType>({
+        property1: fc.oneof(fc.string(), fc.integer(), fc.boolean()),
+        property2: fc.record({
+          property1: fc.string(),
+          property2: fc.object(),
+        }),
+      });
+      const invalidObjectArbitrary = fc.anything().filter((value: any) => {
+        const typeOfProperty1 = typeof value?.property1;
+        if (typeOfProperty1 !== 'string' && typeOfProperty1 !== 'number' && typeOfProperty1 !== 'boolean') return true;
+
+        const typeOfProperty2Property1 = typeof value?.property2?.property1;
+        if (typeOfProperty2Property1 !== 'string') return true;
+
+        const typeOfProperty2Property2 = typeof value?.property2?.property2;
+        if (typeOfProperty2Property2 !== 'object' || value?.property2?.property2 === null) return true;
+
+        return false;
+      });
+
+      testValues(validObjectArbitrary, makeIsA<MultiplePropertiesObjectType>());
+      testValues(validObjectArbitrary, makeIsA<GenericReference<MultiplePropertiesObjectType>>());
+      testValues(invalidObjectArbitrary, makeIsA<MultiplePropertiesObjectType>(), false);
+      testValues(invalidObjectArbitrary, makeIsA<GenericReference<MultiplePropertiesObjectType>>(), false);
+    });
+
     test('intersection', () => {
       type NumberPropertyObjectType = InterfaceWithPropertyOfType<number>;
       type StringDifferentPropertyObjectType = InterfaceWithDifferentPropertyOfType<string>;
@@ -215,14 +259,20 @@ describe('basics', () => {
 
       const validObjectArbitrary = fc.record<IntersectionType>({
         property: fc.integer(),
-        differentProperty: fc.string()
-      })
-      const invalidObjectArbitrary = fc.anything().filter((value: any) => typeof(value?.property) !== 'number' || typeof(value?.differentProperty) !== 'string');
+        differentProperty: fc.string(),
+      });
+      const invalidObjectArbitrary = fc
+        .anything()
+        .filter((value: any) => typeof value?.property !== 'number' || typeof value?.differentProperty !== 'string');
 
       testValues(validObjectArbitrary, makeIsA<NumberPropertyObjectType & StringDifferentPropertyObjectType>());
       testValues(validObjectArbitrary, makeIsA<IntersectionType>());
       testValues(validObjectArbitrary, makeIsA<GenericReference<IntersectionType>>());
-      testValues(invalidObjectArbitrary, makeIsA<NumberPropertyObjectType & StringDifferentPropertyObjectType>(), false);
+      testValues(
+        invalidObjectArbitrary,
+        makeIsA<NumberPropertyObjectType & StringDifferentPropertyObjectType>(),
+        false,
+      );
       testValues(invalidObjectArbitrary, makeIsA<IntersectionType>(), false);
       testValues(invalidObjectArbitrary, makeIsA<GenericReference<IntersectionType>>(), false);
     });
@@ -233,7 +283,9 @@ describe('basics', () => {
       type StringType = string[];
 
       const validStringArbitrary = fc.array(fc.string());
-      const invalidStringArbitrary = fc.anything().filter(value => !Array.isArray(value) || value.some(element => typeof element !== 'string'));
+      const invalidStringArbitrary = fc
+        .anything()
+        .filter(value => !Array.isArray(value) || value.some(element => typeof element !== 'string'));
 
       testValues(validStringArbitrary, makeIsA<string[]>());
       testValues(validStringArbitrary, makeIsA<StringType>());
@@ -248,8 +300,12 @@ describe('basics', () => {
     test('interface[]', () => {
       type StringPropertyObjectType = InterfaceWithPropertyOfType<string>[];
 
-      const validObjectArbitrary = fc.array(fc.string().map<InterfaceWithPropertyOfType<string>>(property => ({ property })));
-      const invalidObjectArbitrary = fc.anything().filter(value => !Array.isArray(value) || value.some(element => typeof element?.property !== 'string'));
+      const validObjectArbitrary = fc.array(
+        fc.string().map<InterfaceWithPropertyOfType<string>>(property => ({ property })),
+      );
+      const invalidObjectArbitrary = fc
+        .anything()
+        .filter(value => !Array.isArray(value) || value.some(element => typeof element?.property !== 'string'));
 
       testValues(validObjectArbitrary, makeIsA<{ property: string }[]>());
       testValues(validObjectArbitrary, makeIsA<StringPropertyObjectType>());

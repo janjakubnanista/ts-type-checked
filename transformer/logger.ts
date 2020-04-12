@@ -1,5 +1,5 @@
-const SILENT = false;
-// const SILENT = true;
+// const SILENT = false;
+const SILENT = true;
 
 export interface Logger {
   (message: string, ...args: unknown[]): void;
