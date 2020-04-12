@@ -32,6 +32,8 @@ describe('basics', () => {
 
   describe('primitives', () => {
     test('string', () => {
+      const genericCheck = <T>(value: unknown) => isA<T>(value);
+
       type StringType = string;
 
       const validStringArbitrary = fc.string();

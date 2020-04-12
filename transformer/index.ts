@@ -3,9 +3,7 @@ import {
   Identifier,
   Program,
   PropertyAssignment,
-  SourceFile,
   TransformationContext,
-  TransformerFactory,
   createIdentifier,
   createPropertyAssignment,
 } from 'typescript';
@@ -23,10 +21,12 @@ export interface TransformerOptions {
   debug?: boolean;
 }
 
-export default (program: Program, options: TransformerOptions = {}): TransformerFactory<SourceFile> => {
-  return (context: TransformationContext) => (file: SourceFile) => {
+export default (program: Program, options: TransformerOptions = {}): ts.TransformerFactory<ts.SourceFile> => {
+  return (context: TransformationContext) => (file: ts.SourceFile) => {
     // Make the logger silent unless options.debug is true
     const logger = createLogger(`[${file.fileName}]`, !options.debug);
+
+    // Get a reference to a TypeScript TypeChecker in order to resolve types from type nodes
     const typeChecker = program.getTypeChecker();
 
     // I believe this is the only hack in the whole codebase
@@ -168,8 +168,13 @@ export default (program: Program, options: TransformerOptions = {}): Transformer
           return ts.createTrue();
         }
 
-        // FIXME Throw an exception here
-        return ts.createFalse();
+        // Rather than silently failing we throw an exception here to let the people in charge know
+        // that this type check is not supported. This might happen if the passed type is e.g. a generic type parameter
+        throw new Error(
+          `Could not create type checker for type '${typeName}'. This happened while creating a check for '${root.getText()}' in ${
+            file.fileName
+          })`,
+        );
       };
 
       const typeCheck = createTypeCheckerFunction(value => createCheckForType(typeNode, type, value));
@@ -190,40 +195,8 @@ export default (program: Program, options: TransformerOptions = {}): Transformer
         ]),
         ts.createReturn(typeCheck),
       ]);
-
-      // return ts.createFunctionExpression(
-      //   undefined,
-      //   undefined,
-      //   undefined,
-      //   undefined,
-      //   [],
-      //   undefined,
-      //   ts.createBlock(
-      //     [
-      //       ts.createVariableStatement(/* modifiers */ undefined, [
-      //         ts.createVariableDeclaration(
-      //           typeCheckerObjectIdentfifier,
-      //           /* type */ undefined,
-      //           ts.createObjectLiteral(/* properties */ typeCheckerProperties, /* multiline */ true),
-      //         ),
-      //       ]),
-      //       ts.createReturn(typeCheck),
-      //     ],
-      //     false,
-      //   ),
-      // );
     };
 
-    const transformedFile = visitNodeAndChildren(file, program, context, isACallVisitor);
-    // const typeCheckerProperties: PropertyAssignment[] = Array.from(typeCheckMethods.values()).map(method => {
-    //   return createPropertyAssignment(method.name, method.definition);
-    // });
-    // const transformedFileWithTypeCheckerMap = addTypeCheckerMap(
-    //   transformedFile,
-    //   typeCheckerObjectIdentfifier,
-    //   typeCheckerProperties,
-    // );
-
-    return transformedFile;
+    return visitNodeAndChildren(file, program, context, isACallVisitor);
   };
 };
