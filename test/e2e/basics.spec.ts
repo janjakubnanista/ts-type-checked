@@ -252,6 +252,36 @@ describe('basics', () => {
       testValues(invalidObjectArbitrary, makeIsA<GenericReference<MultiplePropertiesObjectType>>(), false);
     });
 
+    test('recursion', () => {
+      type RecursiveType = InterfaceWithPropertyOfType<RecursiveType | undefined>;
+
+      const tree: fc.Memo<RecursiveType> = fc.memo(n => node());
+      const node: fc.Memo<RecursiveType> = fc.memo(n => {
+        if (n <= 1)
+          return fc.record<RecursiveType>({
+            property: fc.constant(undefined),
+          });
+
+        return fc.record<RecursiveType>({
+          property: tree(),
+        });
+      });
+
+      const validObjectArbitrary = tree();
+      const isRecursiveType = (value: any): value is RecursiveType => {
+        if (typeof value !== 'object' || !value) return false;
+        if (typeof value?.property === 'undefined' || isRecursiveType(value.property)) return true;
+
+        return false;
+      };
+      const invalidObjectArbitrary = fc.anything().filter(value => !isRecursiveType(value));
+
+      testValues(validObjectArbitrary, makeIsA<RecursiveType>());
+      testValues(validObjectArbitrary, makeIsA<GenericReference<RecursiveType>>());
+      testValues(invalidObjectArbitrary, makeIsA<RecursiveType>(), false);
+      testValues(invalidObjectArbitrary, makeIsA<GenericReference<RecursiveType>>(), false);
+    });
+
     test('intersection', () => {
       type NumberPropertyObjectType = InterfaceWithPropertyOfType<number>;
       type StringDifferentPropertyObjectType = InterfaceWithDifferentPropertyOfType<string>;
