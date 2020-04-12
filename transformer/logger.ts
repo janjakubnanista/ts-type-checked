@@ -7,7 +7,10 @@ export interface Logger {
 }
 
 export const createLogger = (prefix = ''): Logger => {
-  return Object.assign((message: string, ...args: unknown[]) => SILENT ? undefined : console.log(prefix + message, ...args), {
-    indent: () => createLogger('\t' + prefix),
-  });
+  return Object.assign(
+    (message: string, ...args: unknown[]) => (SILENT ? undefined : console.log(prefix + message, ...args)),
+    {
+      indent: () => createLogger('\t' + prefix),
+    },
+  );
 };

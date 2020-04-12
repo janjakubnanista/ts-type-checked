@@ -214,17 +214,17 @@ export default (program: Program): TransformerFactory<SourceFile> => {
 
       logger('Type', typeName, typeFlags(type).join(', '), typeNode?.kind);
 
-      if (typeNode?.kind === ts.SyntaxKind.FalseKeyword) {
-        logger('\tFalse type');
+      // if (typeNode?.kind === ts.SyntaxKind.FalseKeyword) {
+      //   logger('\tFalse type');
 
-        return ts.createStrictEquality(value, ts.createFalse());
-      }
+      //   return ts.createStrictEquality(value, ts.createFalse());
+      // }
 
-      if (typeNode?.kind === ts.SyntaxKind.TrueKeyword) {
-        logger('\tTrue type');
+      // if (typeNode?.kind === ts.SyntaxKind.TrueKeyword) {
+      //   logger('\tTrue type');
 
-        return ts.createStrictEquality(value, ts.createTrue());
-      }
+      //   return ts.createStrictEquality(value, ts.createTrue());
+      // }
 
       if (isArrayType(type)) {
         logger('\tArray type');
@@ -239,29 +239,32 @@ export default (program: Program): TransformerFactory<SourceFile> => {
         );
       }
 
+      if (type.isClass()) {
+        logger('\tClass type');
+
+        return ts.createBinary(value, ts.SyntaxKind.InstanceOfKeyword, ts.createIdentifier(typeName));
+      }
+
       if (type.isLiteral()) {
         logger('\tLiteral type');
 
         return ts.createStrictEquality(value, ts.createLiteral(type.value));
       }
 
-      if (type.flags & ts.TypeFlags.BooleanLiteral) {
-        logger('\tBoolean literal');
-        debugger;
+      if (
+        type.flags & ts.TypeFlags.BooleanLiteral ||
+        type.flags & ts.TypeFlags.Undefined ||
+        type.flags & ts.TypeFlags.Null
+      ) {
+        logger('\ttrue, false, undefined, null');
 
-        return ts.createStrictEquality(ts.createTypeOf(value), ts.createLiteral('boolean'));
+        return ts.createStrictEquality(value, ts.createIdentifier(typeName));
       }
 
-      if (type.flags & ts.TypeFlags.Null) {
-        logger('\tNull');
+      if (type.flags & ts.TypeFlags.Boolean || type.flags & ts.TypeFlags.Number || type.flags & ts.TypeFlags.String) {
+        logger('\tboolean, number, string');
 
-        return ts.createStrictEquality(value, ts.createNull());
-      }
-
-      if (type.flags & ts.TypeFlags.Boolean) {
-        logger('\tBoolean');
-
-        return ts.createStrictEquality(ts.createTypeOf(value), ts.createLiteral('boolean'));
+        return ts.createStrictEquality(ts.createTypeOf(value), ts.createLiteral(typeName));
       }
 
       if (type.isUnion()) {
@@ -284,46 +287,29 @@ export default (program: Program): TransformerFactory<SourceFile> => {
           });
       }
 
-      if (type.flags & ts.TypeFlags.Number) {
-        logger('\tNumber');
-
-        return ts.createStrictEquality(ts.createTypeOf(value), ts.createLiteral('number'));
-      }
-
-      if (type.flags & ts.TypeFlags.String) {
-        logger('\tString');
-
-        return ts.createStrictEquality(ts.createTypeOf(value), ts.createLiteral('string'));
-      }
-
-      if (type.flags & ts.TypeFlags.Undefined) {
-        logger('\tUndefined');
-
-        return ts.createStrictEquality(value, ts.createIdentifier('undefined'));
-      }
-
       if (type.flags & ts.TypeFlags.Object) {
         logger('\tObject');
 
         const properties: ts.Symbol[] = type.getProperties();
-        const checkAllProperties = properties.map<ts.Expression>(property => {
-          const propertyType = typeChecker.getTypeOfSymbolAtLocation(property, root);
+        const checkAllProperties = properties
+          .map<ts.Expression>(property => {
+            const propertyType = typeChecker.getTypeOfSymbolAtLocation(property, root);
 
-          logger('\t\tProperty', property.getName());
+            logger('\t\tProperty', property.getName());
 
-          const propertyAccess = ts.createElementAccess(value, ts.createStringLiteral(property.name));
-          const valueTypeCheck = createCheckForType(root, propertyType, propertyAccess);
+            const propertyAccess = ts.createElementAccess(value, ts.createStringLiteral(property.name));
+            const valueTypeCheck = createCheckForType(root, propertyType, propertyAccess);
 
-          // return createLogicalAnd(typeCheckExpression, createParen(createLogicalOr(optionalCheck, valueTypeCheck)));
-          return ts.createParen(valueTypeCheck);
-        }).reduce((expression, propertyCheck) => ts.createLogicalAnd(expression, propertyCheck));
+            return ts.createParen(valueTypeCheck);
+          })
+          .reduce((expression, propertyCheck) => ts.createLogicalAnd(expression, propertyCheck));
 
         return ts.createLogicalAnd(
           ts.createLogicalAnd(
             ts.createParen(ts.createStrictEquality(ts.createTypeOf(value), ts.createLiteral('object'))),
-            ts.createParen(ts.createStrictInequality(value, ts.createNull()))
+            ts.createParen(ts.createStrictInequality(value, ts.createNull())),
           ),
-          checkAllProperties
+          checkAllProperties,
         );
       }
 
