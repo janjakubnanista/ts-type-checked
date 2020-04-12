@@ -30,14 +30,6 @@ describe('basics', () => {
     property?: T;
   }
 
-  type TypeWithPropertyOfType<T> = {
-    property: T;
-  };
-
-  type TypeWithOptionalPropertyOfType<T> = {
-    property?: T;
-  };
-
   describe('primitives', () => {
     test('string', () => {
       type StringType = string;

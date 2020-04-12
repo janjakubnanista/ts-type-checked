@@ -9,7 +9,7 @@ import {
   createIdentifier,
   createPropertyAssignment,
 } from 'typescript';
-import { addTypeCheckerMap, createArrayElementsCheck, createTypeCheckerFunction, typeFlags } from './utils';
+import { createArrayElementsCheck, createTypeCheckerFunction, typeFlags } from './utils';
 import { createLogger } from './logger';
 import { visitNodeAndChildren } from './visitor';
 import ts from 'typescript';

@@ -1,54 +1,5 @@
-import { IsACallVisitor } from './visitor';
 import path from 'path';
 import ts from 'typescript';
-
-export const getTypeOf = (typeNode: ts.TypeNode): string | undefined => {
-  switch (typeNode.kind) {
-    case ts.SyntaxKind.BooleanKeyword:
-      return 'boolean';
-
-    case ts.SyntaxKind.NumberKeyword:
-      return 'number';
-
-    case ts.SyntaxKind.StringKeyword:
-      return 'string';
-
-    case ts.SyntaxKind.FunctionType:
-      console.warn('Due to the nature of functions their return types cannot be checked');
-
-      return 'function';
-
-    default:
-      return undefined;
-  }
-};
-
-export const getLiteral = (typeNode: ts.TypeNode): ts.Expression | undefined => {
-  if (ts.isLiteralTypeNode(typeNode)) {
-    return typeNode.literal;
-  }
-
-  switch (typeNode.kind) {
-    case ts.SyntaxKind.TrueKeyword:
-      return ts.createTrue();
-
-    case ts.SyntaxKind.FalseKeyword:
-      return ts.createFalse();
-
-    case ts.SyntaxKind.NullKeyword:
-      return ts.createNull();
-
-    case ts.SyntaxKind.UndefinedKeyword:
-      return ts.createIdentifier('undefined');
-
-    default:
-      return undefined;
-  }
-};
-
-export const hasNoConstraint = (typeNode: ts.TypeNode): boolean => {
-  return typeNode.kind === ts.SyntaxKind.AnyKeyword || typeNode.kind === ts.SyntaxKind.UnknownKeyword;
-};
 
 export const createIsPlainObjectCheck = (value: ts.Expression): ts.Expression =>
   ts.createLogicalAnd(
@@ -290,24 +241,6 @@ export const createArrayElementsCheck = (
   const checkElements = ts.createCall(ts.createPropertyAccess(value, 'every'), [], [checkElement]);
 
   return ts.createLogicalAnd(isArray, checkElements);
-};
-
-// Create an empty object declaration
-export const addTypeCheckerMap = (
-  file: ts.SourceFile,
-  identifier: ts.Identifier,
-  properties: ts.PropertyAssignment[],
-): ts.SourceFile => {
-  return ts.updateSourceFileNode(file, [
-    ts.createVariableStatement(/* modifiers */ undefined, [
-      ts.createVariableDeclaration(
-        identifier,
-        /* type */ undefined,
-        ts.createObjectLiteral(/* properties */ properties, /* multiline */ true),
-      ),
-    ]),
-    ...file.statements,
-  ]);
 };
 
 export const createTypeCheckerFunction = (
