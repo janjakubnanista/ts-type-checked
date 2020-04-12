@@ -57,7 +57,8 @@
     "prettier": "^1.19.1",
     "ts-jest": "^25.2.1",
     "tslib": "^1.10.0",
-    "ttypescript": "^1.5.10"
+    "ttypescript": "^1.5.10",
+    "typescript": "^3.7.2"
   },
   "peerDependencies": {
     "typescript": "^3.7.2"

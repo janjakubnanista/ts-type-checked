@@ -1,95 +1,6 @@
 import path from 'path';
 import ts from 'typescript';
 
-export const createIsPlainObjectCheck = (value: ts.Expression): ts.Expression =>
-  ts.createLogicalAnd(
-    ts.createParen(ts.createStrictEquality(ts.createTypeOf(value), ts.createStringLiteral('object'))),
-    ts.createParen(ts.createStrictInequality(value, ts.createNull())),
-  );
-
-// Creates a check for all explicitly defined properties of a type
-export const createObjectPropertiesCheck = (
-  typeChecker: ts.TypeChecker,
-  typeNode: ts.TypeLiteralNode,
-  propertyTypeCheck: (typeNode: ts.TypeNode, value: ts.Expression) => ts.Expression,
-  value: ts.Expression,
-): ts.Expression | undefined => {
-  // const type: ts.Type = typeChecker.getTypeFromTypeNode(typeNode);
-  // const properties: ts.Symbol[] = type.getProperties();
-  // if (!properties || properties.length === 0) return undefined;
-
-  return ts.createFalse();
-
-  // return typeNode?.members
-  //   .map(memberTypeElement => {
-  //     if (ts.isPropertySignature(memberTypeElement)) {
-  //       console.warn('\tProperty signature');
-
-  //       if (memberTypeElement.type === undefined) {
-  //         throw new Error(`Could not find type of property ${memberTypeElement.name}`);
-  //       }
-
-  //       const propertyAccess = ts.createElementAccess(
-  //         value,
-  //         ts.createStringLiteral(memberTypeElement.name?.),
-  //       );
-  //       const checkForType = propertyTypeCheck(memberTypeElement.type, propertyAccess);
-  //       const checkForUndefined = memberTypeElement.questionToken
-  //         ? ts.createStrictEquality(ts.createTypeOf(propertyAccess), ts.createIdentifier('undefined'))
-  //         : undefined;
-
-  //       if (checkForUndefined) return ts.createLogicalOr(checkForUndefined, checkForType);
-
-  //       return checkForType;
-  //     }
-
-  //     // if (memberTypeElement.name === undefined || !ts.isIdentifier(memberTypeElement.name)) {
-  //     //   throw new Error('Only supports explicit properties');
-  //     // }
-
-  //     // const memberTypeElementType = typeChecker.getTypeAtLocation(memberTypeElement.name);
-  //     // const memberTypeElementTypeNode = memberTypeElementType
-  //     //   ? typeChecker.typeToTypeNode(memberTypeElementType, typeNode)
-  //     //   : undefined;
-  //     // if (!memberTypeElementTypeNode) {
-  //     //   throw new Error('Could not resolve property type');
-  //     // }
-
-  //     // const propertyAccess = ts.createElementAccess(value, memberTypeElement.name);
-  //     // const checkForType = propertyTypeCheck(memberTypeElementTypeNode, propertyAccess);
-  //     // const checkForUndefined = memberTypeElement.questionToken
-  //     //   ? ts.createStrictEquality(ts.createTypeOf(propertyAccess), ts.createIdentifier('undefined'))
-  //     //   : undefined;
-
-  //     // if (checkForUndefined) return ts.createLogicalOr(checkForUndefined, checkForType);
-
-  //     // return checkForType;
-
-  //     // retuer
-
-  //     return ts.createFalse();
-  //   })
-  //   .reduce((expression, propertyCheck) => ts.createLogicalAnd(expression, propertyCheck));
-
-  // const propertyChecks = properties.map<ts.Expression>(property => {
-  //   const propertyType = typeChecker.getTypeOfSymbolAtLocation(property, typeNode);
-  //   const propertyTypeNode = typeChecker.typeToTypeNode(propertyType, typeNode);
-  //   if (!propertyTypeNode) {
-  //     throw new Error(`Could not determine the type of property ${property.getName()} of type`);
-  //   }
-
-  //   console.warn('\t\tproperty type', property.getName(), propertyTypeNode.kind);
-
-  //   const propertyAccess = ts.createElementAccess(value, ts.createStringLiteral(property.name));
-  //   const valueTypeCheck = propertyTypeCheck(propertyTypeNode, propertyAccess);
-
-  //   // return createLogicalAnd(typeCheckExpression, createParen(createLogicalOr(optionalCheck, valueTypeCheck)));
-  //   return ts.createParen(valueTypeCheck);
-  // });
-
-  // return propertyChecks.reduce((expression, propertyCheck) => ts.createLogicalAnd(expression, propertyCheck));
-};
-
 // Creates a check for indexed access properties
 export const createObjectIndexedPropertiesCheck = (
   type: ts.Type,
@@ -126,24 +37,6 @@ export const createObjectIndexedPropertiesCheck = (
       ts.NodeFlags.Const,
     ),
   );
-
-  // Object.keys(value).every(key => {
-  //   // Both are defined
-  //   return (!isNaN(value[key]) && isA<NumberType>(value[key])) || isA<StringType>(value[key]);
-
-  //   // StringType is defined
-  //   return false || isA<StringType>(value[key]);
-
-  //   // NumberType is defined
-  //   return (!isNaN(value[key]) && isA<NumberType>(value[key])) || true;
-
-  //   // isNaN(value[key]) ? 7 : 1;
-  //   // // If numberIndexTypeNode is defined
-  //   // if (!isNaN(value[key])) return isA<NumberType>(value[key]);
-
-  //   // // If stringIndexTypeNode
-  //   // return isA<StringType>(value[key]);
-  // })
 
   // The Object.keys(value) call
   const objectKeysCall = ts.createCall(ts.createPropertyAccess(ts.createIdentifier('Object'), 'keys'), [], [value]);
