@@ -2,7 +2,7 @@ import { createTypeCheckerFunction, isOurCallExpression, isOurImportExpression }
 import { visitEachChild } from 'typescript';
 import ts from 'typescript';
 
-export type IsACallVisitor = (typeNode: ts.TypeNode, value: ts.Expression) => ts.Expression;
+export type IsACallVisitor = (typeNode: ts.TypeNode) => ts.Expression;
 
 function visitNode(node: ts.SourceFile, program: ts.Program, isACallVisitor: IsACallVisitor): ts.SourceFile;
 function visitNode(node: ts.Node, program: ts.Program, isACallVisitor: IsACallVisitor): ts.Node | undefined;
@@ -24,7 +24,7 @@ function visitNode(node: ts.Node, program: ts.Program, isACallVisitor: IsACallVi
       throw new Error('isA<T>() requires one argument, none specified');
     }
 
-    return isACallVisitor(typeNode, valueNode);
+    return ts.createCall(isACallVisitor(typeNode), [], [valueNode]);
   }
 
   if (isOurCallExpression(node, 'makeIsA', typeChecker)) {
@@ -33,9 +33,11 @@ function visitNode(node: ts.Node, program: ts.Program, isACallVisitor: IsACallVi
       throw new Error('makeIsA<T>() requires one type parameter, none specified');
     }
 
-    return createTypeCheckerFunction(value => {
-      return isACallVisitor(typeNode, value);
-    });
+    return isACallVisitor(typeNode);
+
+    // return createTypeCheckerFunction(value => {
+    //   return isACallVisitor(typeNode, value);
+    // });
   }
 
   return node;

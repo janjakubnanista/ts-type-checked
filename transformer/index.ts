@@ -29,7 +29,7 @@ export default (program: Program): TransformerFactory<SourceFile> => {
     // This API is marked as internal in TypeScript compiler
     const isArrayType = (type: ts.Type): boolean => (typeChecker as any).isArrayType?.(type) || false;
 
-    const isACallVisitor = (typeNode: ts.TypeNode, value: ts.Expression): ts.Expression => {
+    const isACallVisitor = (typeNode: ts.TypeNode): ts.Expression => {
       logger('Processing', typeNode.getFullText());
 
       const type = typeChecker.getTypeFromTypeNode(typeNode);
@@ -166,7 +166,7 @@ export default (program: Program): TransformerFactory<SourceFile> => {
         return ts.createFalse();
       };
 
-      const typeCheck = createCheckForType(typeNode, type, value);
+      const typeCheck = createTypeCheckerFunction(value => createCheckForType(typeNode, type, value));
       const typeCheckerProperties: PropertyAssignment[] = Array.from(typeCheckMethods.values()).map(method => {
         return createPropertyAssignment(method.name, method.definition);
       });
