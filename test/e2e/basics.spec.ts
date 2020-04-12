@@ -1,17 +1,8 @@
 import 'jest';
 
-import {
-  NumberLiteralUnion,
-  StringLiteralUnion,
-  isNumberLiteralUnionCheck,
-  isStringLiteralUnionCheck,
-  numberLiteralUnionArbitrary,
-  optionalOf,
-  stringLiteralUnionArbitrary,
-  testValues,
-} from './utils';
 import { isA, makeIsA } from '../..';
-import fc, { property } from 'fast-check';
+import { optionalOf, testValues } from './utils';
+import fc from 'fast-check';
 
 describe('basics', () => {
   type GenericReference<T> = T;
@@ -58,10 +49,21 @@ describe('basics', () => {
       testValues(validStringArbitrary, makeIsA<StringType>());
       testValues(validStringArbitrary, makeIsA<GenericReference<string>>());
       testValues(validStringArbitrary, makeIsA<GenericReference<StringType>>());
+
+      testValues(validStringArbitrary, value => isA<string>(value));
+      testValues(validStringArbitrary, value => isA<StringType>(value));
+      testValues(validStringArbitrary, value => isA<GenericReference<string>>(value));
+      testValues(validStringArbitrary, value => isA<GenericReference<StringType>>(value));
+
       testValues(invalidStringArbitrary, makeIsA<string>(), false);
       testValues(invalidStringArbitrary, makeIsA<StringType>(), false);
       testValues(invalidStringArbitrary, makeIsA<GenericReference<string>>(), false);
       testValues(invalidStringArbitrary, makeIsA<GenericReference<StringType>>(), false);
+
+      testValues(invalidStringArbitrary, value => isA<string>(value), false);
+      testValues(invalidStringArbitrary, value => isA<StringType>(value), false);
+      testValues(invalidStringArbitrary, value => isA<GenericReference<string>>(value), false);
+      testValues(invalidStringArbitrary, value => isA<GenericReference<StringType>>(value), false);
     });
 
     test('number', () => {
@@ -280,6 +282,23 @@ describe('basics', () => {
       testValues(validObjectArbitrary, makeIsA<GenericReference<RecursiveType>>());
       testValues(invalidObjectArbitrary, makeIsA<RecursiveType>(), false);
       testValues(invalidObjectArbitrary, makeIsA<GenericReference<RecursiveType>>(), false);
+    });
+
+    test('conditional types', () => {
+      type ConditionalOfType<T, C extends true | false> = C extends true ? T : undefined;
+      type ConditionalOfStringArray = ConditionalOfType<string[], true>;
+      type ConditionalOfUndefined = ConditionalOfType<string[], false>;
+
+      const stringArrayArbitrary = fc.array(fc.string());
+      const undefinedArbitrary = fc.constant(undefined);
+
+      testValues(stringArrayArbitrary, makeIsA<ConditionalOfStringArray>());
+      testValues(stringArrayArbitrary, makeIsA<ConditionalOfType<string[], true>>());
+      testValues(stringArrayArbitrary, makeIsA<ConditionalOfType<ArrayReference<string>, true>>());
+
+      testValues(undefinedArbitrary, makeIsA<ConditionalOfUndefined>());
+      testValues(undefinedArbitrary, makeIsA<ConditionalOfType<string[], false>>());
+      testValues(undefinedArbitrary, makeIsA<ConditionalOfType<ArrayReference<string>, false>>());
     });
 
     test('intersection', () => {
