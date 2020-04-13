@@ -4,5 +4,7 @@ node_modules
 test/**/*.js
 transformer/**/*.js
 transformer/**/*.d.ts
+examples/index.js
+examples/index.*.js
 
 *.log

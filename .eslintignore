@@ -1,2 +1,4 @@
 transformer/**/*.js
 test/**/*.js
+examples/index.js
+examples/index.*.js
