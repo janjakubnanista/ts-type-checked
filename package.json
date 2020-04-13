@@ -9,10 +9,6 @@
     "clean": "rm -rf transformer/*.js",
     "lint": "eslint . --fix --ext .ts",
     "prepublish": "yarn build",
-    "test:debug": "node --inspect node_modules/.bin/jest --runInBand",
-    "test:clean": "jest --clearCache && rm -rf test/e2e/*.js",
-    "test:compile": "ttsc --project tsconfig.test.json",
-    "test:run": "jest",
     "test": "./scripts/test-typescript-versions.sh"
   },
   "repository": {
