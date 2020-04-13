@@ -1,0 +1,77 @@
+{
+  "name": "ts-type-checked",
+  "version": "0.0.1",
+  "description": "Runtime duck type checking utilities for TypeScript.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "babel transformer/*.ts --out-dir transformer --extensions \".ts\"",
+    "clean": "rm -rf transformer/*.js",
+    "lint": "eslint . --fix --ext .ts",
+    "prepublish": "yarn build",
+    "test:debug": "node --inspect node_modules/.bin/jest --runInBand",
+    "test:clean": "jest --clearCache && rm -rf test/e2e/*.js",
+    "test:compile": "ttsc --project tsconfig.test.json",
+    "test:run": "jest",
+    "test": "./scripts/test-typescript-versions.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/janjakubnanista/ts-type-checked.git"
+  },
+  "keywords": [
+    "TypeScript",
+    "type checking",
+    "duck typing"
+  ],
+  "author": "Jan Jakub Nanista <jan.jakub.nanista@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/janjakubnanista/ts-type-checked/issues"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "transformer/*.js"
+  ],
+  "homepage": "https://github.com/janjakubnanista/ts-type-checked#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.7",
+    "@babel/preset-env": "^7.8.7",
+    "@babel/preset-typescript": "^7.8.3",
+    "@types/jest": "^25.1.3",
+    "@types/node": "^12.12.12",
+    "@typescript-eslint/eslint-plugin": "^2.23.0",
+    "@typescript-eslint/parser": "^2.23.0",
+    "babel-preset-typescript": "^7.0.0-alpha.19",
+    "eslint": "^6.6.0",
+    "eslint-config-prettier": "^6.5.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "eslint-plugin-react": "^7.16.0",
+    "eslint-plugin-sort-imports-es6-autofix": "^0.5.0",
+    "fast-check": "^1.22.2",
+    "husky": "^3.0.9",
+    "jest": "^25.1.0",
+    "lint-staged": "^9.4.2",
+    "prettier": "^1.19.1",
+    "ts-jest": "^25.2.1",
+    "tslib": "^1.10.0",
+    "ttypescript": "^1.5.10",
+    "typescript": "^3.7.2"
+  },
+  "peerDependencies": {
+    "typescript": "^3.7.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,ts}(x)?": [
+      "eslint --fix",
+      "git add"
+    ]
+  }
+}
