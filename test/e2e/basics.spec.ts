@@ -74,6 +74,38 @@ describe('basics', () => {
       testValues(invalidNumberArbitrary, makeIsA<GenericReference<NumberType>>(), false);
     });
 
+    test('object', () => {
+      type ObjectType = object;
+
+      const validObjectArbitrary = fc.object();
+      const invalidObjectArbitrary = fc.anything().filter(value => typeof value !== 'object' || value === null);
+
+      testValues(validObjectArbitrary, makeIsA<object>());
+      testValues(validObjectArbitrary, makeIsA<ObjectType>());
+      testValues(validObjectArbitrary, makeIsA<GenericReference<object>>());
+      testValues(validObjectArbitrary, makeIsA<GenericReference<ObjectType>>());
+      testValues(invalidObjectArbitrary, makeIsA<object>(), false);
+      testValues(invalidObjectArbitrary, makeIsA<ObjectType>(), false);
+      testValues(invalidObjectArbitrary, makeIsA<GenericReference<object>>(), false);
+      testValues(invalidObjectArbitrary, makeIsA<GenericReference<ObjectType>>(), false);
+    });
+
+    test('{}', () => {
+      type ObjectType = {};
+
+      const validObjectArbitrary = fc.object();
+      const invalidObjectArbitrary = fc.anything().filter(value => typeof value !== 'object' || value === null);
+
+      testValues(validObjectArbitrary, makeIsA<{}>());
+      testValues(validObjectArbitrary, makeIsA<ObjectType>());
+      testValues(validObjectArbitrary, makeIsA<GenericReference<{}>>());
+      testValues(validObjectArbitrary, makeIsA<GenericReference<ObjectType>>());
+      testValues(invalidObjectArbitrary, makeIsA<{}>(), false);
+      testValues(invalidObjectArbitrary, makeIsA<ObjectType>(), false);
+      testValues(invalidObjectArbitrary, makeIsA<GenericReference<{}>>(), false);
+      testValues(invalidObjectArbitrary, makeIsA<GenericReference<ObjectType>>(), false);
+    });
+
     test('boolean', () => {
       type BooleanType = boolean;
 

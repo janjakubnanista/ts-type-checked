@@ -34,10 +34,27 @@ export default (program: Program, options: TransformerOptions = {}): ts.Transfor
     // Get a reference to a TypeScript TypeChecker in order to resolve types from type nodes
     const typeChecker = program.getTypeChecker();
 
-    // I believe this is the only hack in the whole codebase
-    //
-    // This API is marked as internal in TypeScript compiler
-    const isArrayType = (type: ts.Type): boolean => (typeChecker as any).isArrayType?.(type) || false;
+    const isArrayType = (type: ts.Type): boolean => {
+      // I believe this is the only hack in the whole codebase
+      //
+      // This API is marked as internal in TypeScript compiler
+      // const isArrayType = (type: ts.Type): boolean => (typeChecker as any).isArrayType?.(type) || false;
+      if (typeof (typeChecker as any).isArrayType === 'function') {
+        return (typeChecker as any).isArrayType(type) || false;
+      }
+
+      const typeNode = typeChecker.typeToTypeNode(type);
+      return !!typeNode && ts.isArrayTypeNode(typeNode);
+    };
+
+    // The "object" keyword type is also not very keen to be detected using the Type based API
+    // and needs to be converted to TypeNode in order to be detected
+    const isObjectType = (type: ts.Type): boolean => {
+      if (type.flags & ts.TypeFlags.Object) return true;
+
+      const typeNode = typeChecker.typeToTypeNode(type);
+      return typeNode?.kind === ts.SyntaxKind.ObjectKeyword;
+    };
 
     const isACallVisitor = (typeNode: ts.TypeNode): ts.Expression => {
       logger('Processing', typeNode.getFullText());
@@ -125,7 +142,7 @@ export default (program: Program, options: TransformerOptions = {}): ts.Transfor
             });
         }
 
-        if (type.flags & ts.TypeFlags.Object) {
+        if (isObjectType(type)) {
           logger('\tObject');
 
           // Add a new entry to the global type checker map
@@ -182,13 +199,15 @@ export default (program: Program, options: TransformerOptions = {}): ts.Transfor
           return ts.createTrue();
         }
 
+        debugger;
+
         // Rather than silently failing we throw an exception here to let the people in charge know
         // that this type check is not supported. This might happen if the passed type is e.g. a generic type parameter
-        throw new Error(
-          `Could not create type checker for type '${typeName}'. This happened while creating a check for '${root.getText()}' in ${
-            file.fileName
-          })`,
-        );
+        const errorMessage = `Could not create type checker for type '${typeName}'. This happened while creating a check for '${root.getText()}' in ${
+          file.fileName
+        })`;
+
+        throw new Error(errorMessage);
       };
 
       const typeCheck = createTypeCheckerFunction(value => createCheckForType(typeNode, type, value));
