@@ -3,6 +3,8 @@ node_modules
 
 test/**/*.js
 transformer/**/*.js
-build
+transformer/**/*.d.ts
+examples/index.js
+examples/index.*.js
 
 *.log
