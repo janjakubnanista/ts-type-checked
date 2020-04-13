@@ -1,60 +1,31 @@
 import {
-  FunctionExpression,
-  Identifier,
-  Program,
-  PropertyAssignment,
-  TransformationContext,
-  createIdentifier,
-  createPropertyAssignment,
-} from 'typescript';
-import {
   createArrayElementsCheck,
   createObjectIndexedPropertiesCheck,
   createTypeCheckerFunction,
   typeFlags,
 } from './utils';
 import { createLogger } from './logger';
+import { isArrayType, isFunctionType, isObjectType } from './checks';
 import { visitNodeAndChildren } from './visitor';
 import ts from 'typescript';
 
 interface TypeCheckMethod {
   name: string;
-  definition: FunctionExpression;
+  definition: ts.FunctionExpression;
 }
 
 export interface TransformerOptions {
   debug?: boolean;
 }
 
-export default (program: Program, options: TransformerOptions = {}): ts.TransformerFactory<ts.SourceFile> => {
-  return (context: TransformationContext) => (file: ts.SourceFile) => {
+// The transformer function
+export default (program: ts.Program, options: TransformerOptions = {}): ts.TransformerFactory<ts.SourceFile> => {
+  return (context: ts.TransformationContext) => (file: ts.SourceFile) => {
     // Make the logger silent unless options.debug is true
     const logger = createLogger(`[${file.fileName}]`, !options.debug);
 
     // Get a reference to a TypeScript TypeChecker in order to resolve types from type nodes
     const typeChecker = program.getTypeChecker();
-
-    const isArrayType = (type: ts.Type): boolean => {
-      // I believe this is the only hack in the whole codebase
-      //
-      // This API is marked as internal in TypeScript compiler
-      // const isArrayType = (type: ts.Type): boolean => (typeChecker as any).isArrayType?.(type) || false;
-      if (typeof (typeChecker as any).isArrayType === 'function') {
-        return (typeChecker as any).isArrayType(type) || false;
-      }
-
-      const typeNode = typeChecker.typeToTypeNode(type);
-      return !!typeNode && ts.isArrayTypeNode(typeNode);
-    };
-
-    // The "object" keyword type is also not very keen to be detected using the Type based API
-    // and needs to be converted to TypeNode in order to be detected
-    const isObjectType = (type: ts.Type): boolean => {
-      if (type.flags & ts.TypeFlags.Object) return true;
-
-      const typeNode = typeChecker.typeToTypeNode(type);
-      return typeNode?.kind === ts.SyntaxKind.ObjectKeyword;
-    };
 
     const isACallVisitor = (typeNode: ts.TypeNode): ts.Expression => {
       logger('Processing', typeNode.getFullText());
@@ -65,7 +36,7 @@ export default (program: Program, options: TransformerOptions = {}): ts.Transfor
       // (or create cycles in general) they could create endless recursion when creating type checks
       //
       // The solution is to store all object type checks in a (runtime) map
-      const typeCheckerObjectIdentfifier: Identifier = createIdentifier('__typeCheckerMap__');
+      const typeCheckerObjectIdentfifier: ts.Identifier = ts.createIdentifier('__typeCheckerMap__');
       const typeCheckMethods: Map<ts.Type, TypeCheckMethod> = new Map();
       let lastMethodId = 0;
 
@@ -73,7 +44,7 @@ export default (program: Program, options: TransformerOptions = {}): ts.Transfor
         const typeName = typeChecker.typeToString(type, root);
         logger('Type', typeName, typeFlags(type).join(', '));
 
-        // If the checker already exists don't make a new one, instead just call an existing one
+        // If the type check already exists then don't make a new one, instead just call an existing one
         const typeCheck = typeCheckMethods.get(type);
         if (typeCheck) {
           return ts.createCall(ts.createPropertyAccess(typeCheckerObjectIdentfifier, typeCheck.name), undefined, [
@@ -81,12 +52,16 @@ export default (program: Program, options: TransformerOptions = {}): ts.Transfor
           ]);
         }
 
-        if (isArrayType(type)) {
+        if (isArrayType(typeChecker, type, root)) {
           logger('\tArray type');
 
           const elementType = (type as ts.TypeReference).typeArguments?.[0];
           if (!elementType) {
-            throw new Error('Unable to find element type of ' + typeName);
+            const errorMessage = `Unable to find array element type for type '${typeName}'. This happened while creating a check for '${root.getText()}' in ${
+              file.fileName
+            })`;
+
+            throw new Error(errorMessage);
           }
 
           return createArrayElementsCheck(value, (element: ts.Expression) =>
@@ -142,7 +117,13 @@ export default (program: Program, options: TransformerOptions = {}): ts.Transfor
             });
         }
 
-        if (isObjectType(type)) {
+        if (isFunctionType(typeChecker, type, root)) {
+          logger('\tFunction');
+
+          return ts.createStrictEquality(ts.createTypeOf(value), ts.createLiteral('function'));
+        }
+
+        if (isObjectType(typeChecker, type, root)) {
           logger('\tObject');
 
           // Add a new entry to the global type checker map
@@ -199,8 +180,6 @@ export default (program: Program, options: TransformerOptions = {}): ts.Transfor
           return ts.createTrue();
         }
 
-        debugger;
-
         // Rather than silently failing we throw an exception here to let the people in charge know
         // that this type check is not supported. This might happen if the passed type is e.g. a generic type parameter
         const errorMessage = `Could not create type checker for type '${typeName}'. This happened while creating a check for '${root.getText()}' in ${
@@ -211,8 +190,8 @@ export default (program: Program, options: TransformerOptions = {}): ts.Transfor
       };
 
       const typeCheck = createTypeCheckerFunction(value => createCheckForType(typeNode, type, value));
-      const typeCheckerProperties: PropertyAssignment[] = Array.from(typeCheckMethods.values()).map(method => {
-        return createPropertyAssignment(method.name, method.definition);
+      const typeCheckerProperties: ts.PropertyAssignment[] = Array.from(typeCheckMethods.values()).map(method => {
+        return ts.createPropertyAssignment(method.name, method.definition);
       });
       if (typeCheckerProperties.length === 0) {
         return typeCheck;

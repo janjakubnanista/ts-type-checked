@@ -106,6 +106,22 @@ describe('basics', () => {
       testValues(invalidObjectArbitrary, makeIsA<GenericReference<ObjectType>>(), false);
     });
 
+    test('function', () => {
+      type FunctionType = () => void;
+
+      const validFunctionArbitrary = fc.func(fc.anything());
+      const invalidFunctionArbitrary = fc.anything().filter(value => typeof value !== 'function');
+
+      testValues(validFunctionArbitrary, makeIsA<() => void>());
+      testValues(validFunctionArbitrary, makeIsA<FunctionType>());
+      testValues(validFunctionArbitrary, makeIsA<GenericReference<() => void>>());
+      testValues(validFunctionArbitrary, makeIsA<GenericReference<FunctionType>>());
+      testValues(invalidFunctionArbitrary, makeIsA<() => void>(), false);
+      testValues(invalidFunctionArbitrary, makeIsA<FunctionType>(), false);
+      testValues(invalidFunctionArbitrary, makeIsA<GenericReference<() => void>>(), false);
+      testValues(invalidFunctionArbitrary, makeIsA<GenericReference<FunctionType>>(), false);
+    });
+
     test('boolean', () => {
       type BooleanType = boolean;
 
