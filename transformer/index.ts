@@ -1,10 +1,10 @@
 import {
   createArrayElementsCheck,
+  createLogger,
   createObjectIndexedPropertiesCheck,
   createTypeCheckerFunction,
   typeFlags,
 } from './utils';
-import { createLogger } from './logger';
 import { isArrayType, isFunctionType, isObjectType, isTupleType } from './checks';
 import { visitNodeAndChildren } from './visitor';
 import ts from 'typescript';
