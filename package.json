@@ -13,7 +13,7 @@
     "test:clean": "jest --clearCache && rm -rf test/e2e/*.js",
     "test:compile": "ttsc --project tsconfig.test.json",
     "test:run": "jest",
-    "test": "yarn test:clean && yarn build && yarn test:run"
+    "test": "./scripts/test-typescript-versions.sh"
   },
   "repository": {
     "type": "git",
@@ -57,7 +57,8 @@
     "prettier": "^1.19.1",
     "ts-jest": "^25.2.1",
     "tslib": "^1.10.0",
-    "ttypescript": "^1.5.10"
+    "ttypescript": "^1.5.10",
+    "typescript": "^3.7.2"
   },
   "peerDependencies": {
     "typescript": "^3.7.2"

@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "sourceMap": false,
+    "plugins": [
+      { "transform": "ts-type-checked/transformer", "debug": false },
+    ]
+  },
+  "include": [
+    "*.spec.ts"
+  ]
+}
