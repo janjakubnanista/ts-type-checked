@@ -27,8 +27,8 @@
     "strictPropertyInitialization": true,
     "suppressImplicitAnyIndexErrors": false,
     "moduleResolution": "node",
-    "target": "es5",
-    "module": "es6",
+    "target": "es6",
+    "module": "commonjs",
     "lib": [
       "es6"
     ]
