@@ -1,6 +1,6 @@
 import 'jest';
 
-import { isA, makeIsA } from 'ts-type-checked';
+import { isA, typeCheckFor } from 'ts-type-checked';
 import { optionalOf, testValues } from './utils';
 import fc from 'fast-check';
 
@@ -37,20 +37,20 @@ describe('basics', () => {
       const validStringArbitrary = fc.string();
       const invalidStringArbitrary = fc.anything().filter(value => typeof value !== 'string');
 
-      testValues(validStringArbitrary, makeIsA<string>());
-      testValues(validStringArbitrary, makeIsA<StringType>());
-      testValues(validStringArbitrary, makeIsA<GenericReference<string>>());
-      testValues(validStringArbitrary, makeIsA<GenericReference<StringType>>());
+      testValues(validStringArbitrary, typeCheckFor<string>());
+      testValues(validStringArbitrary, typeCheckFor<StringType>());
+      testValues(validStringArbitrary, typeCheckFor<GenericReference<string>>());
+      testValues(validStringArbitrary, typeCheckFor<GenericReference<StringType>>());
 
       testValues(validStringArbitrary, value => isA<string>(value));
       testValues(validStringArbitrary, value => isA<StringType>(value));
       testValues(validStringArbitrary, value => isA<GenericReference<string>>(value));
       testValues(validStringArbitrary, value => isA<GenericReference<StringType>>(value));
 
-      testValues(invalidStringArbitrary, makeIsA<string>(), false);
-      testValues(invalidStringArbitrary, makeIsA<StringType>(), false);
-      testValues(invalidStringArbitrary, makeIsA<GenericReference<string>>(), false);
-      testValues(invalidStringArbitrary, makeIsA<GenericReference<StringType>>(), false);
+      testValues(invalidStringArbitrary, typeCheckFor<string>(), false);
+      testValues(invalidStringArbitrary, typeCheckFor<StringType>(), false);
+      testValues(invalidStringArbitrary, typeCheckFor<GenericReference<string>>(), false);
+      testValues(invalidStringArbitrary, typeCheckFor<GenericReference<StringType>>(), false);
 
       testValues(invalidStringArbitrary, value => isA<string>(value), false);
       testValues(invalidStringArbitrary, value => isA<StringType>(value), false);
@@ -64,14 +64,14 @@ describe('basics', () => {
       const validNumberArbitrary = fc.oneof(fc.integer(), fc.float());
       const invalidNumberArbitrary = fc.anything().filter(value => typeof value !== 'number');
 
-      testValues(validNumberArbitrary, makeIsA<number>());
-      testValues(validNumberArbitrary, makeIsA<NumberType>());
-      testValues(validNumberArbitrary, makeIsA<GenericReference<number>>());
-      testValues(validNumberArbitrary, makeIsA<GenericReference<NumberType>>());
-      testValues(invalidNumberArbitrary, makeIsA<number>(), false);
-      testValues(invalidNumberArbitrary, makeIsA<NumberType>(), false);
-      testValues(invalidNumberArbitrary, makeIsA<GenericReference<number>>(), false);
-      testValues(invalidNumberArbitrary, makeIsA<GenericReference<NumberType>>(), false);
+      testValues(validNumberArbitrary, typeCheckFor<number>());
+      testValues(validNumberArbitrary, typeCheckFor<NumberType>());
+      testValues(validNumberArbitrary, typeCheckFor<GenericReference<number>>());
+      testValues(validNumberArbitrary, typeCheckFor<GenericReference<NumberType>>());
+      testValues(invalidNumberArbitrary, typeCheckFor<number>(), false);
+      testValues(invalidNumberArbitrary, typeCheckFor<NumberType>(), false);
+      testValues(invalidNumberArbitrary, typeCheckFor<GenericReference<number>>(), false);
+      testValues(invalidNumberArbitrary, typeCheckFor<GenericReference<NumberType>>(), false);
     });
 
     test('object', () => {
@@ -80,14 +80,14 @@ describe('basics', () => {
       const validObjectArbitrary = fc.object();
       const invalidObjectArbitrary = fc.anything().filter(value => typeof value !== 'object' || value === null);
 
-      testValues(validObjectArbitrary, makeIsA<object>());
-      testValues(validObjectArbitrary, makeIsA<ObjectType>());
-      testValues(validObjectArbitrary, makeIsA<GenericReference<object>>());
-      testValues(validObjectArbitrary, makeIsA<GenericReference<ObjectType>>());
-      testValues(invalidObjectArbitrary, makeIsA<object>(), false);
-      testValues(invalidObjectArbitrary, makeIsA<ObjectType>(), false);
-      testValues(invalidObjectArbitrary, makeIsA<GenericReference<object>>(), false);
-      testValues(invalidObjectArbitrary, makeIsA<GenericReference<ObjectType>>(), false);
+      testValues(validObjectArbitrary, typeCheckFor<object>());
+      testValues(validObjectArbitrary, typeCheckFor<ObjectType>());
+      testValues(validObjectArbitrary, typeCheckFor<GenericReference<object>>());
+      testValues(validObjectArbitrary, typeCheckFor<GenericReference<ObjectType>>());
+      testValues(invalidObjectArbitrary, typeCheckFor<object>(), false);
+      testValues(invalidObjectArbitrary, typeCheckFor<ObjectType>(), false);
+      testValues(invalidObjectArbitrary, typeCheckFor<GenericReference<object>>(), false);
+      testValues(invalidObjectArbitrary, typeCheckFor<GenericReference<ObjectType>>(), false);
     });
 
     test('{}', () => {
@@ -96,14 +96,14 @@ describe('basics', () => {
       const validObjectArbitrary = fc.object();
       const invalidObjectArbitrary = fc.anything().filter(value => typeof value !== 'object' || value === null);
 
-      testValues(validObjectArbitrary, makeIsA<{}>());
-      testValues(validObjectArbitrary, makeIsA<ObjectType>());
-      testValues(validObjectArbitrary, makeIsA<GenericReference<{}>>());
-      testValues(validObjectArbitrary, makeIsA<GenericReference<ObjectType>>());
-      testValues(invalidObjectArbitrary, makeIsA<{}>(), false);
-      testValues(invalidObjectArbitrary, makeIsA<ObjectType>(), false);
-      testValues(invalidObjectArbitrary, makeIsA<GenericReference<{}>>(), false);
-      testValues(invalidObjectArbitrary, makeIsA<GenericReference<ObjectType>>(), false);
+      testValues(validObjectArbitrary, typeCheckFor<{}>());
+      testValues(validObjectArbitrary, typeCheckFor<ObjectType>());
+      testValues(validObjectArbitrary, typeCheckFor<GenericReference<{}>>());
+      testValues(validObjectArbitrary, typeCheckFor<GenericReference<ObjectType>>());
+      testValues(invalidObjectArbitrary, typeCheckFor<{}>(), false);
+      testValues(invalidObjectArbitrary, typeCheckFor<ObjectType>(), false);
+      testValues(invalidObjectArbitrary, typeCheckFor<GenericReference<{}>>(), false);
+      testValues(invalidObjectArbitrary, typeCheckFor<GenericReference<ObjectType>>(), false);
     });
 
     test('function', () => {
@@ -112,14 +112,14 @@ describe('basics', () => {
       const validFunctionArbitrary = fc.func(fc.anything());
       const invalidFunctionArbitrary = fc.anything().filter(value => typeof value !== 'function');
 
-      testValues(validFunctionArbitrary, makeIsA<() => void>());
-      testValues(validFunctionArbitrary, makeIsA<FunctionType>());
-      testValues(validFunctionArbitrary, makeIsA<GenericReference<() => void>>());
-      testValues(validFunctionArbitrary, makeIsA<GenericReference<FunctionType>>());
-      testValues(invalidFunctionArbitrary, makeIsA<() => void>(), false);
-      testValues(invalidFunctionArbitrary, makeIsA<FunctionType>(), false);
-      testValues(invalidFunctionArbitrary, makeIsA<GenericReference<() => void>>(), false);
-      testValues(invalidFunctionArbitrary, makeIsA<GenericReference<FunctionType>>(), false);
+      testValues(validFunctionArbitrary, typeCheckFor<() => void>());
+      testValues(validFunctionArbitrary, typeCheckFor<FunctionType>());
+      testValues(validFunctionArbitrary, typeCheckFor<GenericReference<() => void>>());
+      testValues(validFunctionArbitrary, typeCheckFor<GenericReference<FunctionType>>());
+      testValues(invalidFunctionArbitrary, typeCheckFor<() => void>(), false);
+      testValues(invalidFunctionArbitrary, typeCheckFor<FunctionType>(), false);
+      testValues(invalidFunctionArbitrary, typeCheckFor<GenericReference<() => void>>(), false);
+      testValues(invalidFunctionArbitrary, typeCheckFor<GenericReference<FunctionType>>(), false);
     });
 
     test('boolean', () => {
@@ -128,14 +128,14 @@ describe('basics', () => {
       const validBooleanArbitrary = fc.boolean();
       const invalidBooleanArbitrary = fc.anything().filter(value => typeof value !== 'boolean');
 
-      testValues(validBooleanArbitrary, makeIsA<boolean>());
-      testValues(validBooleanArbitrary, makeIsA<BooleanType>());
-      testValues(validBooleanArbitrary, makeIsA<GenericReference<boolean>>());
-      testValues(validBooleanArbitrary, makeIsA<GenericReference<BooleanType>>());
-      testValues(invalidBooleanArbitrary, makeIsA<boolean>(), false);
-      testValues(invalidBooleanArbitrary, makeIsA<BooleanType>(), false);
-      testValues(invalidBooleanArbitrary, makeIsA<GenericReference<boolean>>(), false);
-      testValues(invalidBooleanArbitrary, makeIsA<GenericReference<BooleanType>>(), false);
+      testValues(validBooleanArbitrary, typeCheckFor<boolean>());
+      testValues(validBooleanArbitrary, typeCheckFor<BooleanType>());
+      testValues(validBooleanArbitrary, typeCheckFor<GenericReference<boolean>>());
+      testValues(validBooleanArbitrary, typeCheckFor<GenericReference<BooleanType>>());
+      testValues(invalidBooleanArbitrary, typeCheckFor<boolean>(), false);
+      testValues(invalidBooleanArbitrary, typeCheckFor<BooleanType>(), false);
+      testValues(invalidBooleanArbitrary, typeCheckFor<GenericReference<boolean>>(), false);
+      testValues(invalidBooleanArbitrary, typeCheckFor<GenericReference<BooleanType>>(), false);
     });
 
     test('true', () => {
@@ -144,14 +144,14 @@ describe('basics', () => {
       const validTrueArbitrary = fc.constantFrom(true);
       const invalidTrueArbitrary = fc.anything().filter(value => value !== true);
 
-      testValues(validTrueArbitrary, makeIsA<true>());
-      testValues(validTrueArbitrary, makeIsA<TrueType>());
-      testValues(validTrueArbitrary, makeIsA<GenericReference<true>>());
-      testValues(validTrueArbitrary, makeIsA<GenericReference<TrueType>>());
-      testValues(invalidTrueArbitrary, makeIsA<true>(), false);
-      testValues(invalidTrueArbitrary, makeIsA<TrueType>(), false);
-      testValues(invalidTrueArbitrary, makeIsA<GenericReference<true>>(), false);
-      testValues(invalidTrueArbitrary, makeIsA<GenericReference<TrueType>>(), false);
+      testValues(validTrueArbitrary, typeCheckFor<true>());
+      testValues(validTrueArbitrary, typeCheckFor<TrueType>());
+      testValues(validTrueArbitrary, typeCheckFor<GenericReference<true>>());
+      testValues(validTrueArbitrary, typeCheckFor<GenericReference<TrueType>>());
+      testValues(invalidTrueArbitrary, typeCheckFor<true>(), false);
+      testValues(invalidTrueArbitrary, typeCheckFor<TrueType>(), false);
+      testValues(invalidTrueArbitrary, typeCheckFor<GenericReference<true>>(), false);
+      testValues(invalidTrueArbitrary, typeCheckFor<GenericReference<TrueType>>(), false);
     });
 
     test('false', () => {
@@ -160,14 +160,14 @@ describe('basics', () => {
       const validFalseArbitrary = fc.constantFrom(false);
       const invalidFalseArbitrary = fc.anything().filter(value => value !== false);
 
-      testValues(validFalseArbitrary, makeIsA<false>());
-      testValues(validFalseArbitrary, makeIsA<FalseType>());
-      testValues(validFalseArbitrary, makeIsA<GenericReference<false>>());
-      testValues(validFalseArbitrary, makeIsA<GenericReference<FalseType>>());
-      testValues(invalidFalseArbitrary, makeIsA<false>(), false);
-      testValues(invalidFalseArbitrary, makeIsA<FalseType>(), false);
-      testValues(invalidFalseArbitrary, makeIsA<GenericReference<false>>(), false);
-      testValues(invalidFalseArbitrary, makeIsA<GenericReference<FalseType>>(), false);
+      testValues(validFalseArbitrary, typeCheckFor<false>());
+      testValues(validFalseArbitrary, typeCheckFor<FalseType>());
+      testValues(validFalseArbitrary, typeCheckFor<GenericReference<false>>());
+      testValues(validFalseArbitrary, typeCheckFor<GenericReference<FalseType>>());
+      testValues(invalidFalseArbitrary, typeCheckFor<false>(), false);
+      testValues(invalidFalseArbitrary, typeCheckFor<FalseType>(), false);
+      testValues(invalidFalseArbitrary, typeCheckFor<GenericReference<false>>(), false);
+      testValues(invalidFalseArbitrary, typeCheckFor<GenericReference<FalseType>>(), false);
     });
 
     test('undefined', () => {
@@ -176,10 +176,10 @@ describe('basics', () => {
       const validUndefinedArbitrary = fc.constantFrom(undefined, void 0);
       const invalidUndefinedArbitrary = fc.anything().filter(value => typeof value !== 'undefined');
 
-      testValues(validUndefinedArbitrary, makeIsA<undefined>());
-      testValues(validUndefinedArbitrary, makeIsA<UndefinedType>());
-      testValues(invalidUndefinedArbitrary, makeIsA<undefined>(), false);
-      testValues(invalidUndefinedArbitrary, makeIsA<UndefinedType>(), false);
+      testValues(validUndefinedArbitrary, typeCheckFor<undefined>());
+      testValues(validUndefinedArbitrary, typeCheckFor<UndefinedType>());
+      testValues(invalidUndefinedArbitrary, typeCheckFor<undefined>(), false);
+      testValues(invalidUndefinedArbitrary, typeCheckFor<UndefinedType>(), false);
     });
 
     test('any', () => {
@@ -187,8 +187,8 @@ describe('basics', () => {
 
       const anyArbitrary = fc.anything();
 
-      testValues(anyArbitrary, makeIsA<any>());
-      testValues(anyArbitrary, makeIsA<AnyType>());
+      testValues(anyArbitrary, typeCheckFor<any>());
+      testValues(anyArbitrary, typeCheckFor<AnyType>());
     });
 
     // This test is not super DRY
@@ -199,28 +199,41 @@ describe('basics', () => {
       const validLiteralArbitrary = fc.constantFrom<LiteralType>(...literalTypeValues);
       const invalidLiteralArbitrary = fc.anything().filter(value => !literalTypeValues.includes(value as any));
 
-      testValues(validLiteralArbitrary, makeIsA<'a' | 'b' | 'c' | 9 | false | true>());
-      testValues(validLiteralArbitrary, makeIsA<LiteralType>());
-      testValues(validLiteralArbitrary, makeIsA<GenericReference<LiteralType>>());
-      testValues(invalidLiteralArbitrary, makeIsA<'a' | 'b' | 'c' | 9 | false | true>(), false);
-      testValues(invalidLiteralArbitrary, makeIsA<LiteralType>(), false);
-      testValues(invalidLiteralArbitrary, makeIsA<GenericReference<LiteralType>>(), false);
+      testValues(validLiteralArbitrary, typeCheckFor<'a' | 'b' | 'c' | 9 | false | true>());
+      testValues(validLiteralArbitrary, typeCheckFor<LiteralType>());
+      testValues(validLiteralArbitrary, typeCheckFor<GenericReference<LiteralType>>());
+      testValues(invalidLiteralArbitrary, typeCheckFor<'a' | 'b' | 'c' | 9 | false | true>(), false);
+      testValues(invalidLiteralArbitrary, typeCheckFor<LiteralType>(), false);
+      testValues(invalidLiteralArbitrary, typeCheckFor<GenericReference<LiteralType>>(), false);
     });
   });
 
   describe('interface types', () => {
-    test('number property', () => {
+    describe('number property', () => {
       type NumberPropertyObjectType = InterfaceWithPropertyOfType<number>;
 
       const validObjectArbitrary = fc.integer().map<InterfaceWithPropertyOfType<number>>(property => ({ property }));
       const invalidObjectArbitrary = fc.anything().filter((value: any) => typeof value?.property !== 'number');
 
-      testValues(validObjectArbitrary, makeIsA<{ property: number }>());
-      testValues(validObjectArbitrary, makeIsA<NumberPropertyObjectType>());
-      testValues(validObjectArbitrary, makeIsA<GenericReference<NumberPropertyObjectType>>());
-      testValues(invalidObjectArbitrary, makeIsA<{ property: number }>(), false);
-      testValues(invalidObjectArbitrary, makeIsA<NumberPropertyObjectType>(), false);
-      testValues(invalidObjectArbitrary, makeIsA<GenericReference<NumberPropertyObjectType>>(), false);
+      test('typeCheckerFor', () => {
+        testValues(validObjectArbitrary, typeCheckFor<{ property: number }>());
+        testValues(validObjectArbitrary, typeCheckFor<NumberPropertyObjectType>());
+        testValues(validObjectArbitrary, typeCheckFor<GenericReference<NumberPropertyObjectType>>());
+
+        testValues(invalidObjectArbitrary, typeCheckFor<{ property: number }>(), false);
+        testValues(invalidObjectArbitrary, typeCheckFor<NumberPropertyObjectType>(), false);
+        testValues(invalidObjectArbitrary, typeCheckFor<GenericReference<NumberPropertyObjectType>>(), false);
+      });
+
+      test('isA', () => {
+        testValues(validObjectArbitrary, value => isA<{ property: number }>(value));
+        testValues(validObjectArbitrary, value => isA<NumberPropertyObjectType>(value));
+        testValues(validObjectArbitrary, value => isA<GenericReference<NumberPropertyObjectType>>(value));
+
+        testValues(invalidObjectArbitrary, value => isA<{ property: number }>(value), false);
+        testValues(invalidObjectArbitrary, value => isA<NumberPropertyObjectType>(value), false);
+        testValues(invalidObjectArbitrary, value => isA<GenericReference<NumberPropertyObjectType>>(value), false);
+      });
     });
 
     test('array property', () => {
@@ -233,12 +246,12 @@ describe('basics', () => {
         .anything()
         .filter((value: any) => !Array.isArray(value) || value.some(element => typeof element !== 'boolean'));
 
-      testValues(validObjectArbitrary, makeIsA<{ property: boolean[] }>());
-      testValues(validObjectArbitrary, makeIsA<BooleanArrayPropertyObjectType>());
-      testValues(validObjectArbitrary, makeIsA<GenericReference<BooleanArrayPropertyObjectType>>());
-      testValues(invalidObjectArbitrary, makeIsA<{ property: boolean[] }>(), false);
-      testValues(invalidObjectArbitrary, makeIsA<BooleanArrayPropertyObjectType>(), false);
-      testValues(invalidObjectArbitrary, makeIsA<GenericReference<BooleanArrayPropertyObjectType>>(), false);
+      testValues(validObjectArbitrary, typeCheckFor<{ property: boolean[] }>());
+      testValues(validObjectArbitrary, typeCheckFor<BooleanArrayPropertyObjectType>());
+      testValues(validObjectArbitrary, typeCheckFor<GenericReference<BooleanArrayPropertyObjectType>>());
+      testValues(invalidObjectArbitrary, typeCheckFor<{ property: boolean[] }>(), false);
+      testValues(invalidObjectArbitrary, typeCheckFor<BooleanArrayPropertyObjectType>(), false);
+      testValues(invalidObjectArbitrary, typeCheckFor<GenericReference<BooleanArrayPropertyObjectType>>(), false);
     });
 
     test('optional property', () => {
@@ -255,12 +268,12 @@ describe('basics', () => {
             (typeof value?.property !== 'undefined' && typeof value?.property !== 'number'),
         );
 
-      testValues(validObjectArbitrary, makeIsA<{ property?: string }>());
-      testValues(validObjectArbitrary, makeIsA<StringOptionalPropertyObjectType>());
-      testValues(validObjectArbitrary, makeIsA<GenericReference<StringOptionalPropertyObjectType>>());
-      testValues(invalidObjectArbitrary, makeIsA<{ property?: string }>(), false);
-      testValues(invalidObjectArbitrary, makeIsA<StringOptionalPropertyObjectType>(), false);
-      testValues(invalidObjectArbitrary, makeIsA<GenericReference<StringOptionalPropertyObjectType>>(), false);
+      testValues(validObjectArbitrary, typeCheckFor<{ property?: string }>());
+      testValues(validObjectArbitrary, typeCheckFor<StringOptionalPropertyObjectType>());
+      testValues(validObjectArbitrary, typeCheckFor<GenericReference<StringOptionalPropertyObjectType>>());
+      testValues(invalidObjectArbitrary, typeCheckFor<{ property?: string }>(), false);
+      testValues(invalidObjectArbitrary, typeCheckFor<StringOptionalPropertyObjectType>(), false);
+      testValues(invalidObjectArbitrary, typeCheckFor<GenericReference<StringOptionalPropertyObjectType>>(), false);
     });
 
     test('multiple properties', () => {
@@ -288,10 +301,10 @@ describe('basics', () => {
         return false;
       });
 
-      testValues(validObjectArbitrary, makeIsA<MultiplePropertiesObjectType>());
-      testValues(validObjectArbitrary, makeIsA<GenericReference<MultiplePropertiesObjectType>>());
-      testValues(invalidObjectArbitrary, makeIsA<MultiplePropertiesObjectType>(), false);
-      testValues(invalidObjectArbitrary, makeIsA<GenericReference<MultiplePropertiesObjectType>>(), false);
+      testValues(validObjectArbitrary, typeCheckFor<MultiplePropertiesObjectType>());
+      testValues(validObjectArbitrary, typeCheckFor<GenericReference<MultiplePropertiesObjectType>>());
+      testValues(invalidObjectArbitrary, typeCheckFor<MultiplePropertiesObjectType>(), false);
+      testValues(invalidObjectArbitrary, typeCheckFor<GenericReference<MultiplePropertiesObjectType>>(), false);
     });
 
     test('recursion', () => {
@@ -318,10 +331,10 @@ describe('basics', () => {
       };
       const invalidObjectArbitrary = fc.anything().filter(value => !isRecursiveType(value));
 
-      testValues(validObjectArbitrary, makeIsA<RecursiveType>());
-      testValues(validObjectArbitrary, makeIsA<GenericReference<RecursiveType>>());
-      testValues(invalidObjectArbitrary, makeIsA<RecursiveType>(), false);
-      testValues(invalidObjectArbitrary, makeIsA<GenericReference<RecursiveType>>(), false);
+      testValues(validObjectArbitrary, typeCheckFor<RecursiveType>());
+      testValues(validObjectArbitrary, typeCheckFor<GenericReference<RecursiveType>>());
+      testValues(invalidObjectArbitrary, typeCheckFor<RecursiveType>(), false);
+      testValues(invalidObjectArbitrary, typeCheckFor<GenericReference<RecursiveType>>(), false);
     });
 
     test('conditional types', () => {
@@ -332,13 +345,13 @@ describe('basics', () => {
       const stringArrayArbitrary = fc.array(fc.string());
       const undefinedArbitrary = fc.constant(undefined);
 
-      testValues(stringArrayArbitrary, makeIsA<ConditionalOfStringArray>());
-      testValues(stringArrayArbitrary, makeIsA<ConditionalOfType<string[], true>>());
-      testValues(stringArrayArbitrary, makeIsA<ConditionalOfType<ArrayReference<string>, true>>());
+      testValues(stringArrayArbitrary, typeCheckFor<ConditionalOfStringArray>());
+      testValues(stringArrayArbitrary, typeCheckFor<ConditionalOfType<string[], true>>());
+      testValues(stringArrayArbitrary, typeCheckFor<ConditionalOfType<ArrayReference<string>, true>>());
 
-      testValues(undefinedArbitrary, makeIsA<ConditionalOfUndefined>());
-      testValues(undefinedArbitrary, makeIsA<ConditionalOfType<string[], false>>());
-      testValues(undefinedArbitrary, makeIsA<ConditionalOfType<ArrayReference<string>, false>>());
+      testValues(undefinedArbitrary, typeCheckFor<ConditionalOfUndefined>());
+      testValues(undefinedArbitrary, typeCheckFor<ConditionalOfType<string[], false>>());
+      testValues(undefinedArbitrary, typeCheckFor<ConditionalOfType<ArrayReference<string>, false>>());
     });
 
     test('intersection', () => {
@@ -354,16 +367,16 @@ describe('basics', () => {
         .anything()
         .filter((value: any) => typeof value?.property !== 'number' || typeof value?.differentProperty !== 'string');
 
-      testValues(validObjectArbitrary, makeIsA<NumberPropertyObjectType & StringDifferentPropertyObjectType>());
-      testValues(validObjectArbitrary, makeIsA<IntersectionType>());
-      testValues(validObjectArbitrary, makeIsA<GenericReference<IntersectionType>>());
+      testValues(validObjectArbitrary, typeCheckFor<NumberPropertyObjectType & StringDifferentPropertyObjectType>());
+      testValues(validObjectArbitrary, typeCheckFor<IntersectionType>());
+      testValues(validObjectArbitrary, typeCheckFor<GenericReference<IntersectionType>>());
       testValues(
         invalidObjectArbitrary,
-        makeIsA<NumberPropertyObjectType & StringDifferentPropertyObjectType>(),
+        typeCheckFor<NumberPropertyObjectType & StringDifferentPropertyObjectType>(),
         false,
       );
-      testValues(invalidObjectArbitrary, makeIsA<IntersectionType>(), false);
-      testValues(invalidObjectArbitrary, makeIsA<GenericReference<IntersectionType>>(), false);
+      testValues(invalidObjectArbitrary, typeCheckFor<IntersectionType>(), false);
+      testValues(invalidObjectArbitrary, typeCheckFor<GenericReference<IntersectionType>>(), false);
     });
 
     test('string records', () => {
@@ -381,8 +394,8 @@ describe('basics', () => {
         );
       });
 
-      testValues(stringRecordArbitrary, makeIsA<StringRecord>());
-      testValues(stringRecordArbitrary, makeIsA<GenericReference<StringRecord>>());
+      testValues(stringRecordArbitrary, typeCheckFor<StringRecord>());
+      testValues(stringRecordArbitrary, typeCheckFor<GenericReference<StringRecord>>());
     });
   });
 
@@ -395,14 +408,14 @@ describe('basics', () => {
         .anything()
         .filter(value => !Array.isArray(value) || value.some(element => typeof element !== 'string'));
 
-      testValues(validStringArbitrary, makeIsA<string[]>());
-      testValues(validStringArbitrary, makeIsA<StringType>());
-      testValues(validStringArbitrary, makeIsA<GenericReference<string[]>>());
-      testValues(validStringArbitrary, makeIsA<GenericReference<StringType>>());
-      testValues(invalidStringArbitrary, makeIsA<string[]>(), false);
-      testValues(invalidStringArbitrary, makeIsA<StringType>(), false);
-      testValues(invalidStringArbitrary, makeIsA<GenericReference<string[]>>(), false);
-      testValues(invalidStringArbitrary, makeIsA<GenericReference<StringType>>(), false);
+      testValues(validStringArbitrary, typeCheckFor<string[]>());
+      testValues(validStringArbitrary, typeCheckFor<StringType>());
+      testValues(validStringArbitrary, typeCheckFor<GenericReference<string[]>>());
+      testValues(validStringArbitrary, typeCheckFor<GenericReference<StringType>>());
+      testValues(invalidStringArbitrary, typeCheckFor<string[]>(), false);
+      testValues(invalidStringArbitrary, typeCheckFor<StringType>(), false);
+      testValues(invalidStringArbitrary, typeCheckFor<GenericReference<string[]>>(), false);
+      testValues(invalidStringArbitrary, typeCheckFor<GenericReference<StringType>>(), false);
     });
 
     test('interface[]', () => {
@@ -415,12 +428,12 @@ describe('basics', () => {
         .anything()
         .filter(value => !Array.isArray(value) || value.some(element => typeof element?.property !== 'string'));
 
-      testValues(validObjectArbitrary, makeIsA<{ property: string }[]>());
-      testValues(validObjectArbitrary, makeIsA<StringPropertyObjectType>());
-      testValues(validObjectArbitrary, makeIsA<GenericReference<StringPropertyObjectType>>());
-      testValues(invalidObjectArbitrary, makeIsA<{ property: string }[]>(), false);
-      testValues(invalidObjectArbitrary, makeIsA<StringPropertyObjectType>(), false);
-      testValues(invalidObjectArbitrary, makeIsA<GenericReference<StringPropertyObjectType>>(), false);
+      testValues(validObjectArbitrary, typeCheckFor<{ property: string }[]>());
+      testValues(validObjectArbitrary, typeCheckFor<StringPropertyObjectType>());
+      testValues(validObjectArbitrary, typeCheckFor<GenericReference<StringPropertyObjectType>>());
+      testValues(invalidObjectArbitrary, typeCheckFor<{ property: string }[]>(), false);
+      testValues(invalidObjectArbitrary, typeCheckFor<StringPropertyObjectType>(), false);
+      testValues(invalidObjectArbitrary, typeCheckFor<GenericReference<StringPropertyObjectType>>(), false);
     });
 
     test('tuples', () => {
@@ -438,22 +451,22 @@ describe('basics', () => {
             typeof value[3] !== 'string',
         );
 
-      testValues(validTupleArbitrary, makeIsA<[number, true, () => void, GenericReference<string>]>());
-      testValues(validTupleArbitrary, makeIsA<TupleType>());
+      testValues(validTupleArbitrary, typeCheckFor<[number, true, () => void, GenericReference<string>]>());
+      testValues(validTupleArbitrary, typeCheckFor<TupleType>());
       testValues(
         validTupleArbitrary,
-        makeIsA<GenericReference<[number, true, () => void, GenericReference<string>]>>(),
+        typeCheckFor<GenericReference<[number, true, () => void, GenericReference<string>]>>(),
       );
-      testValues(validTupleArbitrary, makeIsA<GenericReference<TupleType>>());
+      testValues(validTupleArbitrary, typeCheckFor<GenericReference<TupleType>>());
 
-      testValues(invalidTupleArbitrary, makeIsA<[number, true, () => void, GenericReference<string>]>(), false);
-      testValues(invalidTupleArbitrary, makeIsA<TupleType>(), false);
+      testValues(invalidTupleArbitrary, typeCheckFor<[number, true, () => void, GenericReference<string>]>(), false);
+      testValues(invalidTupleArbitrary, typeCheckFor<TupleType>(), false);
       testValues(
         invalidTupleArbitrary,
-        makeIsA<GenericReference<[number, true, () => void, GenericReference<string>]>>(),
+        typeCheckFor<GenericReference<[number, true, () => void, GenericReference<string>]>>(),
         false,
       );
-      testValues(invalidTupleArbitrary, makeIsA<GenericReference<TupleType>>(), false);
+      testValues(invalidTupleArbitrary, typeCheckFor<GenericReference<TupleType>>(), false);
     });
   });
 
@@ -481,11 +494,11 @@ describe('basics', () => {
         .anything()
         .filter(value => value !== EnumWithAAndBWithValues.A && value !== EnumWithAAndBWithValues.B);
 
-      testValues(validEnumWithAAndBArbitrary, makeIsA<EnumWithAAndB>());
-      testValues(invalidEnumWithAAndBArbitrary, makeIsA<EnumWithAAndB>(), false);
+      testValues(validEnumWithAAndBArbitrary, typeCheckFor<EnumWithAAndB>());
+      testValues(invalidEnumWithAAndBArbitrary, typeCheckFor<EnumWithAAndB>(), false);
 
-      testValues(validEnumWithAAndBWithValuesArbitrary, makeIsA<EnumWithAAndBWithValues>());
-      testValues(invalidEnumWithAAndBWithValuesArbitrary, makeIsA<EnumWithAAndBWithValues>(), false);
+      testValues(validEnumWithAAndBWithValuesArbitrary, typeCheckFor<EnumWithAAndBWithValues>());
+      testValues(invalidEnumWithAAndBWithValuesArbitrary, typeCheckFor<EnumWithAAndBWithValues>(), false);
     });
 
     test('const enums', () => {
@@ -511,11 +524,11 @@ describe('basics', () => {
         .anything()
         .filter(value => value !== EnumWithAAndBWithValues.A && value !== EnumWithAAndBWithValues.B);
 
-      testValues(validEnumWithAAndBArbitrary, makeIsA<EnumWithAAndB>());
-      testValues(invalidEnumWithAAndBArbitrary, makeIsA<EnumWithAAndB>(), false);
+      testValues(validEnumWithAAndBArbitrary, typeCheckFor<EnumWithAAndB>());
+      testValues(invalidEnumWithAAndBArbitrary, typeCheckFor<EnumWithAAndB>(), false);
 
-      testValues(validEnumWithAAndBWithValuesArbitrary, makeIsA<EnumWithAAndBWithValues>());
-      testValues(invalidEnumWithAAndBWithValuesArbitrary, makeIsA<EnumWithAAndBWithValues>(), false);
+      testValues(validEnumWithAAndBWithValuesArbitrary, typeCheckFor<EnumWithAAndBWithValues>());
+      testValues(invalidEnumWithAAndBWithValuesArbitrary, typeCheckFor<EnumWithAAndBWithValues>(), false);
     });
   });
 
@@ -540,15 +553,15 @@ describe('basics', () => {
       const invalidClassASubclassArbitrary = fc.anything().filter(value => !(value instanceof ASubclass));
       const invalidClassBArbitrary = fc.anything().filter(value => !(value instanceof B));
 
-      testValues(validClassAArbitrary, makeIsA<A>());
-      testValues(validClassASubclassArbitrary, makeIsA<A>());
-      testValues(validClassASubclassArbitrary, makeIsA<ASubclass>());
-      testValues(validClassBArbitrary, makeIsA<B>());
+      testValues(validClassAArbitrary, typeCheckFor<A>());
+      testValues(validClassASubclassArbitrary, typeCheckFor<A>());
+      testValues(validClassASubclassArbitrary, typeCheckFor<ASubclass>());
+      testValues(validClassBArbitrary, typeCheckFor<B>());
 
-      testValues(invalidClassAArbitrary, makeIsA<A>(), false);
-      testValues(invalidClassASubclassArbitrary, makeIsA<A>(), false);
-      testValues(invalidClassASubclassArbitrary, makeIsA<ASubclass>(), false);
-      testValues(invalidClassBArbitrary, makeIsA<B>(), false);
+      testValues(invalidClassAArbitrary, typeCheckFor<A>(), false);
+      testValues(invalidClassASubclassArbitrary, typeCheckFor<A>(), false);
+      testValues(invalidClassASubclassArbitrary, typeCheckFor<ASubclass>(), false);
+      testValues(invalidClassBArbitrary, typeCheckFor<B>(), false);
     });
   });
 });

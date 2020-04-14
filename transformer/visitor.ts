@@ -27,10 +27,10 @@ function visitNode(node: ts.Node, program: ts.Program, isACallVisitor: IsACallVi
     return ts.createCall(isACallVisitor(typeNode), [], [valueNode]);
   }
 
-  if (isOurCallExpression(node, 'makeIsA', typeChecker)) {
+  if (isOurCallExpression(node, 'typeCheckFor', typeChecker)) {
     const typeNode = node.typeArguments?.[0];
     if (!typeNode) {
-      throw new Error('makeIsA<T>() requires one type parameter, none specified');
+      throw new Error('typeCheckFor<T>() requires one type parameter, none specified');
     }
 
     return isACallVisitor(typeNode);

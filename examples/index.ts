@@ -1,7 +1,7 @@
 // In your project this would become
 //
-// import { makeIsA } from 'ts-type-checked';
-import { makeIsA } from '..';
+// import { typeCheckFor } from 'ts-type-checked';
+import { typeCheckFor } from '..';
 
 interface User {
   name: string;
@@ -9,9 +9,9 @@ interface User {
   hobbies?: string[];
 }
 
-const isAString = makeIsA<string>();
-const isANumber = makeIsA<number>();
-const isAUser = makeIsA<User>();
+const isAString = typeCheckFor<string>();
+const isANumber = typeCheckFor<number>();
+const isAUser = typeCheckFor<User>();
 
 [
   1,

@@ -9,7 +9,8 @@
     "clean": "rm -rf transformer/*.{js,d.ts}",
     "lint": "eslint . --fix --ext .ts",
     "prepublish": "yarn build",
-    "test": "./scripts/test-typescript-versions.sh"
+    "test": "./scripts/test-typescript-versions.sh",
+    "test:version": "./scripts/test-typescript-version.sh"
   },
   "repository": {
     "type": "git",

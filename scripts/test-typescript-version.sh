@@ -10,7 +10,7 @@
 
 # Some file system information first
 SCRIPTS_PATH=$(dirname $0)
-PROJECT_PATH="$SCRIPTS_PATH/../"
+PROJECT_PATH="$SCRIPTS_PATH/.."
 
 # As the first step we need to get the TS version to be used
 VERSION=$1
@@ -52,10 +52,10 @@ yarn add -D -E typescript@${VERSION} --non-interactive
 # and this test package would differ so we need to manually copy the build files over
 TTC_NODE_MODULE_PATH="node_modules/ts-type-checked"
 mkdir -p $TTC_NODE_MODULE_PATH/transformer
-cp ../../package.json $TTC_NODE_MODULE_PATH/package.json
-cp ../../index.js $TTC_NODE_MODULE_PATH/index.js
-cp ../../index.d.ts $TTC_NODE_MODULE_PATH/index.d.ts
-cp ../../transformer/*.js $TTC_NODE_MODULE_PATH/transformer
+cp ../package.json $TTC_NODE_MODULE_PATH/package.json
+cp ../index.js $TTC_NODE_MODULE_PATH/index.js
+cp ../index.d.ts $TTC_NODE_MODULE_PATH/index.d.ts
+cp ../transformer/*.js $TTC_NODE_MODULE_PATH/transformer
 
 # And run tests
 yarn test:clean
