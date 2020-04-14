@@ -1,6 +1,6 @@
 import 'jest';
 
-import { isA, typeCheckFor } from 'ts-type-checked';
+import { isA, typeCheckFor } from '..';
 import { optionalOf, testValues } from './utils';
 import fc from 'fast-check';
 

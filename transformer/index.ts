@@ -1,4 +1,5 @@
 import {
+  addTypeCheckerMap,
   createArrayElementsCheck,
   createLogger,
   createObjectIndexedPropertiesCheck,
@@ -11,7 +12,7 @@ import ts from 'typescript';
 
 interface TypeCheckMethod {
   name: string;
-  definition: ts.FunctionExpression;
+  definition: ts.ArrowFunction;
 }
 
 export interface TransformerOptions {
@@ -27,18 +28,20 @@ export default (program: ts.Program, options: TransformerOptions = {}): ts.Trans
     // Get a reference to a TypeScript TypeChecker in order to resolve types from type nodes
     const typeChecker = program.getTypeChecker();
 
+    // A runtime object that will hold the type checks for object types. Since they can reference themselves
+    // (or create cycles in general) they could create endless recursion when creating type checks
+    //
+    // The solution is to store all object type checks in a (runtime) map
+    const typeCheckerObjectIdentfifier: ts.Identifier = ts.createIdentifier('__isA');
+    const typeCheckMethods: Map<ts.Type, TypeCheckMethod> = new Map();
+    let lastMethodId = 0;
+
+    console.warn('New map');
+
     const isACallVisitor = (typeNode: ts.TypeNode): ts.Expression => {
       logger('Processing', typeNode.getFullText());
 
       const type = typeChecker.getTypeFromTypeNode(typeNode);
-
-      // A runtime object that will hold the type checks for object types. Since they can reference themselves
-      // (or create cycles in general) they could create endless recursion when creating type checks
-      //
-      // The solution is to store all object type checks in a (runtime) map
-      const typeCheckerObjectIdentfifier: ts.Identifier = ts.createIdentifier('__typeCheckerMap__');
-      const typeCheckMethods: Map<ts.Type, TypeCheckMethod> = new Map();
-      let lastMethodId = 0;
 
       const createCheckForType = (root: ts.TypeNode, type: ts.Type, value: ts.Expression): ts.Expression => {
         const typeName = typeChecker.typeToString(type, root);
@@ -146,6 +149,8 @@ export default (program: ts.Program, options: TransformerOptions = {}): ts.Trans
           const methodName = `__${lastMethodId++}`;
           const defaultMethod = { name: methodName, definition: undefined };
 
+          console.warn('addding', typeName, defaultMethod);
+
           // Make sure that it gets inserted (albeit incomplete) before we start digging deeper into the object properties
           // otherwise we will not get rid of any possible recursion
           typeCheckMethods.set(type, defaultMethod as any);
@@ -204,25 +209,38 @@ export default (program: ts.Program, options: TransformerOptions = {}): ts.Trans
       };
 
       const typeCheck = createTypeCheckerFunction(value => createCheckForType(typeNode, type, value));
-      const typeCheckerProperties: ts.PropertyAssignment[] = Array.from(typeCheckMethods.values()).map(method => {
-        return ts.createPropertyAssignment(method.name, method.definition);
-      });
-      if (typeCheckerProperties.length === 0) {
-        return typeCheck;
-      }
 
-      return ts.createImmediatelyInvokedArrowFunction([
-        ts.createVariableStatement(/* modifiers */ undefined, [
-          ts.createVariableDeclaration(
-            typeCheckerObjectIdentfifier,
-            /* type */ undefined,
-            ts.createObjectLiteral(/* properties */ typeCheckerProperties, /* multiline */ true),
-          ),
-        ]),
-        ts.createReturn(typeCheck),
-      ]);
+      // if (typeCheckerProperties.length === 0) {
+      //   return typeCheck;
+      // }
+
+      return typeCheck;
+
+      // return ts.createImmediatelyInvokedArrowFunction([
+      //   ts.createVariableStatement(/* modifiers */ undefined, [
+      //     ts.createVariableDeclaration(
+      //       typeCheckerObjectIdentfifier,
+      //       /* type */ undefined,
+      //       ts.createObjectLiteral(/* properties */ typeCheckerProperties, /* multiline */ true),
+      //     ),
+      //   ]),
+      //   ts.createReturn(typeCheck),
+      // ]);
     };
 
-    return visitNodeAndChildren(file, program, context, isACallVisitor);
+    // First transform the file
+    const transformedFile = visitNodeAndChildren(file, program, context, isACallVisitor);
+
+    // Then grab all the things that need to be checked
+    const typeCheckerProperties: ts.PropertyAssignment[] = Array.from(typeCheckMethods.values()).map(method => {
+      return ts.createPropertyAssignment(method.name, method.definition);
+    });
+    const transformedFileWithTypeCheckerMap = addTypeCheckerMap(
+      transformedFile,
+      typeCheckerObjectIdentfifier,
+      typeCheckerProperties,
+    );
+
+    return transformedFileWithTypeCheckerMap;
   };
 };
