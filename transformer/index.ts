@@ -36,8 +36,6 @@ export default (program: ts.Program, options: TransformerOptions = {}): ts.Trans
     const typeCheckMethods: Map<ts.Type, TypeCheckMethod> = new Map();
     let lastMethodId = 0;
 
-    console.warn('New map');
-
     const isACallVisitor = (typeNode: ts.TypeNode): ts.Expression => {
       logger('Processing', typeNode.getFullText());
 
@@ -149,8 +147,6 @@ export default (program: ts.Program, options: TransformerOptions = {}): ts.Trans
           const methodName = `__${lastMethodId++}`;
           const defaultMethod = { name: methodName, definition: undefined };
 
-          console.warn('addding', typeName, defaultMethod);
-
           // Make sure that it gets inserted (albeit incomplete) before we start digging deeper into the object properties
           // otherwise we will not get rid of any possible recursion
           typeCheckMethods.set(type, defaultMethod as any);
@@ -208,24 +204,7 @@ export default (program: ts.Program, options: TransformerOptions = {}): ts.Trans
         throw new Error(errorMessage);
       };
 
-      const typeCheck = createTypeCheckerFunction(value => createCheckForType(typeNode, type, value));
-
-      // if (typeCheckerProperties.length === 0) {
-      //   return typeCheck;
-      // }
-
-      return typeCheck;
-
-      // return ts.createImmediatelyInvokedArrowFunction([
-      //   ts.createVariableStatement(/* modifiers */ undefined, [
-      //     ts.createVariableDeclaration(
-      //       typeCheckerObjectIdentfifier,
-      //       /* type */ undefined,
-      //       ts.createObjectLiteral(/* properties */ typeCheckerProperties, /* multiline */ true),
-      //     ),
-      //   ]),
-      //   ts.createReturn(typeCheck),
-      // ]);
+      return createTypeCheckerFunction(value => createCheckForType(typeNode, type, value));
     };
 
     // First transform the file
