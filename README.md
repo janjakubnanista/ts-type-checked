@@ -2,7 +2,18 @@
 
 Runtime duck type checking utilities for TypeScript.
 
-[![Build Status](https://travis-ci.org/janjakubnanista/ts-type-checked.svg?branch=master)](https://travis-ci.org/janjakubnanista/ts-type-checked)
+<p align="center">
+  <!-- Travis CI build status -->
+  <a href="https://travis-ci.org/janjakubnanista/ts-type-checked"><img alt="Build Status" src="https://travis-ci.org/janjakubnanista/ts-type-checked.svg?branch=master"/></a>
+  <!-- Fury.io NPM published package version -->
+  <a href="https://www.npmjs.com/package/ts-type-checked"><img alt="NPM Version" src="https://badge.fury.io/js/ts-type-checked.svg"/></a>
+  <!-- Shields.io dev dependencies status -->
+  <a href="https://github.com/janjakubnanista/ts-type-checked/blob/master/package.json"><img alt="Dev Dependency Status" src="https://img.shields.io/david/dev/janjakubnanista/ts-type-checked"/></a>
+  <!-- Snyk.io vulnerabilities badge -->
+  <a href="https://snyk.io/test/github/janjakubnanista/ts-type-checked"><img alt="Known Vulnerabilities" src="https://snyk.io/test/github/janjakubnanista/ts-type-checked/badge.svg"/></a>
+  <!-- Shields.io license badge -->
+  <a href="https://github.com/janjakubnanista/ts-type-checked/blob/master/LICENSE"><img alt="License" src="https://img.shields.io/npm/l/ts-type-checked"/></a>
+</p>
 
 ## Why
 
