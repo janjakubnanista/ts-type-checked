@@ -19,6 +19,12 @@ export const createTypeGuardCreator = (typeChecker: ts.TypeChecker, logger: Logg
     const typeName = typeChecker.typeToString(type, root);
     logger('Type', typeName, typeFlags(type).join(', '));
 
+    debugger;
+
+    if (typeName.indexOf('Promise') !== -1) {
+      debugger;
+    }
+
     return createTypeCheckerFunction(value => {
       if (isArrayType(typeChecker, type, root)) {
         logger('\tArray type');
