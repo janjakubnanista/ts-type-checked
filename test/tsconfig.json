@@ -3,7 +3,7 @@
   "compilerOptions": {
     "sourceMap": false,
     "plugins": [
-      { "transform": "../transformer", "debug": false },
+      { "transform": "../transformer", "debug": true },
     ]
   },
   "include": [

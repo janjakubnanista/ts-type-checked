@@ -1,17 +1,16 @@
-import { PluggableTypeCheckCreator, TypeCheckCreator } from './types';
-import { createTypeCheckerFunction } from './utils';
+import { TypeGuardCreator } from './types';
 import ts from 'typescript';
 
 interface TypeCheckMethod {
   identifier: string;
-  definition?: ts.ArrowFunction;
+  definition?: ts.Expression;
 }
 
 export type TypeMapStatementCreator = () => ts.Statement;
 
 export const createTypeCheckWithMapCreator = (
-  typeCheckCreator: PluggableTypeCheckCreator,
-): [TypeCheckCreator, TypeMapStatementCreator] => {
+  typeCheckCreator: TypeGuardCreator,
+): [TypeGuardCreator, TypeMapStatementCreator] => {
   // A runtime object that will hold the type checks for object types. Since they can reference themselves
   // (or create cycles in general) they could create endless recursion when creating type checks
   //
@@ -20,15 +19,11 @@ export const createTypeCheckWithMapCreator = (
   const typeCheckMethods: Map<ts.Type, TypeCheckMethod> = new Map();
   let lastMethodIdentifier = 0;
 
-  const wrappedTypeCheckCreator: TypeCheckCreator = (root, type, value) => {
+  const wrappedTypeCheckCreator: TypeGuardCreator = (root, type) => {
     // If the type check already exists then don't make a new one, instead just call an existing one
     const existingTypeCheck = typeCheckMethods.get(type);
     if (existingTypeCheck) {
-      return ts.createCall(
-        ts.createPropertyAccess(typeCheckerObjectIdentfifier, existingTypeCheck.identifier),
-        undefined,
-        [value],
-      );
+      return ts.createPropertyAccess(typeCheckerObjectIdentfifier, existingTypeCheck.identifier);
     }
 
     // Add a new entry to the global type checker map
@@ -38,13 +33,13 @@ export const createTypeCheckWithMapCreator = (
     typeCheckMethods.set(type, method);
 
     // Create type check function
-    const definition = createTypeCheckerFunction(value => typeCheckCreator(root, type, value, wrappedTypeCheckCreator));
+    const definition = typeCheckCreator(root, type, wrappedTypeCheckCreator);
 
     // Finally fill in the undefined value for the method definition
     typeCheckMethods.set(type, { ...method, definition });
 
     // TODO This is repetition of the code several lines above
-    return ts.createCall(ts.createPropertyAccess(typeCheckerObjectIdentfifier, method.identifier), undefined, [value]);
+    return ts.createPropertyAccess(typeCheckerObjectIdentfifier, method.identifier);
   };
 
   const statementCreator: TypeMapStatementCreator = () => {

@@ -158,6 +158,10 @@ export const createTypeCheckerFunction = (
   );
 };
 
+export const callTypeCheckerFunction = (typeCheckerFunction: ts.Expression, value: ts.Expression): ts.Expression => {
+  return ts.createCall(typeCheckerFunction, [], [value]);
+};
+
 const indexJs = path.join(__dirname, '..', 'index.js');
 export const isOurImportExpression = (node: ts.Node): node is ts.ImportDeclaration => {
   if (!ts.isImportDeclaration(node)) return false;

@@ -1,6 +1,6 @@
-import { createLogger, createTypeCheckerFunction } from './utils';
-import { createTypeCheckCreator } from './createTypeCheckCreator';
+import { createLogger } from './utils';
 import { createTypeCheckWithMapCreator } from './createTypeCheckWithMapCreator';
+import { createTypeGuardCreator } from './createTypeGuardCreator';
 import { visitNodeAndChildren } from './visitor';
 import ts from 'typescript';
 
@@ -21,14 +21,14 @@ export default (program: ts.Program, options: TransformerOptions = {}): ts.Trans
 
     // Get a reference to a TypeScript TypeChecker in order to resolve types from type nodes
     const typeChecker = program.getTypeChecker();
-    const typeCheckCreator = createTypeCheckCreator(typeChecker, logger);
+    const typeCheckCreator = createTypeGuardCreator(typeChecker, logger);
     const [typeCheckWithMapCreator, typeCheckMapStatementCreator] = createTypeCheckWithMapCreator(typeCheckCreator);
 
     const isACallVisitor = (typeNode: ts.TypeNode): ts.Expression => {
       logger('Processing', typeNode.getFullText());
       const type = typeChecker.getTypeFromTypeNode(typeNode);
 
-      return createTypeCheckerFunction(value => typeCheckWithMapCreator(typeNode, type, value));
+      return typeCheckWithMapCreator(typeNode, type);
     };
 
     // First transform the file
