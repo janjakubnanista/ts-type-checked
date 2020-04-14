@@ -10,9 +10,9 @@
     "lint": "eslint . --fix --ext .ts",
     "prepublish": "yarn build",
     "test": "./scripts/test-typescript-versions.sh",
-    "test:debug": "cd test && node --inspect node_modules/.bin/jest --runInBand",
-    "test:debug:compile": "ttsc --project test/tsconfig.json",
-    "test:debug:clean": "rm -rf test/*.spec.js",
+    "test:clean": "rm -rf test/*.spec.js",
+    "test:debug": "node --inspect node_modules/.bin/jest --runInBand",
+    "test:debug:compile": "ttsc --project tsconfig.test.json",
     "test:version": "./scripts/test-typescript-version.sh"
   },
   "repository": {
@@ -62,6 +62,15 @@
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
+    }
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "globals": {
+      "ts-jest": {
+        "compiler": "ttypescript",
+        "tsConfig": "tsconfig.test.json"
+      }
     }
   },
   "lint-staged": {

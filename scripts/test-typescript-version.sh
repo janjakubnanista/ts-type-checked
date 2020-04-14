@@ -30,21 +30,20 @@ function cleanup {
   git status
   echo ""
 
-  git co -- "$PROJECT_PATH/test/package.json"
-  git co -- "$PROJECT_PATH/test/yarn.lock"
+  # git co -- "$PROJECT_PATH/test/package.json"
+  # git co -- "$PROJECT_PATH/test/yarn.lock"
 }
 
 # Register the cleanup function
 trap cleanup EXIT
 
-# Go to the test project
-cd $PROJECT_PATH/test
+set -x
 
 # Install the test project dependencies
 yarn
 
 # Then add a specific version of typescript
-yarn add -D -E typescript@${VERSION} --non-interactive
+npm install --no-save --no-package-lock typescript@${VERSION}
 
 # And finally copy our package build artifacts to the node_modules for this project
 #
@@ -58,5 +57,5 @@ cp ../index.d.ts $TTC_NODE_MODULE_PATH/index.d.ts
 cp ../transformer/*.js $TTC_NODE_MODULE_PATH/transformer
 
 # And run tests
-yarn test:clean
-yarn test
+yarn jest --clearCache
+yarn jest
