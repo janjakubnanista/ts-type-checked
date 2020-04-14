@@ -4,6 +4,19 @@ import { isA, typeCheckFor } from '..';
 import { optionalOf, testValues } from './utils';
 import fc from 'fast-check';
 
+// These classes are here for the tests of globally accessible classes
+class A {
+  aProperty = 'Andrea Bocelli';
+}
+
+class B {
+  bProperty = 'Britney Spears';
+}
+
+class ASubclass extends A {
+  aSubclassProperty = 'Enrique Iglesias';
+}
+
 describe('basics', () => {
   type GenericReference<T> = T;
 
@@ -533,19 +546,7 @@ describe('basics', () => {
   });
 
   describe('classes', () => {
-    class A {
-      aProperty = 'Andrea Bocelli';
-    }
-
-    class B {
-      bProperty = 'Britney Spears';
-    }
-
-    class ASubclass extends A {
-      aSubclassProperty = 'Enrique Iglesias';
-    }
-
-    test('with inheritance', () => {
+    test('globally accessible', () => {
       const validClassAArbitrary = fc.constantFrom(new A());
       const validClassASubclassArbitrary = fc.constantFrom(new ASubclass());
       const validClassBArbitrary = fc.constantFrom(new B());
@@ -562,6 +563,15 @@ describe('basics', () => {
       testValues(invalidClassASubclassArbitrary, typeCheckFor<A>(), false);
       testValues(invalidClassASubclassArbitrary, typeCheckFor<ASubclass>(), false);
       testValues(invalidClassBArbitrary, typeCheckFor<B>(), false);
+    });
+
+    test('local classes should not work', () => {
+      class D {}
+      const validClassDArbitrary = fc.constantFrom(new D());
+      const invalidClassDArbitrary = fc.anything().filter(value => !(value instanceof D));
+
+      expect(() => testValues(validClassDArbitrary, typeCheckFor<D>())).toThrow();
+      expect(() => testValues(invalidClassDArbitrary, typeCheckFor<D>(), false)).toThrow();
     });
   });
 });

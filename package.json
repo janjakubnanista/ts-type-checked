@@ -12,7 +12,7 @@
     "test": "./scripts/test-typescript-versions.sh",
     "test:debug": "cd test && node --inspect node_modules/.bin/jest --runInBand",
     "test:debug:compile": "ttsc --project test/tsconfig.json",
-    "test:debug:clean": "jest --clearCache && rm -rf test/*.spec.js",
+    "test:debug:clean": "rm -rf test/*.spec.js",
     "test:version": "./scripts/test-typescript-version.sh"
   },
   "repository": {
