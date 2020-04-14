@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "sourceMap": false,
+    "plugins": [
+      { "transform": "./transformer/index.js", "debug": true },
+    ]
+  },
+  "include": [
+    "test/*.spec.ts"
+  ]
+}
