@@ -1,3 +1,4 @@
+import { PluggableTypeCheckCreator, TypeCheckCreator } from './types';
 import { createTypeCheckerFunction } from './utils';
 import ts from 'typescript';
 
@@ -6,16 +7,11 @@ interface TypeCheckMethod {
   definition?: ts.ArrowFunction;
 }
 
-type TypeCheckCreator = (
-  root: ts.TypeNode,
-  type: ts.Type,
-  value: ts.Expression,
-  nestedTypeCheckCreator?: TypeCheckCreator,
-) => ts.Expression;
+export type TypeMapStatementCreator = () => ts.Statement;
 
-type TypeMapStatementCreator = () => ts.Statement;
-
-export const mapCreator = (typeCheckCreator: TypeCheckCreator): [TypeCheckCreator, TypeMapStatementCreator] => {
+export const createTypeCheckWithMapCreator = (
+  typeCheckCreator: PluggableTypeCheckCreator,
+): [TypeCheckCreator, TypeMapStatementCreator] => {
   // A runtime object that will hold the type checks for object types. Since they can reference themselves
   // (or create cycles in general) they could create endless recursion when creating type checks
   //

@@ -1,8 +1,9 @@
 import path from 'path';
 import ts from 'typescript';
 
-export const createLogger = (name = '', silent = false) =>
-  silent ? () => undefined : (...args: unknown[]) => console.info(name, ...args); // eslint-disable-line no-console
+export type Logger = (...params: unknown[]) => void;
+export const createLogger = (name = '', silent = false): Logger =>
+  silent ? () => undefined : (...args) => console.info(name, ...args); // eslint-disable-line no-console
 
 // Creates a check for indexed access properties
 export const createObjectIndexedPropertiesCheck = (
