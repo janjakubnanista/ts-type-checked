@@ -1,6 +1,14 @@
-# ts-type-checked
+<p align="center">
+  <img width="50%" src="https://raw.githubusercontent.com/janjakubnanista/ts-type-checked/master/documentation/ts-type-checked.svg"/>
+</p>
 
-Runtime duck type checking utilities for TypeScript.
+<h1 align="center">
+  ts-type-checked
+</h1>
+
+<p align="center">
+  Automatic type checking for TypeScript
+</p>
 
 <p align="center">
   <!-- Travis CI build status -->
