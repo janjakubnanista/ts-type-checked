@@ -1,6 +1,9 @@
 npm-debug.log*
 node_modules
 
+# This is where the test project is executed
+sandbox
+
 test/**/*.js
 transformer/**/*.js
 transformer/**/*.d.ts
