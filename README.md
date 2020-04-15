@@ -75,8 +75,8 @@ If you like your codebase clean like I do you will not be happy with plenty of h
 
 ```typescript
 // !!!
-const isConfigA = makeIsA<ConfigA>();
-const isConfigB = makeIsA<ConfigA>();
+const isConfigA = typeCheckFor<ConfigA>();
+const isConfigB = typeCheckFor<ConfigA>();
 ```
 
 Not only have you deleted code but your type guards became more generic! Previously you needed to be reasobaly sure that the argument for `isConfigA` and `isConfigB` is of type `Config`. With `ts-type-checked` your type guards accept `unknown` as an argument instead! **OMG!!!**

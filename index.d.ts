@@ -19,8 +19,8 @@
  *
  * @example
  * ```
- * const isAString = makeIsA<string>();
- * const isANumericArray = makeIsA<number[]>();
+ * const isAString = typeCheckFor<string>();
+ * const isANumericArray = typeCheckFor<number[]>();
  *
  * isAString('');             // true
  * isAString('something');    // true
@@ -33,14 +33,14 @@
  * isANumericArray({});             // false
  *
  * type Color = 'red' | 'yellow' | 'blue';
- * const isAColor = makeIsA<Color>();
+ * const isAColor = typeCheckFor<Color>();
  * ```
  *
  * @function
  * @template T
  * @return {function(value: unknown): void} True if {@param value} is assignable to type T
  */
-export function makeIsA<T>(): (value: unknown) => value is T;
+export function typeCheckFor<T>(): (value: unknown) => value is T;
 
 /**
  * Type guard function for type T (checks whether {@param value} is of type T).
