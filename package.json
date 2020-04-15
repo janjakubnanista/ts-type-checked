@@ -9,7 +9,8 @@
     "clean": "rm -rf transformer/*.{js,d.ts}",
     "lint": "eslint . --fix --ext .ts",
     "prepublish": "yarn build",
-    "test": "./scripts/test-typescript-versions.sh"
+    "test": "./scripts/test-all-versions.sh",
+    "test:version": "./scripts/test.sh"
   },
   "repository": {
     "type": "git",
@@ -58,6 +59,15 @@
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
+    }
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "globals": {
+      "ts-jest": {
+        "compiler": "ttypescript",
+        "tsConfig": "tsconfig.test.json"
+      }
     }
   },
   "lint-staged": {

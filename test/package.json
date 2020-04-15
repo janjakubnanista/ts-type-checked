@@ -4,9 +4,8 @@
   "description": "Test package for ts-type-checked",
   "private": true,
   "scripts": {
-    "test:debug": "node --inspect node_modules/.bin/jest --runInBand",
-    "test:clean": "jest --clearCache && rm -rf *.spec.js",
-    "test:compile": "ttsc --project tsconfig.json",
+    "build": "ttsc",
+    "clean": "rm -rf __tests__/*.spec.js",
     "test": "jest"
   },
   "devDependencies": {

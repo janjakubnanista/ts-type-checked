@@ -60,7 +60,7 @@ yarn
 # Then add a specific version of typescript
 yarn add -dev --exact typescript@${VERSION}
 
-# And run tests
+# CLear jest cache
 yarn jest --clearCache
 
 if [ -z "$DEBUG" ]; then
