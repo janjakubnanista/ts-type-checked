@@ -50,8 +50,18 @@ echo "Running tests for version $VERSION"
 
 set -x
 
-# Copy the project to the sandbox
+# Copy the test project to the sandbox
 cp -R "$TEST_PATH/" "$SANDBOX_PATH"
+
+# Copy the transformer to the sandbox
+SANDBOX_MODULE_PATH="$SANDBOX_PATH/node_modules/ts-type-checked"
+mkdir -p "$SANDBOX_MODULE_PATH"
+
+cp -R "$ROOT_PATH/package.json" "$SANDBOX_MODULE_PATH/"
+cp -R "$ROOT_PATH/index.js" "$SANDBOX_MODULE_PATH/"
+cp -R "$ROOT_PATH/index.d.ts" "$SANDBOX_MODULE_PATH/"
+cp -R "$ROOT_PATH/transformer/" "$SANDBOX_MODULE_PATH/transformer"
+
 cd "$SANDBOX_PATH"
 
 # Install the test project dependencies
@@ -66,5 +76,5 @@ yarn jest --clearCache
 if [ -z "$DEBUG" ]; then
   yarn jest "$TEST_PATTERN"
 else
-  node --inspect "$ROOT_PATH/node_modules/.bin/jest" --runInBand "$TEST_PATTERN"
+  node --inspect ./node_modules/.bin/jest --runInBand "$TEST_PATTERN"
 fi

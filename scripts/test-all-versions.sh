@@ -26,7 +26,7 @@ for VERSION in $(cat $SCRIPTS_PATH/versions.txt); do
 
   printHeader "Testing with TypeScript version $VERSION"
 
-  $SCRIPTS_PATH/test.sh "$VERSION"
+  $SCRIPTS_PATH/test.sh -v "$VERSION"
 
   printHeader "Done testing with TypeScript version $VERSION"
 done

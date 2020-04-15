@@ -1,7 +1,7 @@
 import 'jest';
 
-import { isA, typeCheckFor } from '..';
-import { optionalOf, testValues } from './utils';
+import { isA, typeCheckFor } from 'ts-type-checked';
+import { optionalOf, testValues } from '../utils';
 import fc from 'fast-check';
 
 // These classes are here for the tests of globally accessible classes

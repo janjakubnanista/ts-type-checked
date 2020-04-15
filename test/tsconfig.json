@@ -3,10 +3,9 @@
   "compilerOptions": {
     "sourceMap": false,
     "plugins": [
-      { "transform": "../transformer", "debug": false },
+      { "transform": "ts-type-checked/transformer", "debug": true },
     ]
   },
-  "include": [
-    "__tests__/*.spec.ts"
-  ]
+  "exclude": ["node_modules"],
+  "include": ["__tests__/*.spec.ts"]
 }

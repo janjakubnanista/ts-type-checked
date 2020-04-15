@@ -112,14 +112,15 @@ export const createTypeGuardCreator = (typeChecker: ts.TypeChecker, logger: Logg
         const checkAllProperties = properties
           .map<ts.Expression>(property => {
             const propertyType = typeChecker.getTypeOfSymbolAtLocation(property, root);
-
-            const propertyAccess = ts.createElementAccess(value, ts.createStringLiteral(property.name));
+            const propertyName: ts.Expression =
+              ts.isPropertySignature(property.valueDeclaration) &&
+              ts.isComputedPropertyName(property.valueDeclaration.name)
+                ? property.valueDeclaration.name.expression
+                : ts.createStringLiteral(property.name);
+            const propertyAccess = ts.createElementAccess(value, propertyName);
             const valueTypeCheck = callTypeCheckerFunction(nestedTypeCheckCreator(root, propertyType), propertyAccess);
 
             logger('\t\tProperty', property.name);
-            if (property.name === '__@toStringTag') {
-              debugger;
-            }
 
             return ts.createParen(valueTypeCheck);
           })
