@@ -574,4 +574,31 @@ describe('basics', () => {
       expect(() => testValues(invalidClassDArbitrary, typeCheckFor<D>(), false)).toThrow();
     });
   });
+
+  test('Promise', () => {
+    type PromiseType<T> = Promise<T>;
+
+    const validPromiseArbitrary = fc.anything().map(value => Promise.resolve(value));
+    const invalidPromiseArbitrary = fc.anything();
+
+    testValues(validPromiseArbitrary, typeCheckFor<Promise<string>>());
+    testValues(validPromiseArbitrary, typeCheckFor<PromiseType<string>>());
+    testValues(validPromiseArbitrary, typeCheckFor<GenericReference<Promise<string>>>());
+    testValues(validPromiseArbitrary, typeCheckFor<GenericReference<PromiseType<string>>>());
+
+    testValues(validPromiseArbitrary, value => isA<Promise<string>>(value));
+    testValues(validPromiseArbitrary, value => isA<PromiseType<string>>(value));
+    testValues(validPromiseArbitrary, value => isA<GenericReference<Promise<string>>>(value));
+    testValues(validPromiseArbitrary, value => isA<GenericReference<PromiseType<string>>>(value));
+
+    testValues(invalidPromiseArbitrary, typeCheckFor<Promise<string>>(), false);
+    testValues(invalidPromiseArbitrary, typeCheckFor<PromiseType<string>>(), false);
+    testValues(invalidPromiseArbitrary, typeCheckFor<GenericReference<Promise<string>>>(), false);
+    testValues(invalidPromiseArbitrary, typeCheckFor<GenericReference<PromiseType<string>>>(), false);
+
+    testValues(invalidPromiseArbitrary, value => isA<Promise<string>>(value), false);
+    testValues(invalidPromiseArbitrary, value => isA<PromiseType<string>>(value), false);
+    testValues(invalidPromiseArbitrary, value => isA<GenericReference<Promise<string>>>(value), false);
+    testValues(invalidPromiseArbitrary, value => isA<GenericReference<PromiseType<string>>>(value), false);
+  });
 });
