@@ -1,4 +1,5 @@
+sandbox/*
 transformer/**/*.js
-test/**/*.js
+test/*
 examples/index.js
 examples/index.*.js

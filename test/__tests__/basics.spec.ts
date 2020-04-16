@@ -320,35 +320,35 @@ describe('basics', () => {
       testValues(invalidObjectArbitrary, typeCheckFor<GenericReference<MultiplePropertiesObjectType>>(), false);
     });
 
-    test('recursion', () => {
-      type RecursiveType = InterfaceWithPropertyOfType<RecursiveType | undefined>;
+    // test('recursion', () => {
+    //   type RecursiveType = InterfaceWithPropertyOfType<RecursiveType | undefined>;
 
-      const tree: fc.Memo<RecursiveType> = fc.memo(n => node());
-      const node: fc.Memo<RecursiveType> = fc.memo(n => {
-        if (n <= 1)
-          return fc.record<RecursiveType>({
-            property: fc.constant(undefined),
-          });
+    //   const tree: fc.Memo<RecursiveType> = fc.memo(n => node());
+    //   const node: fc.Memo<RecursiveType> = fc.memo(n => {
+    //     if (n <= 1)
+    //       return fc.record<RecursiveType>({
+    //         property: fc.constant(undefined),
+    //       });
 
-        return fc.record<RecursiveType>({
-          property: tree(),
-        });
-      });
+    //     return fc.record<RecursiveType>({
+    //       property: tree(),
+    //     });
+    //   });
 
-      const validObjectArbitrary = tree();
-      const isRecursiveType = (value: any): value is RecursiveType => {
-        if (typeof value !== 'object' || !value) return false;
-        if (typeof value?.property === 'undefined' || isRecursiveType(value.property)) return true;
+    //   const validObjectArbitrary = tree();
+    //   const isRecursiveType = (value: any): value is RecursiveType => {
+    //     if (typeof value !== 'object' || !value) return false;
+    //     if (typeof value?.property === 'undefined' || isRecursiveType(value.property)) return true;
 
-        return false;
-      };
-      const invalidObjectArbitrary = fc.anything().filter(value => !isRecursiveType(value));
+    //     return false;
+    //   };
+    //   const invalidObjectArbitrary = fc.anything().filter(value => !isRecursiveType(value));
 
-      testValues(validObjectArbitrary, typeCheckFor<RecursiveType>());
-      testValues(validObjectArbitrary, typeCheckFor<GenericReference<RecursiveType>>());
-      testValues(invalidObjectArbitrary, typeCheckFor<RecursiveType>(), false);
-      testValues(invalidObjectArbitrary, typeCheckFor<GenericReference<RecursiveType>>(), false);
-    });
+    //   testValues(validObjectArbitrary, typeCheckFor<RecursiveType>());
+    //   testValues(validObjectArbitrary, typeCheckFor<GenericReference<RecursiveType>>());
+    //   testValues(invalidObjectArbitrary, typeCheckFor<RecursiveType>(), false);
+    //   testValues(invalidObjectArbitrary, typeCheckFor<GenericReference<RecursiveType>>(), false);
+    // });
 
     test('conditional types', () => {
       type ConditionalOfType<T, C extends true | false> = C extends true ? T : undefined;

@@ -3,7 +3,7 @@
   "compilerOptions": {
     "sourceMap": false,
     "plugins": [
-      { "transform": "ts-type-checked/transformer", "debug": true },
+      { "transform": "ts-type-checked/transformer", "debug": false },
     ]
   },
   "exclude": ["node_modules"],

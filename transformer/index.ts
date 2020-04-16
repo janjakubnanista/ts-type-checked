@@ -1,6 +1,7 @@
 import { createLogger } from './utils';
 import { createTypeCheckWithMapCreator } from './createTypeCheckWithMapCreator';
 import { createTypeGuardCreator } from './createTypeGuardCreator';
+import { describeType } from './descriptor';
 import { visitNodeAndChildren } from './visitor';
 import ts from 'typescript';
 
@@ -24,15 +25,17 @@ export default (program: ts.Program, options: TransformerOptions = {}): ts.Trans
     const typeCheckCreator = createTypeGuardCreator(typeChecker, logger);
     const [typeCheckWithMapCreator, typeCheckMapStatementCreator] = createTypeCheckWithMapCreator(typeCheckCreator);
 
-    const isACallVisitor = (typeNode: ts.TypeNode): ts.Expression => {
+    const typeCheckExpressionCreator = (typeNode: ts.TypeNode): ts.Expression => {
       logger('Processing', typeNode.getFullText());
       const type = typeChecker.getTypeFromTypeNode(typeNode);
+      const typeDescriptor = describeType(logger, typeChecker, typeNode, type);
+      console.warn('Descriptor', typeDescriptor);
 
       return typeCheckWithMapCreator(typeNode, type);
     };
 
     // First transform the file
-    const transformedFile = visitNodeAndChildren(file, program, context, isACallVisitor);
+    const transformedFile = visitNodeAndChildren(file, program, context, typeCheckExpressionCreator);
 
     return ts.updateSourceFileNode(transformedFile, [typeCheckMapStatementCreator(), ...transformedFile.statements]);
   };
