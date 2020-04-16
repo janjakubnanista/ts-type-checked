@@ -36,10 +36,10 @@ export default (program: ts.Program, options: TransformerOptions = {}): ts.Trans
       return typeCheckWithMapCreator(typeNode, type);
     };
 
-    console.warn('type descriptor map', typeDescriptorMap.size);
-
     // First transform the file
     const transformedFile = visitNodeAndChildren(file, program, context, typeCheckExpressionCreator);
+
+    console.warn('type descriptor map', typeDescriptorMap.entries());
 
     return ts.updateSourceFileNode(transformedFile, [typeCheckMapStatementCreator(), ...transformedFile.statements]);
   };
