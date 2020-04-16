@@ -26,7 +26,9 @@ export default (program: ts.Program, options: TransformerOptions = {}): ts.Trans
     // const typeCheckCreator = createTypeGuardCreator(typeChecker, logger);
     // const [typeCheckWithMapCreator, typeCheckMapStatementCreator] = createTypeCheckWithMapCreator(typeCheckCreator);
 
+    const typeCheckMapIdentifier: ts.Identifier = ts.createIdentifier('__isA');
     const [typeDescriber, typeDescriptorMap] = createTypeDescriber(logger, typeChecker);
+    const [typeCheckCreator, typeCheckMapCreator] = createTypeChecker(typeCheckMapIdentifier, typeDescriptorMap);
 
     const typeCheckExpressionCreator = (typeNode: ts.TypeNode, value: ts.Expression): ts.Expression => {
       logger('Processing', typeNode.getFullText());
@@ -36,7 +38,6 @@ export default (program: ts.Program, options: TransformerOptions = {}): ts.Trans
 
       logger('\tResolved to', typeDescriptorName);
 
-      const [typeCheckCreator] = createTypeChecker(typeDescriptorMap);
       const typeCheck = typeCheckCreator(typeDescriptorName, value);
 
       return typeCheck;
@@ -48,9 +49,8 @@ export default (program: ts.Program, options: TransformerOptions = {}): ts.Trans
     const transformedFile = visitNodeAndChildren(file, program, context, typeCheckExpressionCreator);
 
     console.warn('type descriptor map', typeDescriptorMap.entries());
+    // console.warn('type function map', typeCheckFunctionMap.size);
 
-    return ts.updateSourceFileNode(transformedFile, [
-      /* typeCheckMapStatementCreator(), */ ...transformedFile.statements,
-    ]);
+    return ts.updateSourceFileNode(transformedFile, [typeCheckMapCreator(), ...transformedFile.statements]);
   };
 };

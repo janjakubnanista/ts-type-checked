@@ -1,21 +1,38 @@
-import { TypeCheckCreator, TypeDescriptorMap, TypeName } from '../types';
+import { TypeCheckCreator, TypeCheckMapCreator, TypeDescriptorMap, TypeName } from '../types';
 import { createArrayElementsCheck, createTypeCheckerFunction } from './utils';
 import ts from 'typescript';
 
-export const createTypeChecker = (typeDescriptorMap: TypeDescriptorMap): [TypeCheckCreator] => {
-  const typeCheckMapIdentfifier: ts.Identifier = ts.createIdentifier('__isA');
-  const typeCheckMethods: Map<TypeName, ts.Expression> = new Map();
+export const createTypeChecker = (
+  typeCheckMapIdentifier: ts.Identifier,
+  typeDescriptorMap: TypeDescriptorMap,
+): [TypeCheckCreator, TypeCheckMapCreator] => {
+  // const typeCheckMapIdentfifier: ts.Identifier = ts.createIdentifier('__isA');
+  const typeCheckFunctionMap: Map<TypeName, ts.Expression> = new Map();
 
-  const createTypeCheckMethod = (
+  const createTypeCheckMapStatement: TypeCheckMapCreator = () => {
+    const typeChecks: ts.PropertyAssignment[] = Array.from(typeCheckFunctionMap.entries()).map(entry =>
+      ts.createPropertyAssignment(ts.createLiteral(entry[0]), entry[1]),
+    );
+
+    return ts.createVariableStatement(/* modifiers */ undefined, [
+      ts.createVariableDeclaration(
+        typeCheckMapIdentifier,
+        /* type */ undefined,
+        ts.createObjectLiteral(/* properties */ typeChecks, /* multiline */ true),
+      ),
+    ]);
+  };
+
+  const createTypeCheckFunction = (
     typeName: TypeName,
     creator: (value: ts.Identifier) => ts.Expression,
   ): ts.Expression => {
-    const existingTypeCheckMethod = typeCheckMethods.get(typeName);
+    const existingTypeCheckMethod = typeCheckFunctionMap.get(typeName);
     if (existingTypeCheckMethod) return existingTypeCheckMethod;
 
-    typeCheckMethods.set(typeName, createTypeCheckerFunction(creator));
+    typeCheckFunctionMap.set(typeName, createTypeCheckerFunction(creator));
 
-    return ts.createElementAccess(typeCheckMapIdentfifier, ts.createLiteral(typeName));
+    return ts.createElementAccess(typeCheckMapIdentifier, ts.createLiteral(typeName));
   };
 
   const createTypeCheck = (typeName: TypeName, value: ts.Expression): ts.Expression => {
@@ -45,7 +62,7 @@ export const createTypeChecker = (typeDescriptorMap: TypeDescriptorMap): [TypeCh
         return createArrayElementsCheck(value, element => createTypeCheck(typeDescriptor.type, element));
 
       case 'object':
-        const typeCheckMethod = createTypeCheckMethod(typeName, value => {
+        const typeCheckMethod = createTypeCheckFunction(typeName, value => {
           return ts.createLiteral('oops');
         });
 
@@ -62,5 +79,5 @@ export const createTypeChecker = (typeDescriptorMap: TypeDescriptorMap): [TypeCh
     }
   };
 
-  return [createTypeCheck];
+  return [createTypeCheck, createTypeCheckMapStatement];
 };

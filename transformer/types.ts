@@ -64,3 +64,5 @@ export type TypeNameGenerator = (root: ts.TypeNode, type: ts.Type) => TypeName;
 export type TypeDescriptorMap = Map<TypeName, TypeDescriptor>;
 
 export type TypeCheckCreator = (typeName: TypeName, value: ts.Expression) => ts.Expression;
+
+export type TypeCheckMapCreator = () => ts.Statement;

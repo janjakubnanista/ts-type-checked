@@ -1,6 +1,7 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
+    "declaration": false,
     "sourceMap": false,
     "plugins": [
       { "transform": "ts-type-checked/transformer", "debug": true },
