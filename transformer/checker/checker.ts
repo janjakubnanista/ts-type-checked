@@ -1,5 +1,10 @@
 import { TypeCheckCreator, TypeCheckMapCreator, TypeDescriptorMap, TypeName } from '../types';
-import { createArrayElementsCheck, createIsObject, createTypeCheckerFunction } from './utils';
+import {
+  createArrayElementsCheck,
+  createIsObject,
+  createObjectPropertiesCheck,
+  createTypeCheckerFunction,
+} from './utils';
 import ts from 'typescript';
 
 export const createTypeChecker = (
@@ -63,7 +68,10 @@ export const createTypeChecker = (
 
       case 'object':
         const typeCheckMethod = createTypeCheckFunction(typeName, value => {
-          return createIsObject(value);
+          return ts.createLogicalAnd(
+            createIsObject(value),
+            createObjectPropertiesCheck(value, typeDescriptor, createTypeCheck),
+          );
         });
 
         return ts.createCall(typeCheckMethod, undefined, [value]);
@@ -74,7 +82,6 @@ export const createTypeChecker = (
       default:
         // FIXME Add others:
         // - tuple
-        // - object
         return ts.createFalse();
     }
   };

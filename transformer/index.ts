@@ -23,9 +23,6 @@ export default (program: ts.Program, options: TransformerOptions = {}): ts.Trans
 
     // Get a reference to a TypeScript TypeChecker in order to resolve types from type nodes
     const typeChecker = program.getTypeChecker();
-    // const typeCheckCreator = createTypeGuardCreator(typeChecker, logger);
-    // const [typeCheckWithMapCreator, typeCheckMapStatementCreator] = createTypeCheckWithMapCreator(typeCheckCreator);
-
     const typeCheckMapIdentifier: ts.Identifier = ts.createIdentifier('__isA');
     const [typeDescriber, typeDescriptorMap] = createTypeDescriber(logger, typeChecker);
     const [typeCheckCreator, typeCheckMapCreator] = createTypeChecker(typeCheckMapIdentifier, typeDescriptorMap);
@@ -36,19 +33,13 @@ export default (program: ts.Program, options: TransformerOptions = {}): ts.Trans
       const type = typeChecker.getTypeFromTypeNode(typeNode);
       const typeDescriptorName = typeDescriber(typeNode, type);
 
-      logger('\tResolved to', typeDescriptorName);
-
-      const typeCheck = typeCheckCreator(typeDescriptorName, value);
-
-      return typeCheck;
-
-      // return typeCheckWithMapCreator(typeNode, type);
+      return typeCheckCreator(typeDescriptorName, value);
     };
 
     // First transform the file
     const transformedFile = visitNodeAndChildren(file, program, context, typeCheckExpressionCreator);
 
-    console.warn('type descriptor map', typeDescriptorMap.entries());
+    // console.warn('type descriptor map', typeDescriptorMap.entries());
     // console.warn('type function map', typeCheckFunctionMap.size);
 
     return ts.updateSourceFileNode(transformedFile, [typeCheckMapCreator(), ...transformedFile.statements]);

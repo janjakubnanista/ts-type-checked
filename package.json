@@ -29,8 +29,8 @@
   "files": [
     "index.js",
     "index.d.ts",
-    "transformer/*.js",
-    "transformer/*.d.ts"
+    "transformer/**/*.js",
+    "transformer/**/*.d.ts"
   ],
   "homepage": "https://github.com/janjakubnanista/ts-type-checked#readme",
   "devDependencies": {

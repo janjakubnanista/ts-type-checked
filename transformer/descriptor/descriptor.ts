@@ -58,10 +58,15 @@ export const createTypeDescriber = (
     if (type.isClass()) {
       logger('\tClass type');
 
+      const stringIndexType = type.getStringIndexType();
+
+      // FIXME Add properties if class is generic
+
       return {
         _type: 'object',
         constructorName: typeName,
         properties: [],
+        stringIndexType: stringIndexType ? describeType(root, stringIndexType) : undefined,
       };
     }
 
