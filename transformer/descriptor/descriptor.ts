@@ -1,6 +1,6 @@
 import { Logger, typeFlags } from '../utils';
-import { ObjectTypePropertyDescriptor, TypeDescriptor, TypeDescriptorMap, TypeName, TypeNameGenerator } from './types';
-import { isArrayType, isFunctionType, isObjectType, isTupleType } from '../checks';
+import { ObjectTypePropertyDescriptor, TypeDescriptor, TypeDescriptorMap, TypeName, TypeNameGenerator } from '../types';
+import { isArrayType, isFunctionType, isObjectType, isTupleType } from './utils';
 import ts from 'typescript';
 
 export const createTypeDescriber = (

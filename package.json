@@ -6,7 +6,7 @@
   "types": "index.d.ts",
   "scripts": {
     "build": "tsc",
-    "clean": "rm -rf transformer/*.{js,d.ts}",
+    "clean": "rm -rf transformer/**/*.{js,d.ts}",
     "lint": "eslint . --fix --ext .ts",
     "prepublish": "yarn build",
     "test": "./scripts/test-all-versions.sh",

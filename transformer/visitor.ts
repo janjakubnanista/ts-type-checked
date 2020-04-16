@@ -1,4 +1,4 @@
-import { isOurCallExpression, isOurImportExpression } from './utils';
+import { createTypeCheckerFunction, isOurCallExpression, isOurImportExpression } from './utils';
 import { visitEachChild } from 'typescript';
 import ts from 'typescript';
 
@@ -34,7 +34,7 @@ function visitNode(
       throw new Error('isA<T>() requires one argument, none specified');
     }
 
-    return ts.createCall(typeCheckExpressionCreator(typeNode), [], [valueNode]);
+    return typeCheckExpressionCreator(typeNode, valueNode);
   }
 
   if (isOurCallExpression(node, 'typeCheckFor', typeChecker)) {
@@ -43,13 +43,13 @@ function visitNode(
       throw new Error('typeCheckFor<T>() requires one type parameter, none specified');
     }
 
-    return typeCheckExpressionCreator(typeNode);
+    return createTypeCheckerFunction(value => typeCheckExpressionCreator(typeNode, value));
   }
 
   return node;
 }
 
-export type TypeCheckExpressionCreator = (typeNode: ts.TypeNode) => ts.Expression;
+export type TypeCheckExpressionCreator = (typeNode: ts.TypeNode, value: ts.Expression) => ts.Expression;
 
 export function visitNodeAndChildren(
   node: ts.SourceFile,
