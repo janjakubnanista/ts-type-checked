@@ -36,7 +36,7 @@ export default (program: ts.Program, options: TransformerOptions = {}): ts.Trans
       return typeCheckWithMapCreator(typeNode, type);
     };
 
-    console.warn('type descriptor map', typeDescriptorMap.size());
+    console.warn('type descriptor map', typeDescriptorMap.size);
 
     // First transform the file
     const transformedFile = visitNodeAndChildren(file, program, context, typeCheckExpressionCreator);
