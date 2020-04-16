@@ -1,6 +1,6 @@
 import { Logger, typeFlags } from './utils';
 import { isArrayType, isFunctionType, isObjectType, isTupleType } from './checks';
-import ts, { Type } from 'typescript';
+import ts from 'typescript';
 
 export interface PrimitiveTypeDescriptor {
   _type: 'primitive';
@@ -14,35 +14,35 @@ export interface LiteralTypeDescriptor {
 
 export interface ArrayTypeDescriptor {
   _type: 'array';
-  type: TypeDescriptorReference;
+  type: TypeName;
 }
 
 export interface TupleTypeDescriptor {
   _type: 'tuple';
-  types: TypeDescriptorReference[];
+  types: TypeName[];
 }
 
 export interface ObjectTypePropertyDescriptor {
   _type: 'property';
   accessor: ts.Expression;
-  type: TypeDescriptor;
+  type: TypeName;
 }
 
 export interface ObjectTypeDescriptor {
   _type: 'object';
   constructorName?: string;
   properties: ObjectTypePropertyDescriptor[];
-  stringIndexType?: TypeDescriptor;
+  stringIndexType?: TypeName;
 }
 
 export interface UnionTypeDescriptor {
   _type: 'union';
-  types: TypeDescriptor[];
+  types: TypeName[];
 }
 
 export interface IntersectionTypeDescriptor {
   _type: 'intersection';
-  types: TypeDescriptor[];
+  types: TypeName[];
 }
 
 export interface UnspecifiedTypeDescriptor {
@@ -59,17 +59,18 @@ export type TypeDescriptor =
   | IntersectionTypeDescriptor
   | UnspecifiedTypeDescriptor;
 
-// TODO This should also be some sort of identifier by which a TypeDescriptor can be looked up
-
 export type TypeName = string;
 
-export type TypeDescriptorReference = TypeDescriptor | TypeName;
+export type TypeNameGenerator = (root: ts.TypeNode, type: ts.Type) => TypeName;
 
 export type TypeDescriptorMap = Map<TypeName, TypeDescriptor>;
 
-export const createTypeDescriber = (logger: Logger, typeChecker: ts.TypeChecker) => {
+export const createTypeDescriber = (
+  logger: Logger,
+  typeChecker: ts.TypeChecker,
+): [TypeNameGenerator, TypeDescriptorMap] => {
   const resolvedTypeNames: Map<ts.Type, TypeName> = new Map();
-  const resolvedTypeDescriptors: Map<TypeName, TypeDescriptor> = new Map();
+  const resolvedTypeDescriptors: TypeDescriptorMap = new Map();
 
   const getUniqueTypeName = (typeName: TypeName): TypeName => {
     const reservedNames = Array.from(resolvedTypeNames.values());
@@ -89,12 +90,16 @@ export const createTypeDescriber = (logger: Logger, typeChecker: ts.TypeChecker)
 
     const rawTypeName = typeChecker.typeToString(type, root);
     const uniqueTypeName = getUniqueTypeName(rawTypeName);
+
+    logger('Resolving %s as %s', rawTypeName, uniqueTypeName);
+
     resolvedTypeNames.set(type, uniqueTypeName);
+    resolvedTypeDescriptors.set(uniqueTypeName, resolveType(root, type));
 
     return uniqueTypeName;
   };
 
-  const describeTypeXXX = (root: ts.TypeNode, type: ts.Type): TypeDescriptor => {
+  const resolveType = (root: ts.TypeNode, type: ts.Type): TypeDescriptor => {
     const typeName = typeChecker.typeToString(type, root);
     logger('Type', typeName, typeFlags(type).join(', '));
 
@@ -110,7 +115,7 @@ export const createTypeDescriber = (logger: Logger, typeChecker: ts.TypeChecker)
 
       return {
         _type: 'array',
-        type: describeType(logger, typeChecker, root, elementType),
+        type: describeType(root, elementType),
       };
     }
 
@@ -160,7 +165,7 @@ export const createTypeDescriber = (logger: Logger, typeChecker: ts.TypeChecker)
 
       return {
         _type: 'union',
-        types: type.types.map(type => describeType(logger, typeChecker, root, type)),
+        types: type.types.map(type => describeType(root, type)),
       };
     }
 
@@ -169,7 +174,7 @@ export const createTypeDescriber = (logger: Logger, typeChecker: ts.TypeChecker)
 
       return {
         _type: 'intersection',
-        types: type.types.map(type => describeType(logger, typeChecker, root, type)),
+        types: type.types.map(type => describeType(root, type)),
       };
     }
 
@@ -189,7 +194,7 @@ export const createTypeDescriber = (logger: Logger, typeChecker: ts.TypeChecker)
 
       return {
         _type: 'tuple',
-        types: types.map(type => describeType(logger, typeChecker, root, type)),
+        types: types.map(type => describeType(root, type)),
       };
     }
 
@@ -206,7 +211,7 @@ export const createTypeDescriber = (logger: Logger, typeChecker: ts.TypeChecker)
         return {
           _type: 'property',
           accessor: propertyAccessor,
-          type: describeType(logger, typeChecker, root, propertyType),
+          type: describeType(root, propertyType),
         };
       });
 
@@ -232,148 +237,150 @@ export const createTypeDescriber = (logger: Logger, typeChecker: ts.TypeChecker)
 
     throw new Error(errorMessage);
   };
+
+  return [describeType, resolvedTypeDescriptors];
 };
 
-export const describeType = (
-  logger: Logger,
-  typeChecker: ts.TypeChecker,
-  root: ts.TypeNode,
-  type: ts.Type,
-): TypeDescriptor => {
-  const typeName = typeChecker.typeToString(type, root);
-  logger('Type', typeName, typeFlags(type).join(', '));
+// export const describeType = (
+//   logger: Logger,
+//   typeChecker: ts.TypeChecker,
+//   root: ts.TypeNode,
+//   type: ts.Type,
+// ): TypeDescriptor => {
+//   const typeName = typeChecker.typeToString(type, root);
+//   logger('Type', typeName, typeFlags(type).join(', '));
 
-  if (isArrayType(typeChecker, type, root)) {
-    logger('\tArray type');
+//   if (isArrayType(typeChecker, type, root)) {
+//     logger('\tArray type');
 
-    const elementType = (type as ts.TypeReference).typeArguments?.[0];
-    if (!elementType) {
-      const errorMessage = `Unable to find array element type for type '${typeName}'. This happened while creating a check for '${root.getText()}'`;
+//     const elementType = (type as ts.TypeReference).typeArguments?.[0];
+//     if (!elementType) {
+//       const errorMessage = `Unable to find array element type for type '${typeName}'. This happened while creating a check for '${root.getText()}'`;
 
-      throw new Error(errorMessage);
-    }
+//       throw new Error(errorMessage);
+//     }
 
-    return {
-      _type: 'array',
-      type: describeType(logger, typeChecker, root, elementType),
-    };
-  }
+//     return {
+//       _type: 'array',
+//       type: describeType(logger, typeChecker, root, elementType),
+//     };
+//   }
 
-  if (type.isClass()) {
-    logger('\tClass type');
+//   if (type.isClass()) {
+//     logger('\tClass type');
 
-    return {
-      _type: 'object',
-      constructorName: typeName,
-      properties: [],
-    };
-  }
+//     return {
+//       _type: 'object',
+//       constructorName: typeName,
+//       properties: [],
+//     };
+//   }
 
-  if (type.isLiteral()) {
-    logger('\tLiteral type');
+//   if (type.isLiteral()) {
+//     logger('\tLiteral type');
 
-    return {
-      _type: 'literal',
-      value: ts.createLiteral(type.value),
-    };
-  }
+//     return {
+//       _type: 'literal',
+//       value: ts.createLiteral(type.value),
+//     };
+//   }
 
-  if (
-    type.flags & ts.TypeFlags.BooleanLiteral ||
-    type.flags & ts.TypeFlags.Undefined ||
-    type.flags & ts.TypeFlags.Null
-  ) {
-    logger('\ttrue, false, undefined, null');
+//   if (
+//     type.flags & ts.TypeFlags.BooleanLiteral ||
+//     type.flags & ts.TypeFlags.Undefined ||
+//     type.flags & ts.TypeFlags.Null
+//   ) {
+//     logger('\ttrue, false, undefined, null');
 
-    return {
-      _type: 'literal',
-      value: ts.createIdentifier(typeName),
-    };
-  }
+//     return {
+//       _type: 'literal',
+//       value: ts.createIdentifier(typeName),
+//     };
+//   }
 
-  if (type.flags & ts.TypeFlags.Boolean || type.flags & ts.TypeFlags.Number || type.flags & ts.TypeFlags.String) {
-    logger('\tboolean, number, string');
+//   if (type.flags & ts.TypeFlags.Boolean || type.flags & ts.TypeFlags.Number || type.flags & ts.TypeFlags.String) {
+//     logger('\tboolean, number, string');
 
-    return {
-      _type: 'primitive',
-      value: ts.createLiteral(typeName),
-    };
-  }
+//     return {
+//       _type: 'primitive',
+//       value: ts.createLiteral(typeName),
+//     };
+//   }
 
-  if (type.isUnion()) {
-    logger('\tUnion type');
+//   if (type.isUnion()) {
+//     logger('\tUnion type');
 
-    return {
-      _type: 'union',
-      types: type.types.map(type => describeType(logger, typeChecker, root, type)),
-    };
-  }
+//     return {
+//       _type: 'union',
+//       types: type.types.map(type => describeType(logger, typeChecker, root, type)),
+//     };
+//   }
 
-  if (type.isIntersection()) {
-    logger('\tIntersection type');
+//   if (type.isIntersection()) {
+//     logger('\tIntersection type');
 
-    return {
-      _type: 'intersection',
-      types: type.types.map(type => describeType(logger, typeChecker, root, type)),
-    };
-  }
+//     return {
+//       _type: 'intersection',
+//       types: type.types.map(type => describeType(logger, typeChecker, root, type)),
+//     };
+//   }
 
-  if (isFunctionType(typeChecker, type, root)) {
-    logger('\tFunction');
+//   if (isFunctionType(typeChecker, type, root)) {
+//     logger('\tFunction');
 
-    return {
-      _type: 'primitive',
-      value: ts.createLiteral('function'),
-    };
-  }
+//     return {
+//       _type: 'primitive',
+//       value: ts.createLiteral('function'),
+//     };
+//   }
 
-  if (isTupleType(typeChecker, type, root)) {
-    logger('\tTuple');
+//   if (isTupleType(typeChecker, type, root)) {
+//     logger('\tTuple');
 
-    const types = (type as ts.TupleType).typeArguments || [];
+//     const types = (type as ts.TupleType).typeArguments || [];
 
-    return {
-      _type: 'tuple',
-      types: types.map(type => describeType(logger, typeChecker, root, type)),
-    };
-  }
+//     return {
+//       _type: 'tuple',
+//       types: types.map(type => describeType(logger, typeChecker, root, type)),
+//     };
+//   }
 
-  if (isObjectType(typeChecker, type, root)) {
-    logger('\tObject');
+//   if (isObjectType(typeChecker, type, root)) {
+//     logger('\tObject');
 
-    const properties: ObjectTypePropertyDescriptor[] = type.getProperties().map(property => {
-      const propertyType = typeChecker.getTypeOfSymbolAtLocation(property, root);
-      const propertyAccessor: ts.Expression =
-        ts.isPropertySignature(property.valueDeclaration) && ts.isComputedPropertyName(property.valueDeclaration.name)
-          ? property.valueDeclaration.name.expression
-          : ts.createStringLiteral(property.name);
+//     const properties: ObjectTypePropertyDescriptor[] = type.getProperties().map(property => {
+//       const propertyType = typeChecker.getTypeOfSymbolAtLocation(property, root);
+//       const propertyAccessor: ts.Expression =
+//         ts.isPropertySignature(property.valueDeclaration) && ts.isComputedPropertyName(property.valueDeclaration.name)
+//           ? property.valueDeclaration.name.expression
+//           : ts.createStringLiteral(property.name);
 
-      return {
-        _type: 'property',
-        accessor: propertyAccessor,
-        type: describeType(logger, typeChecker, root, propertyType),
-      };
-    });
+//       return {
+//         _type: 'property',
+//         accessor: propertyAccessor,
+//         type: describeType(logger, typeChecker, root, propertyType),
+//       };
+//     });
 
-    return {
-      _type: 'object',
-      properties,
-    };
-  }
+//     return {
+//       _type: 'object',
+//       properties,
+//     };
+//   }
 
-  // This one should most probably always be one of the last ones or the last one
-  // since it's the most permissive one
-  if (type.flags & ts.TypeFlags.Any) {
-    logger('\tAny');
+//   // This one should most probably always be one of the last ones or the last one
+//   // since it's the most permissive one
+//   if (type.flags & ts.TypeFlags.Any) {
+//     logger('\tAny');
 
-    return {
-      _type: 'unspecified',
-    };
-  }
+//     return {
+//       _type: 'unspecified',
+//     };
+//   }
 
-  // Rather than silently failing we throw an exception here to let the people in charge know
-  // that this type check is not supported. This might happen if the passed type is e.g. a generic type parameter
-  const errorMessage = `Could not create type checker for type '${typeName}'. This happened while creating a check for '${root.getText()}'`;
+//   // Rather than silently failing we throw an exception here to let the people in charge know
+//   // that this type check is not supported. This might happen if the passed type is e.g. a generic type parameter
+//   const errorMessage = `Could not create type checker for type '${typeName}'. This happened while creating a check for '${root.getText()}'`;
 
-  throw new Error(errorMessage);
-};
+//   throw new Error(errorMessage);
+// };
