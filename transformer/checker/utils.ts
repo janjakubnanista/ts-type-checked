@@ -58,3 +58,11 @@ export const createArrayElementsCheck = (
 
   return ts.createLogicalAnd(createIsArray(value), checkElements);
 };
+
+export const createIsObject = (value: ts.Expression): ts.Expression =>
+  ts.createParen(
+    ts.createLogicalAnd(
+      ts.createStrictEquality(ts.createTypeOf(value), ts.createLiteral('object')),
+      ts.createStrictInequality(value, ts.createNull()),
+    ),
+  );

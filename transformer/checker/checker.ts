@@ -1,5 +1,5 @@
 import { TypeCheckCreator, TypeCheckMapCreator, TypeDescriptorMap, TypeName } from '../types';
-import { createArrayElementsCheck, createTypeCheckerFunction } from './utils';
+import { createArrayElementsCheck, createIsObject, createTypeCheckerFunction } from './utils';
 import ts from 'typescript';
 
 export const createTypeChecker = (
@@ -63,7 +63,7 @@ export const createTypeChecker = (
 
       case 'object':
         const typeCheckMethod = createTypeCheckFunction(typeName, value => {
-          return ts.createLiteral('oops');
+          return createIsObject(value);
         });
 
         return ts.createCall(typeCheckMethod, undefined, [value]);

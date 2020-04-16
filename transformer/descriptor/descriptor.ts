@@ -137,6 +137,7 @@ export const createTypeDescriber = (
     if (isObjectType(typeChecker, type, root)) {
       logger('\tObject');
 
+      const stringIndexType = type.getStringIndexType();
       const properties: ObjectTypePropertyDescriptor[] = type.getProperties().map(property => {
         const propertyType = typeChecker.getTypeOfSymbolAtLocation(property, root);
         const propertyAccessor: ts.Expression =
@@ -154,6 +155,7 @@ export const createTypeDescriber = (
       return {
         _type: 'object',
         properties,
+        stringIndexType: stringIndexType ? describeType(root, stringIndexType) : undefined,
       };
     }
 
