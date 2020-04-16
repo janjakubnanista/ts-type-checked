@@ -101,10 +101,8 @@ export const createArrayElementsCheck = (
   // Then let's define a element type checker function that can be passed to Array.every
   const element = ts.createIdentifier('element');
   const index = ts.createIdentifier('index');
-  const checkElement = ts.createFunctionExpression(
+  const checkElement = ts.createArrowFunction(
     undefined /* modifiers */,
-    undefined /* asteriskToken */,
-    undefined /* name */,
     undefined /* typeParameters */,
     [
       ts.createParameter(
@@ -112,22 +110,17 @@ export const createArrayElementsCheck = (
         undefined /* modifiers */,
         undefined /* dotDotDotToken */,
         element /* name */,
-        undefined /* questionToken */,
-        undefined /* type */,
-        undefined /* initializer */,
       ),
       ts.createParameter(
         undefined /* decorators */,
         undefined /* modifiers */,
         undefined /* dotDotDotToken */,
         index /* name */,
-        undefined /* questionToken */,
-        undefined /* type */,
-        undefined /* initializer */,
       ),
     ],
     undefined,
-    ts.createBlock([ts.createReturn(elementTypeCheck(element, index))], false),
+    ts.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+    elementTypeCheck(element, index),
   );
 
   // Now let's do value.every(<element type checker>)
