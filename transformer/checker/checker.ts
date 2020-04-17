@@ -1,6 +1,8 @@
-import { TypeCheckCreator, TypeCheckMapCreator, TypeDescriptorMap, TypeName } from '../types';
+import { TypeCheckCreator, TypeCheckMapCreator, TypeDescriptor, TypeDescriptorMap, TypeName } from '../types';
 import { createArrayTypeCheck } from './array';
-import { createIsObject, createObjectPropertiesCheck, createValueCheckFunction } from './utils';
+import { createLogicalAndChain, createLogicalOrChain, createValueCheckFunction } from './utils';
+import { createObjectTypeCheck } from './object';
+import { createTupleTypeCheck } from './tuple';
 import ts from 'typescript';
 
 export const createTypeChecker = (
@@ -50,25 +52,27 @@ export const createTypeChecker = (
         return ts.createStrictEquality(ts.createTypeOf(value), typeDescriptor.value);
 
       case 'intersection':
-        return typeDescriptor.types
-          .map<ts.Expression>(typeName => ts.createParen(createTypeCheck(typeName, value)))
-          .reduce((typeCheck, comparison) => ts.createLogicalAnd(typeCheck, comparison));
+        return createLogicalAndChain(
+          ...typeDescriptor.types.map<ts.Expression>(typeName => createTypeCheck(typeName, value)),
+        );
 
       case 'union':
-        return typeDescriptor.types
-          .map<ts.Expression>(typeName => ts.createParen(createTypeCheck(typeName, value)))
-          .reduce((typeCheck, comparison) => ts.createLogicalOr(typeCheck, comparison));
+        return createLogicalOrChain(
+          ...typeDescriptor.types.map<ts.Expression>(typeName => createTypeCheck(typeName, value)),
+        );
 
       case 'array':
         return createArrayTypeCheck(value, element => createTypeCheck(typeDescriptor.type, element));
 
-      case 'object':
-        const typeCheckMethod = createTypeCheckFunction(typeName, value => {
-          return ts.createLogicalAnd(
-            createIsObject(value),
-            createObjectPropertiesCheck(value, typeDescriptor, createTypeCheck),
-          );
+      case 'tuple':
+        return createTupleTypeCheck(value, typeDescriptor.types.length, (element, index) => {
+          return createTypeCheck(typeDescriptor.types[index], element);
         });
+
+      case 'object':
+        const typeCheckMethod = createTypeCheckFunction(typeName, value =>
+          createObjectTypeCheck(value, typeDescriptor.properties, typeDescriptor.stringIndexType, createTypeCheck),
+        );
 
         return ts.createCall(typeCheckMethod, undefined, [value]);
 
@@ -76,9 +80,7 @@ export const createTypeChecker = (
         return ts.createTrue();
 
       default:
-        // FIXME Add others:
-        // - tuple
-        return ts.createFalse();
+        throw new Error('Unable to create a checker for type descriptor ' + (typeDescriptor as TypeDescriptor)._type);
     }
   };
 
