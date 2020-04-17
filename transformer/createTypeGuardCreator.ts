@@ -3,7 +3,7 @@
 //   callTypeCheckerFunction,
 //   createArrayElementsCheck,
 //   createObjectIndexedPropertiesCheck,
-//   createTypeCheckerFunction,
+//   createValueCheckFunction,
 //   typeFlags,
 // } from './utils';
 // import { TypeGuardCreator } from './types';
@@ -19,7 +19,7 @@
 //     const typeName = typeChecker.typeToString(type, root);
 //     logger('Type', typeName, typeFlags(type).join(', '));
 
-//     return createTypeCheckerFunction(value => {
+//     return createValueCheckFunction(value => {
 //       if (isArrayType(typeChecker, type, root)) {
 //         logger('\tArray type');
 

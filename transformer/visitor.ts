@@ -1,4 +1,4 @@
-import { createTypeCheckerFunction, isOurCallExpression, isOurImportExpression } from './utils';
+import { createValueCheckFunction, isOurCallExpression, isOurImportExpression } from './utils';
 import { visitEachChild } from 'typescript';
 import ts from 'typescript';
 
@@ -43,7 +43,7 @@ function visitNode(
       throw new Error('typeCheckFor<T>() requires one type parameter, none specified');
     }
 
-    return createTypeCheckerFunction(value => typeCheckExpressionCreator(typeNode, value));
+    return createValueCheckFunction(value => typeCheckExpressionCreator(typeNode, value));
   }
 
   return node;

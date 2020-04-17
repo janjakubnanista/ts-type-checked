@@ -1,7 +1,7 @@
 import { ObjectTypeDescriptor, TypeName } from '../types';
 import ts from 'typescript';
 
-export const createTypeCheckerFunction = (
+export const createValueCheckFunction = (
   comparison: (valueNode: ts.Identifier) => ts.ConciseBody,
 ): ts.ArrowFunction => {
   const value: ts.Identifier = ts.createIdentifier('value');
@@ -121,7 +121,7 @@ export const createObjectPropertiesCheck = (
   const valueForKey = ts.createElementAccess(value, key);
 
   const stringIndexTypeCheck = propertyCheck(descriptor.stringIndexType, valueForKey);
-  const checkProperty = createTypeCheckerFunction(key =>
+  const checkProperty = createValueCheckFunction(key =>
     ts.createBlock([
       propertyMap,
 

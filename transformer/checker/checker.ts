@@ -3,7 +3,7 @@ import {
   createArrayElementsCheck,
   createIsObject,
   createObjectPropertiesCheck,
-  createTypeCheckerFunction,
+  createValueCheckFunction,
 } from './utils';
 import ts from 'typescript';
 
@@ -35,7 +35,7 @@ export const createTypeChecker = (
     const existingTypeCheckMethod = typeCheckFunctionMap.get(typeName);
     if (existingTypeCheckMethod) return existingTypeCheckMethod;
 
-    typeCheckFunctionMap.set(typeName, createTypeCheckerFunction(creator));
+    typeCheckFunctionMap.set(typeName, createValueCheckFunction(creator));
 
     return ts.createElementAccess(typeCheckMapIdentifier, ts.createLiteral(typeName));
   };

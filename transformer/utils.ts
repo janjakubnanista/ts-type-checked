@@ -129,9 +129,7 @@ export const createArrayElementsCheck = (
   return ts.createLogicalAnd(isArray, checkElements);
 };
 
-export const createTypeCheckerFunction = (
-  comparison: (valueNode: ts.Identifier) => ts.Expression,
-): ts.ArrowFunction => {
+export const createValueCheckFunction = (comparison: (valueNode: ts.Identifier) => ts.Expression): ts.ArrowFunction => {
   const value: ts.Identifier = ts.createIdentifier('value');
 
   return ts.createArrowFunction(
