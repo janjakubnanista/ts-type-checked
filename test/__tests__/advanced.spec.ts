@@ -217,7 +217,7 @@ describe('advanced', () => {
     test('string records', () => {
       type StringRecord = Record<string, number | boolean>;
 
-      const stringRecordArbitrary = fc.array(fc.string()).chain(keys => {
+      const validStringRecordArbitrary = fc.array(fc.string()).chain(keys => {
         return fc.record<StringRecord>(
           keys.reduce(
             (recordOptions, key) => ({
@@ -228,9 +228,12 @@ describe('advanced', () => {
           ),
         );
       });
+      const invalidStringRecordArbitrary = fc.anything().filter((value: any) => typeof(value) !== 'object' || value === null || Object.values(value).some(propertyValue => typeof(propertyValue) !== 'number' && typeof(propertyValue) !== 'boolean'))
 
-      testValues(stringRecordArbitrary, typeCheckFor<StringRecord>());
-      testValues(stringRecordArbitrary, typeCheckFor<GenericReference<StringRecord>>());
+      testValues(validStringRecordArbitrary, typeCheckFor<StringRecord>());
+      testValues(validStringRecordArbitrary, typeCheckFor<GenericReference<StringRecord>>());
+      testValues(invalidStringRecordArbitrary, typeCheckFor<StringRecord>(), false);
+      testValues(invalidStringRecordArbitrary, typeCheckFor<GenericReference<StringRecord>>(), false);
     });
   });
 
