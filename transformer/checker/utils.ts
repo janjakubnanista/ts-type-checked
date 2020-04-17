@@ -1,6 +1,18 @@
 import { ObjectTypeDescriptor, TypeName } from '../types';
 import ts from 'typescript';
 
+export const createLogicalAndChain = (...expressions: ts.Expression[]): ts.Expression => {
+  return expressions
+    .map<ts.Expression>(expression => ts.createParen(expression))
+    .reduce((chain, expression) => ts.createLogicalAnd(chain, expression));
+};
+
+export const createLogicalOrChain = (...expressions: ts.Expression[]): ts.Expression => {
+  return expressions
+    .map<ts.Expression>(expression => ts.createParen(expression))
+    .reduce((chain, expression) => ts.createLogicalOr(chain, expression));
+};
+
 export const createValueCheckFunction = (
   comparison: (valueNode: ts.Identifier) => ts.ConciseBody,
 ): ts.ArrowFunction => {
@@ -21,43 +33,6 @@ export const createValueCheckFunction = (
     ts.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
     comparison(value),
   );
-};
-
-export const createIsArray = (value: ts.Expression): ts.Expression =>
-  ts.createCall(ts.createPropertyAccess(ts.createIdentifier('Array'), 'isArray'), [], [value]);
-
-export const createArrayElementsCheck = (
-  value: ts.Expression,
-  elementTypeCheck: (value: ts.Expression, index: ts.Expression) => ts.Expression,
-): ts.Expression => {
-  const element = ts.createIdentifier('element');
-  const index = ts.createIdentifier('index');
-  const checkElement = ts.createArrowFunction(
-    undefined /* modifiers */,
-    undefined /* typeParameters */,
-    [
-      ts.createParameter(
-        undefined /* decorators */,
-        undefined /* modifiers */,
-        undefined /* dotDotDotToken */,
-        element /* name */,
-      ),
-      ts.createParameter(
-        undefined /* decorators */,
-        undefined /* modifiers */,
-        undefined /* dotDotDotToken */,
-        index /* name */,
-      ),
-    ],
-    undefined,
-    ts.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-    elementTypeCheck(element, index),
-  );
-
-  // Now let's do value.every(<element type checker>)
-  const checkElements = ts.createCall(ts.createPropertyAccess(value, 'every'), [], [checkElement]);
-
-  return ts.createLogicalAnd(createIsArray(value), checkElements);
 };
 
 export const createIsObject = (value: ts.Expression): ts.Expression =>

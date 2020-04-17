@@ -1,10 +1,6 @@
 import { TypeCheckCreator, TypeCheckMapCreator, TypeDescriptorMap, TypeName } from '../types';
-import {
-  createArrayElementsCheck,
-  createIsObject,
-  createObjectPropertiesCheck,
-  createValueCheckFunction,
-} from './utils';
+import { createArrayTypeCheck } from './array';
+import { createIsObject, createObjectPropertiesCheck, createValueCheckFunction } from './utils';
 import ts from 'typescript';
 
 export const createTypeChecker = (
@@ -64,7 +60,7 @@ export const createTypeChecker = (
           .reduce((typeCheck, comparison) => ts.createLogicalOr(typeCheck, comparison));
 
       case 'array':
-        return createArrayElementsCheck(value, element => createTypeCheck(typeDescriptor.type, element));
+        return createArrayTypeCheck(value, element => createTypeCheck(typeDescriptor.type, element));
 
       case 'object':
         const typeCheckMethod = createTypeCheckFunction(typeName, value => {
