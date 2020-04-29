@@ -18,8 +18,7 @@ module.exports = {
         loader: 'ts-loader',
         options: {
           getCustomTransformers: program => ({
-            // The transformer accepts options as second argument
-            before: [transformer(program, { debug: false })],
+            before: [transformer(program)],
           }),
         },
       },
