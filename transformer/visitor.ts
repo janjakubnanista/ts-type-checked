@@ -1,12 +1,22 @@
-import { isOurCallExpression, isOurImportExpression } from './utils';
+import { createValueCheckFunction, isOurCallExpression, isOurImportExpression } from './utils';
 import { visitEachChild } from 'typescript';
 import ts from 'typescript';
 
-export type IsACallVisitor = (typeNode: ts.TypeNode) => ts.Expression;
-
-function visitNode(node: ts.SourceFile, program: ts.Program, isACallVisitor: IsACallVisitor): ts.SourceFile;
-function visitNode(node: ts.Node, program: ts.Program, isACallVisitor: IsACallVisitor): ts.Node | undefined;
-function visitNode(node: ts.Node, program: ts.Program, isACallVisitor: IsACallVisitor): ts.Node | undefined {
+function visitNode(
+  node: ts.SourceFile,
+  program: ts.Program,
+  typeCheckExpressionCreator: TypeCheckExpressionCreator,
+): ts.SourceFile;
+function visitNode(
+  node: ts.Node,
+  program: ts.Program,
+  typeCheckExpressionCreator: TypeCheckExpressionCreator,
+): ts.Node | undefined;
+function visitNode(
+  node: ts.Node,
+  program: ts.Program,
+  typeCheckExpressionCreator: TypeCheckExpressionCreator,
+): ts.Node | undefined {
   // Discard all the imports from this module
   if (isOurImportExpression(node)) {
     return;
@@ -24,42 +34,44 @@ function visitNode(node: ts.Node, program: ts.Program, isACallVisitor: IsACallVi
       throw new Error('isA<T>() requires one argument, none specified');
     }
 
-    return ts.createCall(isACallVisitor(typeNode), [], [valueNode]);
+    return typeCheckExpressionCreator(typeNode, valueNode);
   }
 
-  if (isOurCallExpression(node, 'makeIsA', typeChecker)) {
+  if (isOurCallExpression(node, 'typeCheckFor', typeChecker)) {
     const typeNode = node.typeArguments?.[0];
     if (!typeNode) {
-      throw new Error('makeIsA<T>() requires one type parameter, none specified');
+      throw new Error('typeCheckFor<T>() requires one type parameter, none specified');
     }
 
-    return isACallVisitor(typeNode);
+    return createValueCheckFunction(value => typeCheckExpressionCreator(typeNode, value));
   }
 
   return node;
 }
 
+export type TypeCheckExpressionCreator = (typeNode: ts.TypeNode, value: ts.Expression) => ts.Expression;
+
 export function visitNodeAndChildren(
   node: ts.SourceFile,
   program: ts.Program,
   context: ts.TransformationContext,
-  isACallVisitor: IsACallVisitor,
+  typeCheckExpressionCreator: TypeCheckExpressionCreator,
 ): ts.SourceFile;
 export function visitNodeAndChildren(
   node: ts.Node,
   program: ts.Program,
   context: ts.TransformationContext,
-  isACallVisitor: IsACallVisitor,
+  typeCheckExpressionCreator: TypeCheckExpressionCreator,
 ): ts.Node | undefined;
 export function visitNodeAndChildren(
   node: ts.Node,
   program: ts.Program,
   context: ts.TransformationContext,
-  isACallVisitor: IsACallVisitor,
+  typeCheckExpressionCreator: TypeCheckExpressionCreator,
 ): ts.Node | undefined {
   return visitEachChild(
-    visitNode(node, program, isACallVisitor),
-    childNode => visitNodeAndChildren(childNode, program, context, isACallVisitor),
+    visitNode(node, program, typeCheckExpressionCreator),
+    childNode => visitNodeAndChildren(childNode, program, context, typeCheckExpressionCreator),
     context,
   );
 }

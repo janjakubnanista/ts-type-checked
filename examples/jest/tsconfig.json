@@ -1,0 +1,8 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "plugins": [
+      { "transform": "ts-type-checked/transformer" }
+    ]
+  }
+}

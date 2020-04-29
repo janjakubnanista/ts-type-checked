@@ -1,12 +1,14 @@
 import 'jest';
-import { isA, makeIsA } from '..';
+
+// @ts-ignore
+import { isA, typeCheckFor } from 'ts-type-checked';
 
 interface User {
   name: string;
   age?: number;
 }
 
-const isAUser = makeIsA<User>();
+const isAUser = typeCheckFor<User>();
 const getTypeName = (value: unknown): string => {
   if (isAUser(value)) return 'User';
   if (isA<string>(value)) return 'String';

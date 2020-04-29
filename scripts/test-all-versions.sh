@@ -16,6 +16,8 @@ function printHeader {
   echo "########################################"
 }
 
+set -e
+
 # Now for the main act we'll collect all the TS version numbers
 # we are interested in and run the test suite for each one, one by one
 for VERSION in $(cat $SCRIPTS_PATH/versions.txt); do
@@ -26,7 +28,7 @@ for VERSION in $(cat $SCRIPTS_PATH/versions.txt); do
 
   printHeader "Testing with TypeScript version $VERSION"
 
-  $SCRIPTS_PATH/test-typescript-version.sh "$VERSION"
+  $SCRIPTS_PATH/test.sh -v "$VERSION"
 
   printHeader "Done testing with TypeScript version $VERSION"
 done

@@ -1,17 +1,10 @@
-// In your code you would probably do something like
-//
-// const transformer = require('ts-type-checked/transformer').default;
-//
-// OR
-//
-// import transformer from 'ts-type-checked/transformer'
-const transformer = require('../transformer').default;
+const transformer = require('ts-type-checked/transformer').default;
 
 module.exports = {
   mode: 'development',
   entry: './index.ts',
   output: {
-    filename: `index.webpack.js`,
+    filename: `index.js`,
     path: __dirname,
   },
   resolve: {
