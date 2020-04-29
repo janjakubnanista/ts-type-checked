@@ -1,7 +1,7 @@
 {
   "name": "ts-type-checked",
   "version": "0.0.1",
-  "description": "Runtime duck type checking utilities for TypeScript.",
+  "description": "Type checking utilities for TypeScript.",
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
@@ -21,7 +21,9 @@
   "keywords": [
     "TypeScript",
     "type checking",
-    "duck typing"
+    "type checks",
+    "duck typing",
+    "type guards"
   ],
   "author": "Jan Jakub Nanista <jan.jakub.nanista@gmail.com>",
   "license": "MIT",
@@ -36,7 +38,6 @@
   ],
   "homepage": "https://github.com/janjakubnanista/ts-type-checked#readme",
   "devDependencies": {
-    "@types/jest": "^25.1.3",
     "@types/node": "^12.12.12",
     "@typescript-eslint/eslint-plugin": "^2.23.0",
     "@typescript-eslint/parser": "^2.23.0",
@@ -47,10 +48,8 @@
     "eslint-plugin-sort-imports-es6-autofix": "^0.5.0",
     "fast-check": "^1.22.2",
     "husky": "^3.0.9",
-    "jest": "^25.1.0",
     "lint-staged": "^9.4.2",
     "prettier": "^1.19.1",
-    "ts-jest": "^25.2.1",
     "tslib": "^1.10.0",
     "ttypescript": "^1.5.10",
     "typescript": "^3.7.2"
