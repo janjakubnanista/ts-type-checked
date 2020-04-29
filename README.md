@@ -1,6 +1,6 @@
 <!-- Logo -->
 <p align="center">
-  <img width="50%" src="https://raw.githubusercontent.com/janjakubnanista/ts-type-checked/master/documentation/ts-type-checked.png"/>
+  <img width="50%" src="https://raw.githubusercontent.com/janjakubnanista/ts-type-checked/master/res/ts-type-checked.png"/>
 </p>
 
 <h1 align="center">
