@@ -62,6 +62,9 @@ yarn
 # And move back to root
 cd ..
 
+# Remove the sandbox folder
+rm -rf "$SANDBOX_PATH"
+
 # Copy the test project to the sandbox
 cp -R "$TEST_PATH/" "$SANDBOX_PATH"
 
