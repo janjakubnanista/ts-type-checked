@@ -9,9 +9,10 @@
     "clean": "rm -rf transformer/**/*.{js,d.ts}",
     "lint": "eslint . --fix --ext .ts",
     "prepublish": "yarn build",
-    "test": "./scripts/test-all-versions.sh",
-    "test:unit": "jest",
-    "test:version": "./scripts/test.sh"
+    "test:examples": "cd examples && yarn && yarn install:local && yarn build && yarn start",
+    "test:version": "./scripts/test.sh",
+    "test:versions": "./scripts/test-all-versions.sh",
+    "test": "yarn test:versions && yarn test:examples"
   },
   "repository": {
     "type": "git",

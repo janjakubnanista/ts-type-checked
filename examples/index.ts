@@ -1,7 +1,5 @@
-// In your project this would become
-//
-// import { typeCheckFor } from 'ts-type-checked';
-import { typeCheckFor } from '..';
+// @ts-ignore
+import { typeCheckFor } from 'ts-type-checked';
 
 interface User {
   name: string;
@@ -24,8 +22,8 @@ const isAUser = typeCheckFor<User>();
   { name: 'Dough', age: 6, hobbies: 'none' },
   { name: 'Jan', age: 30, hobbies: ['gardening', 'coding'] },
 ].forEach(value => {
-  console.log(JSON.stringify(value));
-  console.log('\tIs a string:\t%s', isAString(value));
-  console.log('\tIs a number:\t%s', isANumber(value));
-  console.log('\tIs a User:\t%s', isAUser(value));
+  console.log(JSON.stringify(value)); // eslint-disable-line no-console
+  console.log('\tIs a string:\t%s', isAString(value)); // eslint-disable-line no-console
+  console.log('\tIs a number:\t%s', isANumber(value)); // eslint-disable-line no-console
+  console.log('\tIs a User:\t%s', isAUser(value)); // eslint-disable-line no-console
 });

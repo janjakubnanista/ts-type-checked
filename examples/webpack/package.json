@@ -1,0 +1,15 @@
+{
+  "name": "@ts-type-checked-examples/webpack",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "webpack",
+    "clean": "rm -rf index.js",
+    "start": "node index.js"
+  },
+  "devDependencies": {
+    "ts-loader": "^6.2.2",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11"
+  }
+}

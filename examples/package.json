@@ -1,21 +1,11 @@
 {
+  "name": "@ts-type-checked-examples/root",
+  "private": true,
   "scripts": {
-    "build:rollup": "rollup -c",
-    "build:ttypescript": "ttsc --project tsconfig.ttypescript.json",
-    "build:webpack": "webpack",
-    "test": "jest"
+    "install:local": "../scripts/install.sh",
+    "build": "yarn workspaces run build",
+    "clean": "rm -rf index.js && yarn workspaces run clean",
+    "start": "yarn workspaces run start"
   },
-  "devDependencies": {
-    "@types/jest": "^25.2.1",
-    "@wessberg/rollup-plugin-ts": "^1.2.24",
-    "jest": "^25.3.0",
-    "rollup": "^2.6.1",
-    "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-typescript2": "^0.27.0",
-    "ts-jest": "^25.3.1",
-    "ts-loader": "^6.2.2",
-    "ttypescript": "^1.5.10",
-    "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11"
-  }
+  "workspaces": ["jest", "rollup", "ttypescript", "webpack"]
 }

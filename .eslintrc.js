@@ -32,7 +32,7 @@ module.exports =  {
       '@typescript-eslint/no-var-requires': 0
     }
   }, {
-    files: ['test/**/*.spec.ts', 'test/**/*.spec.tsx'],
+    files: ['test/**/*.spec.ts', 'test/**/*.spec.tsx', 'examples/index.ts', 'examples/**/*.spec.ts'],
     rules: {
       "@typescript-eslint/ban-ts-ignore": 0
     }

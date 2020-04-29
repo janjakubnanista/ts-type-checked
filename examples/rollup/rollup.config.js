@@ -1,13 +1,12 @@
 import resolve from 'rollup-plugin-node-resolve';
 import ts from '@wessberg/rollup-plugin-ts';
 // import typescript from 'rollup-plugin-typescript2';
-
-const transformer = require('../transformer').default;
+import transformer from 'ts-type-checked/transformer';
 
 export default {
   input: './index.ts',
   output: {
-    file: 'index.rollup.js',
+    file: 'index.js',
     format: 'iife',
   },
   plugins: [
