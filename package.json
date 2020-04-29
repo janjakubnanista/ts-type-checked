@@ -6,10 +6,12 @@
   "types": "index.d.ts",
   "scripts": {
     "build": "tsc",
-    "clean": "rm -rf transformer/*.{js,d.ts}",
+    "clean": "rm -rf transformer/**/*.{js,d.ts}",
     "lint": "eslint . --fix --ext .ts",
     "prepublish": "yarn build",
-    "test": "./scripts/test-typescript-versions.sh"
+    "test": "./scripts/test-all-versions.sh",
+    "test:unit": "jest",
+    "test:version": "./scripts/test.sh"
   },
   "repository": {
     "type": "git",
