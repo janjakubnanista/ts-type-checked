@@ -4,16 +4,17 @@
   "description": "Test package for ts-type-checked",
   "private": true,
   "scripts": {
-    "test:debug": "node --inspect node_modules/.bin/jest --runInBand",
-    "test:clean": "jest --clearCache && rm -rf *.spec.js",
-    "test:compile": "ttsc --project tsconfig.json",
+    "build": "ttsc",
+    "clean": "rm -rf __tests__/*.spec.js",
     "test": "jest"
   },
   "devDependencies": {
     "@types/jest": "^25.1.3",
     "@types/node": "^12.12.12",
+    "@types/react": "^16.9.34",
     "fast-check": "^1.22.2",
     "jest": "^25.1.0",
+    "react": "^16.13.1",
     "ts-jest": "^25.2.1",
     "tslib": "^1.10.0",
     "ttypescript": "^1.5.10",
@@ -21,6 +22,10 @@
   },
   "jest": {
     "preset": "ts-jest",
+    "testMatch": [
+      "**/__tests__/**/*.spec.ts",
+      "**/__tests__/**/*.spec.tsx"
+    ],
     "globals": {
       "ts-jest": {
         "compiler": "ttypescript"

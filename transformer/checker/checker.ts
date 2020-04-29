@@ -7,8 +7,8 @@ import {
   createLogicalOrChain,
   createValueCheckFunction,
 } from './utils';
+import { createMapTypeCheck, createPromiseTypeCheck, createSetTypeCheck } from './es6';
 import { createObjectTypeCheck } from './object';
-import { createPromiseTypeCheck, createSetTypeCheck } from './es6';
 import { createTupleTypeCheck } from './tuple';
 import ts from 'typescript';
 
@@ -95,6 +95,13 @@ export const createTypeChecker = (
 
       case 'class':
         return createIsInstanceOf(value, typeDescriptor.value);
+
+      case 'map':
+        return createMapTypeCheck(
+          value,
+          key => createTypeCheck(typeDescriptor.keyType, key),
+          value => createTypeCheck(typeDescriptor.valueType, value),
+        );
 
       case 'set':
         return createSetTypeCheck(value, element => createTypeCheck(typeDescriptor.type, element));
