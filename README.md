@@ -342,6 +342,17 @@ module.exports = {
 
 ### Transformer API
 
+The transformer function is exported from `ts-type-checked/transformer`:
+
+```typescript
+import transformer from 'ts-type-checked/transformer';
+
+// Or equivalent
+const transfomer = require('ts-type-checked/transformer').default;
+```
+
+*Please refer to the [installation section](#installation)  for more information on how to plug the transfomer into your build.*
+
 ### Type guard API
 
 *Please refer to the [TypeScript definition file](https://github.com/janjakubnanista/ts-type-checked/tree/master/index.d.ts) of the module for more information.*
