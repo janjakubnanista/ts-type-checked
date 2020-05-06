@@ -1,7 +1,7 @@
 import 'jest';
 
-// @ts-ignore
 import { FilterFunction, testTypeChecks } from './utils';
+// @ts-ignore
 import { isA, typeCheckFor } from 'ts-type-checked';
 import fc from 'fast-check';
 
@@ -12,7 +12,7 @@ describe('DOM', () => {
     const validArbitrary = fc.constantFrom(document);
     const invalidArbitrary = fc.anything();
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), value => isA<TypeReference1>(value)];
+    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
 
     testTypeChecks(validArbitrary, checks, true);
     testTypeChecks(invalidArbitrary, checks, false);
@@ -23,10 +23,10 @@ describe('DOM', () => {
 
     const validArbitrary = fc
       .constantFrom('div', 'span', 'article', 'p')
-      .map(tagName => document.createElement(tagName));
+      .map((tagName) => document.createElement(tagName));
     const invalidArbitrary = fc.anything();
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), value => isA<TypeReference1>(value)];
+    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
 
     testTypeChecks(validArbitrary, checks, true);
     testTypeChecks(invalidArbitrary, checks, false);
@@ -37,10 +37,10 @@ describe('DOM', () => {
 
     const validArbitrary = fc
       .constantFrom('div', 'span', 'article', 'p')
-      .map(tagName => document.createElement(tagName));
+      .map((tagName) => document.createElement(tagName));
     const invalidArbitrary = fc.anything();
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), value => isA<TypeReference1>(value)];
+    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
 
     testTypeChecks(validArbitrary, checks, true);
     testTypeChecks(invalidArbitrary, checks, false);
@@ -49,13 +49,13 @@ describe('DOM', () => {
   test('HTMLDivElement', () => {
     type TypeReference1 = HTMLDivElement;
 
-    const validArbitrary = fc.constantFrom('div').map(tagName => document.createElement(tagName));
+    const validArbitrary = fc.constantFrom('div').map((tagName) => document.createElement(tagName));
     const invalidArbitrary = fc.oneof(
       fc.anything(),
-      fc.constantFrom('span', 'article', 'link', 'p').map(tagName => document.createElement(tagName)),
+      fc.constantFrom('span', 'article', 'link', 'p').map((tagName) => document.createElement(tagName)),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), value => isA<TypeReference1>(value)];
+    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
 
     testTypeChecks(validArbitrary, checks, true);
     testTypeChecks(invalidArbitrary, checks, false);

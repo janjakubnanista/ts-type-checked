@@ -19,169 +19,133 @@ import { isA, typeCheckFor } from 'ts-type-checked';
 import fc from 'fast-check';
 
 describe('interface types', () => {
-  test('primitive property', () => {
-    type PropertyType =
-      | number
-      | number
-      | string
-      | string
-      | boolean
-      | boolean
-      | bigint
-      | BigInt
-      | object
-      | Record<string, any>;
-    type TypeReference1 = InterfaceWithPropertyOfType<PropertyType>;
-    type TypeReference2 = {
-      property: PropertyType;
-    };
-    interface TypeReference3 {
-      property: PropertyType;
-    }
+  test('{}', () => {
+    type TypeReference1 = {};
 
-    const validPropertyArbitrary = fc.oneof(
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(
+      fc.constantFrom<TypeReference1>(
+        {},
+        [],
+        ['string'],
+        new Object(),
+        new String(),
+        () => true,
+        Object.assign(() => true, {}),
+        Symbol('a'),
+      ),
+      fc.array(fc.anything()),
+      fc.date(),
       fc.integer(),
-      fc.float(),
       fc.string(),
       fc.bigInt(),
       fc.boolean(),
       fc.object(),
       fc.func(fc.anything()),
     );
-    const validSpecialCases = fc.constantFrom({ property: () => false });
-    const validArbitrary = fc.oneof(
+    const invalidArbitrary = fc.constantFrom(null, undefined);
+
+    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
+
+    testTypeChecks(validArbitrary, checks, true);
+    testTypeChecks(invalidArbitrary, checks, false);
+  });
+
+  test('simple property', () => {
+    interface TypeReference1 {
+      property: string;
+    }
+
+    const validSpecialCases: fc.Arbitrary<TypeReference1> = fc.constantFrom({ property: '' });
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(
       validSpecialCases,
-      validPropertyArbitrary.map(property => Object.assign(() => true, { property })),
-      fc.record<TypeReference1 & TypeReference2 & TypeReference3>({
-        property: validPropertyArbitrary,
+      fc.string().map((property) => Object.assign(() => true, { property })),
+      fc.record<TypeReference1>({
+        property: fc.string(),
       }),
     );
 
-    const invalidPropertyArbitrary = fc.anything().filter(notOfType('number', 'string', 'boolean', 'bigint', 'object'));
-    const invalidSpecialCases = fc.constantFrom<unknown>({}, { a: false }, { property: null }, { property: undefined });
+    const invalidPropertyArbitrary = fc.anything().filter(notOfType('string'));
+    const invalidSpecialCases = fc.constantFrom<unknown>({}, { a: false });
     const invalidArbitrary = fc.oneof(
       invalidSpecialCases,
-      fc.anything().filter(notAnObject),
-      invalidPropertyArbitrary.map(property => Object.assign(() => true, { property })),
+      fc.anything().filter(aPrimitive),
+      invalidPropertyArbitrary.map((property) => Object.assign(() => true, { property })),
       fc.record({
         property: invalidPropertyArbitrary,
       }),
     );
 
-    const checks: FilterFunction[] = [
-      typeCheckFor<{ property: PropertyType }>(),
-      typeCheckFor<InterfaceWithPropertyOfType<PropertyType>>(),
-      typeCheckFor<TypeReference1>(),
-      typeCheckFor<TypeReference2>(),
-      typeCheckFor<TypeReference3>(),
-      value => isA<{ property: PropertyType }>(value),
-      value => isA<InterfaceWithPropertyOfType<PropertyType>>(value),
-      value => isA<TypeReference1>(value),
-      value => isA<TypeReference2>(value),
-      value => isA<TypeReference3>(value),
-    ];
+    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
+
+    testTypeChecks(validArbitrary, checks, true);
+    testTypeChecks(invalidArbitrary, checks, false);
+  });
+
+  test('with Object methods', () => {
+    interface TypeReference1 {
+      toString: () => string;
+    }
+
+    const validSpecialCases: fc.Arbitrary<TypeReference1> = fc.constantFrom<TypeReference1>(
+      {},
+      new Object(),
+      () => true,
+      'string',
+      6,
+      6n,
+      true,
+      false,
+      Symbol('symbol'),
+    );
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(
+      validSpecialCases,
+      fc.string(),
+      fc.boolean(),
+      fc.object(),
+      fc.bigInt(),
+      fc.func(fc.anything()),
+      fc.object(),
+    );
+
+    const invalidArbitrary = fc.oneof(fc.constantFrom(null, undefined));
+
+    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
 
     testTypeChecks(validArbitrary, checks, true);
     testTypeChecks(invalidArbitrary, checks, false);
   });
 
   test('optional property', () => {
-    type PropertyType = object;
-    type TypeReference1 = InterfaceWithPropertyOfType<PropertyType | undefined>;
-    type TypeReference2 = {
-      property: PropertyType | undefined;
-    };
-    interface TypeReference3 {
-      property?: object;
+    interface TypeReference1 {
+      property?: string;
     }
 
-    const validSpecialCases = fc.constantFrom({}, new Object());
-    const validArbitrary = fc.oneof(
+    const validSpecialCases: fc.Arbitrary<TypeReference1> = fc.constantFrom<TypeReference1>(
+      {},
+      new Object(),
+      { property: undefined },
+      { property: 'string' },
+      0 as TypeReference1,
+      false as TypeReference1,
+      1n as TypeReference1,
+      (() => true) as TypeReference1,
+    );
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(
       validSpecialCases,
-      fc.object().map(property => Object.assign(() => true, { property })),
+      optionalOf(fc.string()).map((property) => Object.assign(() => true, { property })),
       fc.record({
-        property: optionalOf(fc.object()),
+        property: optionalOf(fc.string()),
       }),
     );
 
     const invalidArbitrary = fc.oneof(
-      fc.anything().filter(notAnObject),
+      fc.constantFrom(null, undefined),
       fc.record({
-        property: fc.anything().filter(notOfType('object', 'undefined')),
+        property: fc.anything().filter(notOfType('string', 'undefined')),
       }),
     );
 
-    const checks: FilterFunction[] = [
-      typeCheckFor<{ property: PropertyType | undefined }>(),
-      typeCheckFor<InterfaceWithPropertyOfType<PropertyType | undefined>>(),
-      typeCheckFor<TypeReference1>(),
-      typeCheckFor<TypeReference2>(),
-      typeCheckFor<TypeReference3>(),
-      value => isA<{ property: PropertyType | undefined }>(value),
-      value => isA<InterfaceWithPropertyOfType<PropertyType | undefined>>(value),
-      value => isA<TypeReference1>(value),
-      value => isA<TypeReference2>(value),
-      value => isA<TypeReference3>(value),
-    ];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
-  });
-
-  test('return type of a function property should not be checked ', () => {
-    type TypeReference1 = InterfaceWithPropertyOfType<Function>;
-    type TypeReference2 = {
-      property: Function;
-    };
-    interface TypeReference3 {
-      property: () => string;
-    }
-
-    interface TypeReference4 {
-      property: () => string;
-    }
-    interface TypeReference5 {
-      property: GenericReference<Function>;
-    }
-    interface TypeReference6 {
-      property: GenericReference<() => string>;
-    }
-
-    const validArbitrary = fc.record({
-      property: fc.func(fc.anything()),
-    });
-
-    const invalidSpecialCases = fc.constantFrom<unknown>({}, { a: false }, { property: 'number' });
-    const invalidArbitrary = fc.oneof(
-      invalidSpecialCases,
-      fc.anything().filter(notAnObject),
-      fc.record({
-        property: fc.anything().filter(notOfType('function')),
-      }),
-    );
-
-    const checks: FilterFunction[] = [
-      typeCheckFor<{ property: Function }>(),
-      typeCheckFor<{ property: () => string }>(),
-      typeCheckFor<InterfaceWithPropertyOfType<Function>>(),
-      typeCheckFor<InterfaceWithPropertyOfType<() => string>>(),
-      typeCheckFor<TypeReference1>(),
-      typeCheckFor<TypeReference2>(),
-      typeCheckFor<TypeReference3>(),
-      typeCheckFor<TypeReference4>(),
-      typeCheckFor<TypeReference5>(),
-      typeCheckFor<TypeReference6>(),
-      value => isA<{ property: Function }>(value),
-      value => isA<{ property: () => string }>(value),
-      value => isA<InterfaceWithPropertyOfType<Function>>(value),
-      value => isA<InterfaceWithPropertyOfType<() => string>>(value),
-      value => isA<TypeReference1>(value),
-      value => isA<TypeReference2>(value),
-      value => isA<TypeReference3>(value),
-      value => isA<TypeReference4>(value),
-      value => isA<TypeReference5>(value),
-      value => isA<TypeReference6>(value),
-    ];
+    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
 
     testTypeChecks(validArbitrary, checks, true);
     testTypeChecks(invalidArbitrary, checks, false);
@@ -191,7 +155,7 @@ describe('interface types', () => {
     type RecursiveType = InterfaceWithPropertyOfType<RecursiveType | number>;
 
     const tree: fc.Memo<RecursiveType> = fc.memo(() => node());
-    const node: fc.Memo<RecursiveType> = fc.memo(n => {
+    const node: fc.Memo<RecursiveType> = fc.memo((n) => {
       if (n <= 1)
         return fc.record<RecursiveType>({
           property: fc.oneof(fc.integer(), fc.float()),
@@ -247,10 +211,10 @@ describe('interface types', () => {
       typeCheckFor<PositiveTypeReference>(),
       typeCheckFor<GenericReference<PositiveTypeReference>>(),
       typeCheckFor<GenericReference<ConditionalOfType<string[], true>>>(),
-      value => isA<ConditionalOfType<string[], true>>(value),
-      value => isA<PositiveTypeReference>(value),
-      value => isA<GenericReference<PositiveTypeReference>>(value),
-      value => isA<GenericReference<ConditionalOfType<string[], true>>>(value),
+      (value) => isA<ConditionalOfType<string[], true>>(value),
+      (value) => isA<PositiveTypeReference>(value),
+      (value) => isA<GenericReference<PositiveTypeReference>>(value),
+      (value) => isA<GenericReference<ConditionalOfType<string[], true>>>(value),
     ];
 
     const negativeChecks: FilterFunction[] = [
@@ -258,10 +222,10 @@ describe('interface types', () => {
       typeCheckFor<NegativeReference>(),
       typeCheckFor<GenericReference<NegativeReference>>(),
       typeCheckFor<GenericReference<ConditionalOfType<string[], false>>>(),
-      value => isA<ConditionalOfType<string[], false>>(value),
-      value => isA<NegativeReference>(value),
-      value => isA<GenericReference<NegativeReference>>(value),
-      value => isA<GenericReference<ConditionalOfType<string[], false>>>(value),
+      (value) => isA<ConditionalOfType<string[], false>>(value),
+      (value) => isA<NegativeReference>(value),
+      (value) => isA<GenericReference<NegativeReference>>(value),
+      (value) => isA<GenericReference<ConditionalOfType<string[], false>>>(value),
     ];
 
     testTypeChecks(validPositiveArbitrary, positiveChecks, true);
@@ -300,7 +264,7 @@ describe('interface types', () => {
       }),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), value => isA<TypeReference1>(value)];
+    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
 
     testTypeChecks(validArbitrary, checks, true);
     testTypeChecks(invalidArbitrary, checks, false);
@@ -328,7 +292,30 @@ describe('interface types', () => {
       }),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), value => isA<TypeReference1>(value)];
+    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
+
+    testTypeChecks(validArbitrary, checks, true);
+    testTypeChecks(invalidArbitrary, checks, false);
+  });
+
+  test('callable', () => {
+    type TypeReference1 = {
+      (): string;
+      property: number;
+    };
+
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc
+      .tuple(fc.func(fc.anything() as fc.Arbitrary<string>), fc.oneof(fc.integer(), fc.float()))
+      .map(([object, property]) => Object.assign(object, { property }));
+
+    const invalidArbitrary = fc.oneof(
+      fc.anything().filter(notOfType('function')),
+      fc
+        .tuple(fc.func(fc.anything() as fc.Arbitrary<string>), fc.anything().filter(notOfType('number')))
+        .map(([object, property]) => Object.assign(object, { property })),
+    );
+
+    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
 
     testTypeChecks(validArbitrary, checks, true);
     testTypeChecks(invalidArbitrary, checks, false);

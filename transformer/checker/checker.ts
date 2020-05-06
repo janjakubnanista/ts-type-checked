@@ -20,7 +20,7 @@ export const createTypeChecker = (
   const typeCheckFunctionMap: Map<TypeName, ts.Expression> = new Map();
 
   const createTypeCheckMapStatement: TypeCheckMapCreator = () => {
-    const typeChecks: ts.PropertyAssignment[] = Array.from(typeCheckFunctionMap.entries()).map(entry =>
+    const typeChecks: ts.PropertyAssignment[] = Array.from(typeCheckFunctionMap.entries()).map((entry) =>
       ts.createPropertyAssignment(ts.createLiteral(entry[0]), entry[1]),
     );
 
@@ -61,32 +61,35 @@ export const createTypeChecker = (
       case 'literal':
         return ts.createStrictEquality(value, typeDescriptor.value);
 
-      case 'primitive':
-        return ts.createStrictEquality(ts.createTypeOf(value), typeDescriptor.value);
+      case 'keyword':
+        switch (typeDescriptor.value) {
+          case 'object':
+            return createIsNotPrimitive(value);
 
-      case 'object':
-        return createIsNotPrimitive(value);
+          default:
+            return ts.createStrictEquality(ts.createTypeOf(value), ts.createStringLiteral(typeDescriptor.value));
+        }
 
       case 'intersection':
-        const intersectionTypeCheckMethod = createTypeCheckFunction(typeName, value =>
+        const intersectionTypeCheckMethod = createTypeCheckFunction(typeName, (value) =>
           createLogicalAndChain(
-            ...typeDescriptor.types.map<ts.Expression>(typeName => createTypeCheck(typeName, value)),
+            ...typeDescriptor.types.map<ts.Expression>((typeName) => createTypeCheck(typeName, value)),
           ),
         );
 
         return ts.createCall(intersectionTypeCheckMethod, undefined, [value]);
 
       case 'union':
-        const unionTypeCheckMethod = createTypeCheckFunction(typeName, value =>
+        const unionTypeCheckMethod = createTypeCheckFunction(typeName, (value) =>
           createLogicalOrChain(
-            ...typeDescriptor.types.map<ts.Expression>(typeName => createTypeCheck(typeName, value)),
+            ...typeDescriptor.types.map<ts.Expression>((typeName) => createTypeCheck(typeName, value)),
           ),
         );
 
         return ts.createCall(unionTypeCheckMethod, undefined, [value]);
 
       case 'array':
-        return createArrayTypeCheck(value, element => createTypeCheck(typeDescriptor.type, element));
+        return createArrayTypeCheck(value, (element) => createTypeCheck(typeDescriptor.type, element));
 
       case 'tuple':
         return createTupleTypeCheck(value, typeDescriptor.types.length, (element, index) => {
@@ -99,18 +102,18 @@ export const createTypeChecker = (
       case 'map':
         return createMapTypeCheck(
           value,
-          key => createTypeCheck(typeDescriptor.keyType, key),
-          value => createTypeCheck(typeDescriptor.valueType, value),
+          (key) => createTypeCheck(typeDescriptor.keyType, key),
+          (value) => createTypeCheck(typeDescriptor.valueType, value),
         );
 
       case 'set':
-        return createSetTypeCheck(value, element => createTypeCheck(typeDescriptor.type, element));
+        return createSetTypeCheck(value, (element) => createTypeCheck(typeDescriptor.type, element));
 
       case 'promise':
         return createPromiseTypeCheck(value);
 
       case 'interface':
-        const objectTypeCheckMethod = createTypeCheckFunction(typeName, value =>
+        const objectTypeCheckMethod = createTypeCheckFunction(typeName, (value) =>
           createObjectTypeCheck(value, typeDescriptor, createTypeCheck),
         );
 
