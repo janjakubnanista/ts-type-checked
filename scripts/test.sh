@@ -49,6 +49,7 @@ fi
 echo "Running tests for version $VERSION"
 
 set -x
+set -e
 
 # Move to the test project
 cd "$TEST_PATH"
