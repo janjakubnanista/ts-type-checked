@@ -89,7 +89,7 @@ function handleMessage(data: string): string {
     return 'I will tell ' + message.sayHelloTo.join(' and ')
   }
 
-  throw new Error('I have know idea what you mean');
+  throw new Error('I have no idea what you mean');
 }
 
 ```
