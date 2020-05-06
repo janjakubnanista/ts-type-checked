@@ -4,37 +4,37 @@ import { typeFlags } from '../utils';
 import ts from 'typescript';
 
 type TypeDescriptorName =
-  | 'array'
-  | 'bigint'
-  | 'date'
-  | 'number'
-  | 'string'
-  | 'boolean'
-  | 'object'
-  | 'function'
-  | 'promise'
-  | 'map'
-  | 'set';
+  | 'Array'
+  | 'BigInt'
+  | 'Date'
+  | 'Number'
+  | 'String'
+  | 'Boolean'
+  | 'Object'
+  | 'Function'
+  | 'Promise'
+  | 'Map'
+  | 'Set';
 
 const typeDescriptorNameBySymbolName: Record<string, TypeDescriptorName> = {
-  Array: 'array',
-  ReadonlyArray: 'array',
-  BigInt: 'bigint',
-  Number: 'number',
-  Function: 'function',
-  Date: 'date',
-  String: 'string',
-  Boolean: 'boolean',
-  Object: 'object',
-  Promise: 'promise',
-  Map: 'map',
-  Set: 'set',
+  Array: 'Array',
+  ReadonlyArray: 'Array',
+  BigInt: 'BigInt',
+  Number: 'Number',
+  Function: 'Function',
+  Date: 'Date',
+  String: 'String',
+  Boolean: 'Boolean',
+  Object: 'Object',
+  Promise: 'Promise',
+  Map: 'Map',
+  Set: 'Set',
 };
 
 const getFirstValidDeclaration = (declarations: ts.Declaration[] | undefined): ts.Declaration | undefined => {
   return (
     declarations?.find(
-      declaration => !ts.isVariableDeclaration(declaration) && !ts.isFunctionDeclaration(declaration),
+      (declaration) => !ts.isVariableDeclaration(declaration) && !ts.isFunctionDeclaration(declaration),
     ) || declarations?.[0]
   );
 };
@@ -73,40 +73,45 @@ export const getTypeDescriptor = (
   logger.debug('Library descriptor name', libraryDescriptorName);
 
   // BigInt
-  if (type.flags & ts.TypeFlags.BigInt || libraryDescriptorName === 'bigint') {
+  if (type.flags & ts.TypeFlags.BigInt || libraryDescriptorName === 'BigInt') {
     logger.debug('BigInt');
 
-    return { _type: 'primitive', value: ts.createLiteral('bigint') };
+    return { _type: 'keyword', value: 'bigint' };
   }
 
   // Boolean
-  if (type.flags & ts.TypeFlags.Boolean || libraryDescriptorName === 'boolean') {
+  if (type.flags & ts.TypeFlags.Boolean || libraryDescriptorName === 'Boolean') {
     logger.debug('Boolean');
 
-    return { _type: 'primitive', value: ts.createLiteral('boolean') };
+    return { _type: 'keyword', value: 'boolean' };
   }
 
   // Number
-  if (type.flags & ts.TypeFlags.Number || libraryDescriptorName === 'number') {
+  if (type.flags & ts.TypeFlags.Number || libraryDescriptorName === 'Number') {
     logger.debug('Number');
 
-    return { _type: 'primitive', value: ts.createLiteral('number') };
+    return { _type: 'keyword', value: 'number' };
   }
 
   // String
-  if (type.flags & ts.TypeFlags.String || libraryDescriptorName === 'string') {
+  if (type.flags & ts.TypeFlags.String || libraryDescriptorName === 'String') {
     logger.debug('String');
 
-    return { _type: 'primitive', value: ts.createLiteral('string') };
+    return { _type: 'keyword', value: 'string' };
+  }
+
+  // Date
+  if (libraryDescriptorName === 'Date') {
+    return { _type: 'class', value: ts.createIdentifier(libraryDescriptorName) };
   }
 
   // Union
   if (type.isUnion()) {
     logger.debug('Union type');
 
-    return resolve => ({
+    return (resolve) => ({
       _type: 'union',
-      types: type.types.map(type => resolve(scope, type)),
+      types: type.types.map((type) => resolve(scope, type)),
     });
   }
 
@@ -114,9 +119,9 @@ export const getTypeDescriptor = (
   if (type.isIntersection()) {
     logger.debug('Intersection type');
 
-    return resolve => ({
+    return (resolve) => ({
       _type: 'intersection',
-      types: type.types.map(type => resolve(scope, type)),
+      types: type.types.map((type) => resolve(scope, type)),
     });
   }
 
@@ -126,6 +131,24 @@ export const getTypeDescriptor = (
   // for error messages below
   const typeChecker = program.getTypeChecker();
   const typeName = typeChecker.typeToString(type, scope);
+
+  // Promise
+  if (libraryDescriptorName === 'Promise') {
+    logger.warn(
+      `
+
+It looks like you are trying to type check a Promise-like value (${typeName}). 
+Although possible, type checking Promises is discouraged in favour of wrapping the value in a new Promise:
+
+const certainlyPromise = Promise.resolve(value);
+
+Check https://stackoverflow.com/questions/27746304/how-do-i-tell-if-an-object-is-a-promise for more information.
+
+`,
+    );
+
+    return { _type: 'promise' };
+  }
 
   // Literal types
   if (type.isLiteral() || type.flags & ts.TypeFlags.BigIntLiteral) {
@@ -155,10 +178,10 @@ export const getTypeDescriptor = (
   // For the checks below we need access to the TypeNode for this type
   const typeNode = typeChecker.typeToTypeNode(type, scope);
 
-  if (typeNode?.kind === ts.SyntaxKind.ObjectKeyword || libraryDescriptorName === 'object') {
-    logger.debug('Object (keyword)');
+  if (typeNode?.kind === ts.SyntaxKind.ObjectKeyword) {
+    logger.debug('object (keyword)');
 
-    return { _type: 'object' };
+    return { _type: 'keyword', value: 'object' };
   }
 
   // True
@@ -173,9 +196,9 @@ export const getTypeDescriptor = (
 
     const typeArguments = (type as ts.TypeReference).typeArguments || [];
 
-    return resolve => ({
+    return (resolve) => ({
       _type: 'tuple',
-      types: typeArguments.map(type => resolve(scope, type)) || [],
+      types: typeArguments.map((type) => resolve(scope, type)) || [],
     });
   }
 
@@ -183,18 +206,18 @@ export const getTypeDescriptor = (
   if (
     typeNode?.kind === ts.SyntaxKind.FunctionType ||
     typeNode?.kind === ts.SyntaxKind.ConstructorType ||
-    libraryDescriptorName === 'function' ||
+    libraryDescriptorName === 'Function' ||
     type.getConstructSignatures()?.length
   ) {
     logger.debug('Function');
 
-    return { _type: 'primitive', value: ts.createLiteral('function') };
+    return { _type: 'keyword', value: 'function' };
   }
 
   // Array
   if (
     typeNode?.kind === ts.SyntaxKind.ArrayType ||
-    libraryDescriptorName === 'array' ||
+    libraryDescriptorName === 'Array' ||
     (typeChecker as any)?.isArrayType(type)
   ) {
     logger.debug('Array');
@@ -204,11 +227,11 @@ export const getTypeDescriptor = (
       throw new Error('Could not find element type for (apparently) array type ' + typeName);
     }
 
-    return resolve => ({ _type: 'array', type: resolve(scope, elementType) });
+    return (resolve) => ({ _type: 'array', type: resolve(scope, elementType) });
   }
 
   // Map
-  if (libraryDescriptorName === 'map') {
+  if (libraryDescriptorName === 'Map') {
     const [keyType, valueType] = (type as ts.TypeReference).typeArguments || [];
     if (!keyType) {
       throw new Error('Could not find key type for (apparently) Map type ' + typeName);
@@ -218,40 +241,17 @@ export const getTypeDescriptor = (
       throw new Error('Could not find value type for (apparently) Map type ' + typeName);
     }
 
-    return resolve => ({ _type: 'map', keyType: resolve(scope, keyType), valueType: resolve(scope, valueType) });
+    return (resolve) => ({ _type: 'map', keyType: resolve(scope, keyType), valueType: resolve(scope, valueType) });
   }
 
   // Set
-  if (libraryDescriptorName === 'set') {
+  if (libraryDescriptorName === 'Set') {
     const [setType] = (type as ts.TypeReference).typeArguments || [];
     if (!setType) {
       throw new Error('Could not find key type for (apparently) Set type ' + typeName);
     }
 
-    return resolve => ({ _type: 'set', type: resolve(scope, setType) });
-  }
-
-  // Date
-  if (libraryDescriptorName === 'date') {
-    return { _type: 'class', value: ts.createIdentifier('Date') };
-  }
-
-  // Promise
-  if (libraryDescriptorName === 'promise') {
-    logger.warn(
-      `
-
-It looks like you are trying to type check a Promise-like value (${typeName}). 
-Although possible, type checking Promises is discouraged in favour of wrapping the value in a new Promise:
-
-const certainlyPromise = Promise.resolve(value);
-
-Check https://stackoverflow.com/questions/27746304/how-do-i-tell-if-an-object-is-a-promise for more information.
-
-`,
-    );
-
-    return { _type: 'promise' };
+    return (resolve) => ({ _type: 'set', type: resolve(scope, setType) });
   }
 
   const domElementClassName = getDOMElementClassName(program, type);
@@ -260,12 +260,12 @@ Check https://stackoverflow.com/questions/27746304/how-do-i-tell-if-an-object-is
   }
 
   // Interface-ish
-  if (type.flags & ts.TypeFlags.Object) {
+  if (type.flags & ts.TypeFlags.Object || libraryDescriptorName === 'Object') {
     const callable = type.getCallSignatures()?.length !== 0;
 
-    return resolve => {
+    return (resolve) => {
       const stringIndexType = type.getStringIndexType();
-      const properties: PropertyTypeDescriptor[] = type.getProperties().map(property => {
+      const properties: PropertyTypeDescriptor[] = type.getProperties().map((property) => {
         const propertyType = typeChecker.getTypeOfSymbolAtLocation(property, scope);
         const accessor: ts.Expression = getPropertyAccessor(property);
 

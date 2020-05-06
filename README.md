@@ -27,6 +27,16 @@
 
 `ts-type-checked` generates [type guards](https://www.typescriptlang.org/docs/handbook/advanced-types.html#type-guards-and-differentiating-types) based on your own (or library) TypeScript types. It is compatible with [rollup](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/rollup), [webpack](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/webpack) and [ttypescript](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/ttypescript) projects and works nicely with [jest](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/jest).
 
+<p align="center">
+  <a href="#example-cases">Example cases</a>
+  <span>|</span>
+  <a href="#installation">Installation</a>
+  <span>|</span>
+  <a href="#api">API</a>
+  <span>|</span>
+  <a href="#supported-types">Supported types</a>
+</p>
+
 ## Wait what?
 
 TypeScript is a powerful way of enhancing your application code at compile time but, unfortunately, provides no runtime type guards out of the box - you need to [create these manually](https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards). For types like `string` or `boolean` this is easy, you can just use the `typeof` operator. It becomes more difficult for interface types, arrays, enums etc. And that is where `ts-type-checked` comes in! It automatically creates these type guards at compile time for you.
@@ -38,13 +48,55 @@ This might get usefule when:
 - You want to check whether a variable implements one of more possible interfaces (e.g. `LoggedInUser`, `GuestUser`)
 - _..._
 
-### An example case
+## Example cases
 
-Imagine you need to check whether an object implements one of more possible interfaces / types. You want your code to support as many input formats as possible, some of them might be arrays, some of them implement interfaces, some of them might be e.g. strings. 
+### Example 1: Data consistency checks
 
-The code you'd need to write would need to check for types and shapes of these and everytime you needed to make a change to your types your checks would need to change too.
+```typescript
+import { isA } from 'ts-type-checked';
 
-The code below demonstrates how `ts-type-checked` can be used to autogenerate these checks based on your TypeScript types.
+// Imagine a third party service that sends out JSON serialized 
+// messages that might sometimes come broken
+// and a client that handles these.
+
+interface WelcomeMessage {
+  text: 'Oh hello there!'
+}
+
+interface WhatALovelyDayMessage {
+  yesIndeed: boolean;
+  isTheSkyUnusuallyBlue?: boolean;
+}
+
+interface GoodbyeThenMessage {
+  sayHelloTo: string[];
+}
+
+function handleMessage(data: string): string {
+  const message = JSON.parse(message);
+
+  // Instead of writing the code that checks the message consistency 
+  // you can just use the ts-type-checked isA function:
+  if (isA<WelcomeMessage>(message)) {
+    return 'Good day sir!'!
+  }
+
+  if (isA<WhatALovelyDayMessage>(message)) {
+    return message.isTheSkyUnusuallyBlue ? 'magnificient' : 'wonderful';
+  }
+
+  if (isA<GoodbyeThenMessage>(message)) {
+    return 'I will tell ' + message.sayHelloTo.join(' and ')
+  }
+
+  throw new Error('I have know idea what you mean');
+}
+
+```
+
+### Example 2: Distniguishing between several types
+
+One more example, this time some data traversal code
 
 ```typescript
 // Group is an array of users or accounts
@@ -84,8 +136,61 @@ function getObjectDescription(object: Node): string {
 }
 ```
 
-<a id="how"></a>
-## How
+### Example 3: Passing type guards as parameters
+
+`ts-type-checked` also exports `typeCheckFor` type guard factory. This is more or less a syntactic sugar that saves you couple of keystrokes. It is useful when you want to store the type guard into a variable or pass it as a parameter:
+
+```typescript
+import { typeCheckFor } from 'ts-type-checked';
+
+// Store type guard in a variable
+const isStringArray = typeCheckFor<string[]>();
+
+function createMessageHandler<T>(validator: (value: unknown) => value is T) {
+  return function handleMessage(data: string) {
+    const message = JSON.parse(data);
+
+    if (validator(message)) {
+      console.log('valid message!');
+
+      // ...
+    } else {
+      console.error('invalid message!');
+    }
+  }
+}
+
+interface HelloWorldMessage {
+  hello: 'world';
+}
+
+// Or pass it as a parameter
+const handleStringMessage = createMessageHandler(typeCheckFor<string>());
+
+const handleHelloWorldMessage = createMessageHandler(typeCheckFor<HelloWorldMessage>());
+```
+
+### Example 4: Deduplicating generated type guards
+
+`isA` and `typeCheckFor` will both transform the code on per-file basis - in other terms a type guard function will be created in every file where either of these is used. To prevent duplication of generated code I recommend placing the type guards in a separate file and importing them when necessary:
+
+```typescript
+// ./typeGuards.ts
+import { typeCheckFor } from 'ts-type-checked';
+
+export const isDate = typeCheckFor<Date>();
+export const isStringRecord = typeCheckFor<Record<string, string>>();
+
+// ./myUtility.ts
+import { isDate } from './typeGuards';
+
+if (isDate(value)) {
+  // ...
+}
+```
+
+<a id="installation"></a>
+## Installation
 
 `ts-type-checked` is a TypeScript transformer - it generates the required type checks and injects them into your code at compile time. It is compatible with [rollup](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/rollup), [webpack](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/webpack) and [ttypescript](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/ttypescript) projects and works nicely with [jest](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/jest).
 
@@ -100,6 +205,8 @@ yarn add -D ts-type-checked
 ```
 
 ### Webpack
+
+[See example here](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/webpack)
 
 In order to enable `ts-type-checked` in your Webpack project you need to configure `ts-loader` or `awesome-typescript-loader` in you webpack config.
 
@@ -127,9 +234,11 @@ const transformer = require('ts-type-checked/transformer').default;
 }
 ```
 
-#### 3. Profit
+#### 3. Profit :money_with_wings:
 
 ### Rollup
+
+[See example here](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/rollup)
 
 In order to enable `ts-type-checked` in your Rollup project you need to configure `ts-loader` or `awesome-typescript-loader` in you rollup config.
 
@@ -172,10 +281,12 @@ typescript({
 }),
 ```
 
-#### 3. Profit
+#### 3. Profit :money_with_wings:
 
-<a id="how/ttypescript"></a>
+<a id="installation/ttypescript"></a>
 ### TTypeScript
+
+[See example here](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/jest)
 
 In order to enable `ts-type-checked` in your TTypescript project you need to configure plugins in your `tsconfig.json`.
 
@@ -191,6 +302,8 @@ In order to enable `ts-type-checked` in your TTypescript project you need to con
 
 ### Jest
 
+[See example here](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/jest)
+
 In order to enable `ts-type-checked` in your Jest tests you need to switch to `ttypescript` compiler.
 
 #### 1. Install `ttypescript`
@@ -205,7 +318,7 @@ yarn add -D ttypescript
 
 #### 2. Configure `ttypescript`
 
-See [the instructions above](#how/ttypescript).
+See [the instructions above](#installation/ttypescript).
 
 #### 3. Set `ttypescript` as your compiler
 
@@ -222,18 +335,60 @@ module.exports = {
 };
 ```
 
-#### 4. Profit
+#### 4. Profit :money_with_wings:
 
+<a id="api"></a>
+## API
+
+### Transformer API
+
+### Type guard API
+
+*Please refer to the [TypeScript definition file](https://github.com/janjakubnanista/ts-type-checked/tree/master/index.d.ts) of the module for more information.*
+
+Two functions are exposed (funny enough neither of them exist, just check [index.js](https://github.com/janjakubnanista/ts-type-checked/tree/master/index.js) yourself :grinning:): `isA` and `typeCheckFor`:
+
+```typescript
+import { isA, typeCheckFor } from 'ts-type-checked';
+```
+
+#### `isA<T>(value: unknown) => value is T`
+
+`isA` takes one type argument `T` and one function argument `value` and checkes whether the value is assignable to type `T`.
+
+**The type that you pass to `isA` must not be a type parameter!** In other words:
+
+```typescript
+function doMyStuff<T>(value: unknown) {
+  // Bad, T is a type argument and will depend on how you call the function
+  if (isA<T>(value)) {
+    // ...
+  }
+
+  // Good, string[] is not a type parameter
+  if (isA<string[]>(value)) {
+    // ...
+  }
+}
+```
+
+#### `typeCheckFor<T>() => (value: unknown) => value is T`
+
+`typeCheckFor` is a factory function for `isA` so to say - it takes one type argument `T` and returns a function, just like `isA`, that takes an argument `value` and checkes whether the value is assignable to type `T`.
+
+**The type that you pass to `typeCheckFor` must not be a type parameter either!** (see above)
+
+<a id="supported-types"></a>
 ## Supported types
 
 `ts-type-checked` supports (reasonably large but still only) a subset of TypeScript features.
 
 - **Primitive types** `string`, `number`, `boolean`, `bigint`, `symbol` are supported using `typeof` operator
-- **Boxed types** `String`, `Number`, `Boolean`, `BigInt`, `Symbol` are converted to their unboxed versions and checked using `typeof` operator
-- **Array types** `any[]`, `Array<any>`, `ReadonlyArray<any>` are supported using `Array.isArray` utility. **All the elements are checked as well.**
+- **Boxed types** `String`, `Number`, `Boolean`, `BigInt`, `Symbol` are converted to their unboxed versions and checked using `typeof` operator. 
+- **Array types** `any[]`, `Array<any>`, `ReadonlyArray<any>` are supported using `Array.isArray` utility. **All the elements are checked as well** so avoid unneccessary type checks of long lists.
 - **Date type** `Date` is supported using `instanceof` keyword
 - **DOM types** `Node`, `Element` (and all its subclasses) are supported using `instanceof` keyword
-- **Object types** `object`, `Object`, `{}` are supported as specified in [TypeScript reference](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html#object-type). In practice that covers functions and plain objects.
+- **Object types** `object`, `Object`, `{}` are supported as specified in [TypeScript reference](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html#object-type).
 - **Function types** `Function`, `(...args: any[]) => any` are supported using `typeof` operator. **Due to the nature of JavaScript it is impossible to check the return type of a function without calling it** so the signature of a function is not checked.
 - **Promise types** `Promise<any>` are supported by checking for `then` and `catch` methods. **Type checking promises is generally discouraged in favour of converting values into promises using `Promise.resolve`**
 - **Set & Map** `Set<any>`, `Map<any, any>` are checked using `instanceof` operator. **All values (and keys for `Map`) are checked as well.**
@@ -242,8 +397,3 @@ module.exports = {
 
 - **Promise resolution values** It is impossible to check what the value of a resolved promise will be
 - **Function return types and signatures** It is impossible to check anything about a function apart from the fact that it is a function
-
-<a id="examples"></a>
-## Examples
-
-<!-- TODO -->

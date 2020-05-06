@@ -2,7 +2,7 @@ import { InterfaceTypeDescriptor, TypeName } from '../types';
 import ts from 'typescript';
 
 const parenthesize = (expressions: ts.Expression[]): ts.Expression[] =>
-  expressions.map<ts.Expression>(expression =>
+  expressions.map<ts.Expression>((expression) =>
     ts.isCallExpression(expression) ? expression : ts.createParen(expression),
   );
 
@@ -29,12 +29,9 @@ export const createDoubleNegation = (value: ts.Expression): ts.Expression =>
 //
 // for more information
 export const createIsNotPrimitive = (value: ts.Expression): ts.Expression => {
-  return createLogicalAndChain(
-    createLogicalOrChain(
-      createIsOfType(value, ts.createLiteral('object')),
-      createIsOfType(value, ts.createLiteral('function')),
-    ),
-    createDoubleNegation(value),
+  return createLogicalOrChain(
+    createIsOfType(value, ts.createLiteral('function')),
+    createLogicalAndChain(createIsOfType(value, ts.createLiteral('object')), createDoubleNegation(value)),
   );
 };
 
@@ -68,7 +65,7 @@ export const createObjectPropertiesCheck = (
 ): ts.Expression => {
   const propertiesCheck = descriptor.properties.length
     ? descriptor.properties
-        .map<ts.Expression>(propertyDescriptor =>
+        .map<ts.Expression>((propertyDescriptor) =>
           ts.createParen(
             propertyCheck(propertyDescriptor.type, ts.createElementAccess(value, propertyDescriptor.accessor)),
           ),
@@ -90,7 +87,7 @@ export const createObjectPropertiesCheck = (
           propertyMapIdentifier,
           undefined,
           ts.createObjectLiteral(
-            descriptor.properties.map(propertyDescriptor => {
+            descriptor.properties.map((propertyDescriptor) => {
               return ts.createPropertyAssignment(
                 ts.createComputedPropertyName(propertyDescriptor.accessor),
                 ts.createTrue(),
@@ -114,7 +111,7 @@ export const createObjectPropertiesCheck = (
   const valueForKey = ts.createElementAccess(value, key);
 
   const stringIndexTypeCheck = propertyCheck(descriptor.stringIndexType, valueForKey);
-  const checkProperty = createValueCheckFunction(key =>
+  const checkProperty = createValueCheckFunction((key) =>
     ts.createBlock([
       propertyMap,
 

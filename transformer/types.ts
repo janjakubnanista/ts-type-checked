@@ -1,23 +1,27 @@
 import ts from 'typescript';
 
-export interface PropertyTypeDescriptor {
-  _type: 'property';
-  accessor: ts.Expression;
-  type: TypeName;
+// All the primitive types as specified in https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html#object-type
+export interface KeywordTypeDescriptor {
+  _type: 'keyword';
+  value: 'string' | 'number' | 'boolean' | 'bigint' | 'object' | 'symbol' | 'null' | 'undefined' | 'function';
 }
 
-export interface PrimitiveTypeDescriptor {
-  _type: 'primitive';
-  value: ts.Expression;
-}
-
-export interface ObjectTypeDescriptor {
-  _type: 'object';
+export interface InterfaceTypeDescriptor {
+  _type: 'interface';
+  callable?: boolean;
+  properties: PropertyTypeDescriptor[];
+  stringIndexType?: TypeName;
 }
 
 export interface LiteralTypeDescriptor {
   _type: 'literal';
   value: ts.Expression;
+}
+
+export interface PropertyTypeDescriptor {
+  _type: 'property';
+  accessor: ts.Expression;
+  type: TypeName;
 }
 
 export interface ArrayTypeDescriptor {
@@ -50,13 +54,6 @@ export interface ClassTypeDescriptor {
   value: ts.Expression;
 }
 
-export interface InterfaceTypeDescriptor {
-  _type: 'interface';
-  callable?: boolean;
-  properties: PropertyTypeDescriptor[];
-  stringIndexType?: TypeName;
-}
-
 export interface UnionTypeDescriptor {
   _type: 'union';
   types: TypeName[];
@@ -72,10 +69,9 @@ export interface UnspecifiedTypeDescriptor {
 }
 
 export type TypeDescriptor =
-  | PrimitiveTypeDescriptor
+  | KeywordTypeDescriptor
   | LiteralTypeDescriptor
   | InterfaceTypeDescriptor
-  | ObjectTypeDescriptor
   | ArrayTypeDescriptor
   | TupleTypeDescriptor
   | PromiseTypeDescriptor
