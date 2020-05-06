@@ -286,7 +286,7 @@ typescript({
 <a id="installation/ttypescript"></a>
 ### TTypeScript
 
-[See example here](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/jest)
+[See example here](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/ttypescript)
 
 In order to enable `ts-type-checked` in your TTypescript project you need to configure plugins in your `tsconfig.json`.
 
