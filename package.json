@@ -1,6 +1,6 @@
 {
   "name": "ts-type-checked",
-  "version": "0.1.2",
+  "version": "0.2.1",
   "description": "Type checking utilities for TypeScript.",
   "main": "index.js",
   "types": "index.d.ts",
