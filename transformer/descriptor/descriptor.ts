@@ -13,16 +13,15 @@ export const createTypeDescriber = (
   const resolvedTypeDescriptors: TypeDescriptorMap = new Map();
 
   function describeType(scope: ts.TypeNode, type: ts.Type): TypeName {
-    const typeName = typeChecker.typeToString(type);
+    const rawTypeName = typeChecker.typeToString(type);
 
-    logger.info('Describing', typeName);
+    logger.info('Describing', rawTypeName);
     logger.debug('\tType flags: ', typeFlags(type).join(', '));
     logger.debug('\tObject flags: ', objectFlags(type).join(', '));
 
     const resolvedTypeName = resolvedTypeNames.get(type);
     if (resolvedTypeName) return resolvedTypeName;
 
-    const rawTypeName = typeChecker.typeToString(type);
     const uniqueTypeName = getUniqueTypeName(rawTypeName, Array.from(resolvedTypeNames.values()));
 
     resolvedTypeNames.set(type, uniqueTypeName);
