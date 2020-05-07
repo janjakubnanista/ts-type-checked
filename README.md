@@ -340,19 +340,6 @@ module.exports = {
 <a id="api"></a>
 ## API
 
-### Transformer API
-
-The transformer function is exported from `ts-type-checked/transformer`:
-
-```typescript
-import transformer from 'ts-type-checked/transformer';
-
-// Or equivalent
-const transfomer = require('ts-type-checked/transformer').default;
-```
-
-*Please refer to the [installation section](#installation)  for more information on how to plug the transfomer into your build.*
-
 ### Type guard API
 
 *Please refer to the [TypeScript definition file](https://github.com/janjakubnanista/ts-type-checked/tree/master/index.d.ts) of the module for more information.*
@@ -389,22 +376,381 @@ function doMyStuff<T>(value: unknown) {
 
 **The type that you pass to `typeCheckFor` must not be a type parameter either!** (see above)
 
+### Transformer API
+
+The transformer function is exported from `ts-type-checked/transformer`:
+
+```typescript
+import transformer from 'ts-type-checked/transformer';
+
+// Or equivalent
+const transfomer = require('ts-type-checked/transformer').default;
+```
+
+*Please refer to the [installation section](#installation)  for more information on how to plug the transfomer into your build.*
+
 <a id="supported-types"></a>
-## Supported types
+## Supported TypeScript features
 
-`ts-type-checked` supports (reasonably large but still only) a subset of TypeScript features.
+`ts-type-checked` supports (reasonably large but still only) a subset of TypeScript features:
 
-- **Primitive types** `string`, `number`, `boolean`, `bigint`, `symbol` are supported using `typeof` operator
-- **Boxed types** `String`, `Number`, `Boolean`, `BigInt`, `Symbol` are converted to their unboxed versions and checked using `typeof` operator. 
-- **Array types** `any[]`, `Array<any>`, `ReadonlyArray<any>` are supported using `Array.isArray` utility. **All the elements are checked as well** so avoid unneccessary type checks of long lists.
-- **Date type** `Date` is supported using `instanceof` keyword
-- **DOM types** `Node`, `Element` (and all its subclasses) are supported using `instanceof` keyword
-- **Object types** `object`, `Object`, `{}` are supported as specified in [TypeScript reference](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html#object-type).
-- **Function types** `Function`, `(...args: any[]) => any` are supported using `typeof` operator. **Due to the nature of JavaScript it is impossible to check the return type of a function without calling it** so the signature of a function is not checked.
-- **Promise types** `Promise<any>` are supported by checking for `then` and `catch` methods. **Type checking promises is generally discouraged in favour of converting values into promises using `Promise.resolve`**
-- **Set & Map** `Set<any>`, `Map<any, any>` are checked using `instanceof` operator. **All values (and keys for `Map`) are checked as well.**
+<!-- <tr>
+  <th></th>
+  <td></td>
+  <td></td>
+</tr> -->
 
-## What is not supported
+<table width="100%" cellpadding="4">
+  <thead>
+    <tr>
+      <th align="left">Type&nbsp;/&nbsp;feature</th>
+      <th align="center">Support</th>
+      <th align="left">Notes</th>
+      <th align="left">Implementation</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <!-- Primitive types -->
+    <tr valign="top">
+      <td align="left">
+        <code>bigint</code>,<br/>
+        <code>boolean</code>,<br/>
+        <code>number</code>,<br/>
+        <code>string</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">Primitive types that can be checked using the <code>typeof</code> operator</td>
+      <td align="left">
+        <code>typeof value === 'bigint'</code>,<br/>
+        <code>typeof value === 'boolean'</code>,<br/>
+        <code>typeof value === 'number'</code>,<br/>
+        <code>typeof value === 'string'</code>
+      </td>
+    </tr>
+    <!-- Boxed types -->
+    <tr valign="top">
+      <td align="left">
+        <code>BigInt</code>,<br/>
+        <code>Boolean</code>,<br/>
+        <code>Number</code>,<br/>
+        <code>String</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">Boxed types are converted to their un-boxed versions and checked accordingly</td>
+      <td align="left">
+        <code>typeof value === 'bigint'</code>,<br/>
+        <code>typeof value === 'boolean'</code>,<br/>
+        <code>typeof value === 'number'</code>,<br/>
+        <code>typeof value === 'string'</code>
+      </td>
+    </tr>
+    <!-- any, unknown -->
+    <tr valign="top">
+      <td align="left">
+        <code>any</code>,<br/>
+        <code>unknown</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        Checks for these will always be true
+      </td>
+      <td align="left">
+        <code>true</code>
+      </td>
+    </tr>
+    <!-- object keyword -->
+    <tr valign="top">
+      <td align="left">
+        <code>object</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        All non-primitives (See description of the object type <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html#object">here</a>)
+      </td>
+      <td align="left">
+        <code>typeof value === 'function' || (typeof value === 'object' && value !== null)</code>
+      </td>
+    </tr>
+    <!-- Object interface -->
+    <tr valign="top">
+      <td align="left">
+        <code>Object</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        All objects that inherit from <code>Object</code> (i.e. everything except for <code>null</code> and <code>undefined</code>) and implement the <code>Object</code> interface.
+        <br/>
+        <br/>
+        Check the definition of the <code>Object</code> interface here <a href="https://github.com/microsoft/TypeScript/blob/master/src/lib/es5.d.ts">here</a>
+      </td>
+      <td align="left">
+        <code>value !== null && value !== undefined && typeof value.toString === 'function' && ...</code>
+      </td>
+    </tr>
+    <!-- Date -->
+    <tr valign="top">
+      <td align="left">
+        <code>Date</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        Date objects
+      </td>
+      <td align="left">
+        <code>value instanceof Date</code>
+      </td>
+    </tr>
+    <!-- Set -->
+    <tr valign="top">
+      <td align="left">
+        <code>Set&lt;T&gt;</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        ES6 Sets
+        <br/>
+        <br/>
+        <code>Array.from</code> and <code>Array.every</code> methods are used so they need to be available.
+      </td>
+      <td align="left">
+        <code>(value instanceof Set) && Array.from(value.values()).every(value => isA&lt;T&gt;(value))</code>
+      </td>
+    </tr>
+    <!-- Map -->
+    <tr valign="top">
+      <td align="left">
+        <code>Map&lt;K, V&gt;</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        ES6 Maps
+        <br/>
+        <br/>
+        <code>Array.from</code> and <code>Array.every</code> methods are used so they need to be available.
+      </td>
+      <td align="left">
+        <code>(value instanceof Map) && Array.from(value.entries()).every(entry => isA&lt;K&gt;(entry[0]) && isA&lt;V&gt;(entry[1]))</code>
+      </td>
+    </tr>
+    <!-- Interfaces -->
+    <tr valign="top">
+      <td align="left">
+        <code>interface T {<br/>
+          &nbsp;&nbsp;name:&nbsp;string;<br/>
+          &nbsp;&nbsp;age:&nbsp;number;<br/>
+          &nbsp;&nbsp;others:&nbsp;T[];<br/>
+          &nbsp;&nbsp;// ...<br/>
+        }</code>,
+        <br/>
+        <code>type T = {<br/>
+          &nbsp;&nbsp;name:&nbsp;string;<br/>
+          &nbsp;&nbsp;age:&nbsp;number;<br/>
+          &nbsp;&nbsp;others:&nbsp;T[];<br/>
+          &nbsp;&nbsp;// ...<br/>
+        }</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        All objects that inherit from <code>Object</code> (i.e. everything except for <code>null</code> and <code>undefined</code>) and have all the properties of interface <code>T</code>.
+        <br/>
+        <br/>
+        Recursive types are also supported.
+      </td>
+      <td align="left">
+        <code>value !== null && value !== undefined && typeof value.name === 'string' && typeof value.age === 'number' && isA&lt;T[]&gt;(value.others)</code>
+      </td>
+    </tr>
+    <!-- Indexed types -->
+    <tr valign="top">
+      <td align="left">
+        <code>Record&lt;string, T&gt;</code>,
+        <br/>
+        <code>{<br/>
+          &nbsp;&nbsp;[key: string]: T;<br/>
+        }</code>
+      </td>
+      <td align="center">~</td>
+      <td align="left">
+        All non-primitives (See description of the object type <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html#object">here</a>) whose properties are assignable to <code>T</code>
+        <br/>
+        <br/>
+        <code>Object.keys</code> and <code>Array.every</code> methods are used to check the properties so they need to be available
+        <br/>
+        <br/>
+        <strong>Numeric indexes are not yet supported!</strong>
+      </td>
+      <td align="left">
+        <code>(typeof value === 'function' || (typeof value === 'object' && value !== null)) && Object.keys(value).every(key => isA&lt;T&gt;(value[key]))</code>
+      </td>
+    </tr>
+    <!-- Literal types -->
+    <tr valign="top">
+      <td align="left">
+        <code>'primary'</code>,<br/>
+        <code>21</code>,<br/>
+        <code>true</code>,<br/>
+        <code>false</code>,<br/>
+        <code>null</code>,<br/>
+        <code>undefined</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        Literal types
+      </td>
+      <td align="left">
+        <code>value === 'primary'</code>,<br/>
+        <code>value === 21</code>,<br/>
+        <code>value === true</code>,<br/>
+        <code>value === false</code>,<br/>
+        <code>value === null</code>,<br/>
+        <code>value === undefined</code>,<br/>
+      </td>
+    </tr>
+    <!-- Union types -->
+    <tr valign="top">
+      <td align="left">
+        <code>A | B</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        Union types
+      </td>
+      <td align="left">
+        <code>isA&lt;A&gt;(value) || isA&lt;B&gt;(value)</code>
+      </td>
+    </tr>
+    <!-- Intersection types -->
+    <tr valign="top">
+      <td align="left">
+        <code>A & B</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        Intersection types
+      </td>
+      <td align="left">
+        <code>isA&lt;A&gt;(value) && isA&lt;B&gt;(value)</code>
+      </td>
+    </tr>
+    <!-- Generic types -->
+    <tr valign="top">
+      <td align="left">
+        <code>Type&lt;T&gt;</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        Generic types are supported provided all the type arguments (<code>T</code> in this case) are specified.<br/>
+        <br/>
+        What this means is that you cannot create a generic function and use the <code>isA</code> to check whether a value is assignable to a type parameter of that function.
+        <br/>
+        <br/>
+        Conditional types are also supported as part of generic types.
+      </td>
+      <td align="left"></td>
+    </tr>
+    <!-- Array types -->
+    <tr valign="top">
+      <td align="left">
+        <code>T[]</code>,<br/>
+        <code>Array&lt;T&gt;</code>,<br/>
+        <code>ReadonlyArray&lt;T&gt;</code>,<br/>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        Array types are checked using <code>Array.isArray</code>, the types of elements using <code>Array.every</code> so these need to be available
+      </td>
+      <td align="left">
+        <code>Array.isArray(value) && value.every(element => isA&lt;T&gt;(element))</code>
+      </td>
+    </tr>
+    <!-- Tuple types -->
+    <tr valign="top">
+      <td align="left">
+        <code>[T, U, V]</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        Tuple types are checked for their length as well as the types of their members
+      </td>
+      <td align="left">
+        <code>Array.isArray(value) && value.length === 3 && isA&lt;T&gt;(value[0]) && isA&lt;U&gt;(value[1]) && isA&lt;V&gt;(value[2])</code>
+      </td>
+    </tr>
+    <!-- Function types -->
+    <tr valign="top">
+      <td align="left">
+        <code>Function</code>,<br/>
+        <code>(...args:&nbsp;any[])&nbsp;=>&nbsp;any</code>,<br/>
+        <code>new () => {}</code>
+      </td>
+      <td align="center">~</td>
+      <td align="left">
+        <strong>The signature of the function cannot be checked (since you cannot check the return type of a function without calling it)</strong>
+      </td>
+      <td align="left">
+        <code>typeof value === 'function'</code>
+      </td>
+    </tr>
+    <!-- Callable interface -->
+    <tr valign="top">
+      <td align="left">
+        <code>
+          interface T {<br/>
+          &nbsp;&nbsp;() => string;<br/>
+          &nbsp;&nbsp;callCount: number;<br/>
+          }
+        </code>
+      </td>
+      <td align="center">~</td>
+      <td align="left">
+        <strong>The signature of the function cannot be checked (since you cannot check the return type of a function without calling it)</strong>
+      </td>
+      <td align="left">
+        <code>typeof value === 'function' && typeof(value.callCount) === 'number'</code>
+      </td>
+    </tr>
+    <!-- Promises -->
+    <tr valign="top">
+      <td align="left">
+        <code>Promise&lt;T&gt;</code>
+      </td>
+      <td align="center">~</td>
+      <td align="left">
+        <strong>The resolution value of the promise cannot be checked.</strong>
+        <br/>
+        <br/>
+        Checking for promise types is discouraged in favor of using the <code>Promise.resolve</code> method.
+      </td>
+      <td align="left">
+        <code>!!value && typeof value.then === 'function' && typeof value.catch === 'function'</code>
+      </td>
+    </tr>
+    <!-- DOM types -->
+    <tr valign="top">
+      <td align="left">
+        <code>Node</code>,<br/>
+        <code>Element</code>,<br/>
+        <code>HTMLElement</code>,<br/>
+        <code>HTMLDivElement</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        The global DOM classes
+      </td>
+      <td align="left">
+        <code>value instanceof Node</code>,<br/>
+        <code>value instanceof Element</code>,<br/>
+        <code>value instanceof HTMLElement</code>,<br/>
+        <code>value instanceof HTMLDivElement</code>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+### What is not supported
 
 - **Promise resolution values** It is impossible to check what the value of a resolved promise will be
 - **Function return types and signatures** It is impossible to check anything about a function apart from the fact that it is a function
+- **Numeric indexed types** Since all the object keys are converted to strings it is tricky to define what `Record<number, any>` means in JavaScript terms - any key that is numeric is also a string. If you have an opinion, please let me know!
+#

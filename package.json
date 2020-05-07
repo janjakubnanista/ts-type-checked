@@ -6,8 +6,8 @@
   "types": "index.d.ts",
   "scripts": {
     "build": "tsc",
-    "clean": "rm -rf transformer/**/*.{js,d.ts}",
-    "lint": "eslint . --fix --ext .ts",
+    "clean": "rm -rf transformer/**.{js,d.ts}",
+    "lint": "eslint . --fix --ext .ts,.tsx",
     "prepublish": "yarn build",
     "test:examples": "cd examples && yarn && yarn install:local && yarn build && yarn start",
     "test:version": "./scripts/test.sh",

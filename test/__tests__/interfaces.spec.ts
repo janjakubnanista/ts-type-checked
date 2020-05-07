@@ -207,25 +207,13 @@ describe('interface types', () => {
     const invalidNegativeArbitrary = fc.anything().filter(notOfType('undefined'));
 
     const positiveChecks: FilterFunction[] = [
-      typeCheckFor<ConditionalOfType<string[], true>>(),
       typeCheckFor<PositiveTypeReference>(),
-      typeCheckFor<GenericReference<PositiveTypeReference>>(),
-      typeCheckFor<GenericReference<ConditionalOfType<string[], true>>>(),
-      (value) => isA<ConditionalOfType<string[], true>>(value),
       (value) => isA<PositiveTypeReference>(value),
-      (value) => isA<GenericReference<PositiveTypeReference>>(value),
-      (value) => isA<GenericReference<ConditionalOfType<string[], true>>>(value),
     ];
 
     const negativeChecks: FilterFunction[] = [
-      typeCheckFor<ConditionalOfType<string[], false>>(),
       typeCheckFor<NegativeReference>(),
-      typeCheckFor<GenericReference<NegativeReference>>(),
-      typeCheckFor<GenericReference<ConditionalOfType<string[], false>>>(),
-      (value) => isA<ConditionalOfType<string[], false>>(value),
       (value) => isA<NegativeReference>(value),
-      (value) => isA<GenericReference<NegativeReference>>(value),
-      (value) => isA<GenericReference<ConditionalOfType<string[], false>>>(value),
     ];
 
     testTypeChecks(validPositiveArbitrary, positiveChecks, true);

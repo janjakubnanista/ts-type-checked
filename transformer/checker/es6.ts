@@ -32,7 +32,7 @@ export const createMapTypeCheck = (
     [],
     [
       createValueCheckFunction(
-        entry =>
+        (entry) =>
           createLogicalAndChain(
             createKeyCheck(ts.createElementAccess(entry, 0)),
             createValueCheck(ts.createElementAccess(entry, 1)),

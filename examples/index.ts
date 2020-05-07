@@ -21,7 +21,7 @@ const isAUser = typeCheckFor<User>();
   { name: 'John', age: 'None' },
   { name: 'Dough', age: 6, hobbies: 'none' },
   { name: 'Jan', age: 30, hobbies: ['gardening', 'coding'] },
-].forEach(value => {
+].forEach((value) => {
   console.log(JSON.stringify(value)); // eslint-disable-line no-console
   console.log('\tIs a string:\t%s', isAString(value)); // eslint-disable-line no-console
   console.log('\tIs a number:\t%s', isANumber(value)); // eslint-disable-line no-console

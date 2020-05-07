@@ -25,8 +25,8 @@ export const recordOf = (values: fc.Arbitrary<unknown>) => fc.dictionary(fc.stri
 export type FilterFunction = (value: unknown) => boolean;
 export const testTypeChecks = <T>(arbitrary: fc.Arbitrary<T>, checks: FilterFunction[], result: boolean) => {
   fc.assert(
-    fc.property(arbitrary, value => {
-      checks.forEach(check => {
+    fc.property(arbitrary, (value) => {
+      checks.forEach((check) => {
         expect(check(value)).toBe(result);
       });
     }),
@@ -54,7 +54,7 @@ export const notAnEmptyArray: FilterFunction = (value: unknown): boolean => !Arr
 export const notAnObject: FilterFunction = (value: unknown): boolean => typeof value !== 'object' || value === null;
 export const notAnEmptyObject: FilterFunction = (value: unknown): boolean =>
   notAnObject(value) || Object.keys(value as any).length !== 0;
-export const notOfType = (...types: TypeOf[]): FilterFunction => value => !types.includes(typeof value);
-export const notAPrimitive: FilterFunction = value => !PRIMITIVE_TYPES.includes(typeof value) && value !== null;
-export const aPrimitive: FilterFunction = value => !notAPrimitive(value);
-export const notALiteral = (...literals: unknown[]): FilterFunction => value => !literals.includes(value);
+export const notOfType = (...types: TypeOf[]): FilterFunction => (value) => !types.includes(typeof value);
+export const notAPrimitive: FilterFunction = (value) => !PRIMITIVE_TYPES.includes(typeof value) && value !== null;
+export const aPrimitive: FilterFunction = (value) => !notAPrimitive(value);
+export const notALiteral = (...literals: unknown[]): FilterFunction => (value) => !literals.includes(value);

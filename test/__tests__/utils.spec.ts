@@ -23,7 +23,7 @@ describe('utils', () => {
       expect(aPrimitive(() => true)).toBeFalsy();
 
       fc.assert(
-        fc.property(primitive(), value => {
+        fc.property(primitive(), (value) => {
           expect(aPrimitive(value)).toBeTruthy();
         }),
       );
@@ -48,7 +48,7 @@ describe('utils', () => {
       expect(notAPrimitive(() => true)).toBeTruthy();
 
       fc.assert(
-        fc.property(primitive(), value => {
+        fc.property(primitive(), (value) => {
           expect(notAPrimitive(value)).toBeFalsy();
         }),
       );

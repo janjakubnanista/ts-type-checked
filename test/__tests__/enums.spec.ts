@@ -23,10 +23,10 @@ describe('enums', () => {
         typeCheckFor<TypeReference1>(),
         typeCheckFor<GenericReference<Enum>>(),
         typeCheckFor<GenericReference<TypeReference1>>(),
-        value => isA<Enum>(value),
-        value => isA<TypeReference1>(value),
-        value => isA<GenericReference<Enum>>(value),
-        value => isA<GenericReference<TypeReference1>>(value),
+        (value) => isA<Enum>(value),
+        (value) => isA<TypeReference1>(value),
+        (value) => isA<GenericReference<Enum>>(value),
+        (value) => isA<GenericReference<TypeReference1>>(value),
       ];
 
       testTypeChecks(validArbitrary, checks, true);
@@ -49,10 +49,10 @@ describe('enums', () => {
         typeCheckFor<TypeReference1>(),
         typeCheckFor<GenericReference<Enum>>(),
         typeCheckFor<GenericReference<TypeReference1>>(),
-        value => isA<Enum>(value),
-        value => isA<TypeReference1>(value),
-        value => isA<GenericReference<Enum>>(value),
-        value => isA<GenericReference<TypeReference1>>(value),
+        (value) => isA<Enum>(value),
+        (value) => isA<TypeReference1>(value),
+        (value) => isA<GenericReference<Enum>>(value),
+        (value) => isA<GenericReference<TypeReference1>>(value),
       ];
 
       testTypeChecks(validArbitrary, checks, true);
@@ -77,10 +77,10 @@ describe('enums', () => {
         typeCheckFor<TypeReference1>(),
         typeCheckFor<GenericReference<Enum>>(),
         typeCheckFor<GenericReference<TypeReference1>>(),
-        value => isA<Enum>(value),
-        value => isA<TypeReference1>(value),
-        value => isA<GenericReference<Enum>>(value),
-        value => isA<GenericReference<TypeReference1>>(value),
+        (value) => isA<Enum>(value),
+        (value) => isA<TypeReference1>(value),
+        (value) => isA<GenericReference<Enum>>(value),
+        (value) => isA<GenericReference<TypeReference1>>(value),
       ];
 
       testTypeChecks(validArbitrary, checks, true);
@@ -103,10 +103,10 @@ describe('enums', () => {
         typeCheckFor<TypeReference1>(),
         typeCheckFor<GenericReference<Enum>>(),
         typeCheckFor<GenericReference<TypeReference1>>(),
-        value => isA<Enum>(value),
-        value => isA<TypeReference1>(value),
-        value => isA<GenericReference<Enum>>(value),
-        value => isA<GenericReference<TypeReference1>>(value),
+        (value) => isA<Enum>(value),
+        (value) => isA<TypeReference1>(value),
+        (value) => isA<GenericReference<Enum>>(value),
+        (value) => isA<GenericReference<TypeReference1>>(value),
       ];
 
       testTypeChecks(validArbitrary, checks, true);

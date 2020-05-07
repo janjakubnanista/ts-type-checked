@@ -61,7 +61,7 @@ describe('React', () => {
           key: reactKeyArbitrary,
         }),
       );
-      const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), value => isA<TypeReference1>(value)];
+      const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
 
       testTypeChecks(validArbitrary, checks, true);
       testTypeChecks(invalidArbitrary, checks, false);
@@ -110,7 +110,7 @@ describe('React', () => {
           key: reactKeyArbitrary,
         }),
       );
-      const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), value => isA<TypeReference1>(value)];
+      const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
 
       testTypeChecks(validArbitrary, checks, true);
       testTypeChecks(invalidArbitrary, checks, false);
@@ -132,7 +132,7 @@ describe('React', () => {
       ),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), value => isA<TypeReference1>(value)];
+    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
 
     testTypeChecks(validArbitrary, checks, true);
     testTypeChecks(invalidArbitrary, checks, false);
@@ -145,16 +145,13 @@ describe('React', () => {
       current: fc.option(fc.string()),
     });
     const invalidArbitrary = fc.oneof(
-      fc.anything().filter(value => !notAPrimitive(value)),
+      fc.anything().filter((value) => !notAPrimitive(value)),
       fc.record({
-        current: fc
-          .anything()
-          .filter(notOfType('string'))
-          .filter(notALiteral(null)),
+        current: fc.anything().filter(notOfType('string')).filter(notALiteral(null)),
       }),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), value => isA<TypeReference1>(value)];
+    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
 
     testTypeChecks(validArbitrary, checks, true);
     testTypeChecks(invalidArbitrary, checks, false);
