@@ -5,7 +5,7 @@ import { FilterFunction, notAnEmptyObject, notAnObject, recordOf, testTypeChecks
 import { isA, typeCheckFor } from 'ts-type-checked';
 import fc from 'fast-check';
 
-describe('Record', () => {
+describe('indexed types', () => {
   test('string records', () => {
     type TypeReference1 = Record<string, boolean>;
     type TypeReference2 = {
