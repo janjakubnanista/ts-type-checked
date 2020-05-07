@@ -52,8 +52,7 @@ export const primitive = (): fc.Arbitrary<Primitive> =>
 export const notAnArray: FilterFunction = (value: unknown): boolean => !Array.isArray(value);
 export const notAnEmptyArray: FilterFunction = (value: unknown): boolean => !Array.isArray(value) || value.length !== 0;
 export const notAnObject: FilterFunction = (value: unknown): boolean => typeof value !== 'object' || value === null;
-export const notAnEmptyObject: FilterFunction = (value: unknown): boolean =>
-  notAnObject(value) || Object.keys(value as any).length !== 0;
+export const notAnEmptyObject: FilterFunction = (value: unknown): boolean => Object.keys(value as any).length !== 0;
 export const notOfType = (...types: TypeOf[]): FilterFunction => (value) => !types.includes(typeof value);
 export const notAPrimitive: FilterFunction = (value) => !PRIMITIVE_TYPES.includes(typeof value) && value !== null;
 export const aPrimitive: FilterFunction = (value) => !notAPrimitive(value);
