@@ -43,7 +43,7 @@ function visitNode(
       throw new Error('typeCheckFor<T>() requires one type parameter, none specified');
     }
 
-    return createValueCheckFunction(value => typeCheckExpressionCreator(typeNode, value));
+    return createValueCheckFunction((value) => typeCheckExpressionCreator(typeNode, value));
   }
 
   return node;
@@ -71,7 +71,7 @@ export function visitNodeAndChildren(
 ): ts.Node | undefined {
   return visitEachChild(
     visitNode(node, program, typeCheckExpressionCreator),
-    childNode => visitNodeAndChildren(childNode, program, context, typeCheckExpressionCreator),
+    (childNode) => visitNodeAndChildren(childNode, program, context, typeCheckExpressionCreator),
     context,
   );
 }

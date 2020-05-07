@@ -60,14 +60,14 @@ export const isOurCallExpression = (
 };
 
 export const typeFlags = (type: ts.Type): string[] => {
-  return Object.keys(ts.TypeFlags).filter(flagName => !!((ts.TypeFlags[flagName as any] as any) & type.flags));
+  return Object.keys(ts.TypeFlags).filter((flagName) => !!((ts.TypeFlags[flagName as any] as any) & type.flags));
 };
 
 export const objectFlags = (type: ts.Type): string[] => {
   const objectFlags = (type as ts.TypeReference).objectFlags;
   if (typeof objectFlags !== 'number') return [];
 
-  return Object.keys(ts.ObjectFlags).filter(flagName => !!((ts.ObjectFlags[flagName as any] as any) & objectFlags));
+  return Object.keys(ts.ObjectFlags).filter((flagName) => !!((ts.ObjectFlags[flagName as any] as any) & objectFlags));
 };
 
 export const addTypeCheckerMap = (

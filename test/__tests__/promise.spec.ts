@@ -14,11 +14,11 @@ describe('Promise', () => {
         then: fc.func(fc.anything()),
         catch: fc.func(fc.anything()),
       }),
-      fc.anything().map(value => Promise.resolve(value)),
+      fc.anything().map((value) => Promise.resolve(value)),
     );
     const invalidArbitrary = fc.anything();
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), value => isA<TypeReference1>(value)];
+    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
 
     testTypeChecks(validArbitrary, checks, true);
     testTypeChecks(invalidArbitrary, checks, false);

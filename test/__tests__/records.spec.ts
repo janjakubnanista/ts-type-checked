@@ -18,7 +18,7 @@ describe('Record', () => {
     const validSpecialCases = fc.constantFrom({}, new Object(), { 6: true }, { [Symbol('value')]: false });
     const validArbitrary = fc.oneof(
       validSpecialCases,
-      fc.boolean().map(property => Object.assign(() => 'string', { property })),
+      fc.boolean().map((property) => Object.assign(() => 'string', { property })),
       recordOf(fc.boolean()),
     );
 
@@ -35,11 +35,11 @@ describe('Record', () => {
       typeCheckFor<TypeReference1>(),
       typeCheckFor<TypeReference2>(),
       typeCheckFor<TypeReference3>(),
-      value => isA<Record<string, boolean>>(value),
-      value => isA<{ [key: string]: boolean }>(value),
-      value => isA<TypeReference1>(value),
-      value => isA<TypeReference2>(value),
-      value => isA<TypeReference3>(value),
+      (value) => isA<Record<string, boolean>>(value),
+      (value) => isA<{ [key: string]: boolean }>(value),
+      (value) => isA<TypeReference1>(value),
+      (value) => isA<TypeReference2>(value),
+      (value) => isA<TypeReference3>(value),
     ];
 
     testTypeChecks(validArbitrary, checks, true);

@@ -1,15 +1,7 @@
 import 'jest';
 
 // @ts-ignore
-import {
-  FilterFunction,
-  aPrimitive,
-  notALiteral,
-  notAPrimitive,
-  notAnEmptyArray,
-  notOfType,
-  testTypeChecks,
-} from './utils';
+import { FilterFunction, aPrimitive, notALiteral, notAnEmptyArray, notOfType, testTypeChecks } from './utils';
 import { isA, typeCheckFor } from 'ts-type-checked';
 import fc from 'fast-check';
 
