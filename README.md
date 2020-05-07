@@ -753,4 +753,19 @@ const transfomer = require('ts-type-checked/transformer').default;
 - **Promise resolution values** It is impossible to check what the value of a resolved promise will be
 - **Function return types and signatures** It is impossible to check anything about a function apart from the fact that it is a function
 - **Numeric indexed types** Since all the object keys are converted to strings it is tricky to define what `Record<number, any>` means in JavaScript terms - any key that is numeric is also a string. If you have an opinion, please let me know!
-#
+
+## Supported TypeScript versions
+
+`ts-type-checked` has an extensive E2E test suite found in the [test](https://github.com/janjakubnanista/ts-type-checked/tree/master/test) folder. This suite is being run against several TS versions (the list can be found [here](https://github.com/janjakubnanista/ts-type-checked/blob/master/scripts/versions.txt)):
+
+- `3.9.0-beta`
+- `3.8.3`
+- `3.8.2`
+- `3.8.1`
+- `3.8.0`
+- `3.7.5`
+- `3.7.4`
+- `3.7.3`
+- `3.7.2`
+- `3.7.1`
+- `3.7.0`
