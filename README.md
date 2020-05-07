@@ -41,7 +41,7 @@
 
 TypeScript is a powerful way of enhancing your application code at compile time but, unfortunately, provides no runtime type guards out of the box - you need to [create these manually](https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards). For types like `string` or `boolean` this is easy, you can just use the `typeof` operator. It becomes more difficult for interface types, arrays, enums etc. And that is where `ts-type-checked` comes in! It automatically creates these type guards at compile time for you.
 
-This might get usefule when:
+This might get useful when:
 
 - You want to make sure an object you received from an API matches the expected type
 - You are exposing your code as a library and want to prevent users from passing in invalid arguments
