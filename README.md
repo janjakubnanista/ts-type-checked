@@ -758,7 +758,8 @@ const transfomer = require('ts-type-checked/transformer').default;
 
 `ts-type-checked` has an extensive E2E test suite found in the [test](https://github.com/janjakubnanista/ts-type-checked/tree/master/test) folder. This suite is being run against several TS versions (the list can be found [here](https://github.com/janjakubnanista/ts-type-checked/blob/master/scripts/versions.txt)):
 
-- `3.9.0-beta`
+- `4.0.0-dev.20200514`
+- `3.9.2`
 - `3.8.3`
 - `3.8.2`
 - `3.8.1`
