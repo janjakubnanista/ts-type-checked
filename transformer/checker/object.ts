@@ -23,7 +23,7 @@ const createIsNotNullOrUndefined = (value: ts.Expression): ts.Expression =>
 // - Record       -> everything but number, string, boolean, symbol, null, or undefined
 export const createObjectTypeCheck = (
   value: ts.Expression,
-  { callable, properties, stringIndexType }: InterfaceTypeDescriptor,
+  { callable, properties, numberIndexType, stringIndexType }: InterfaceTypeDescriptor,
   createObjectPropertyCheck: CreateObjectPropertyCheck,
 ): ts.Expression => {
   const propertyChecks = properties.map((property) =>
@@ -33,35 +33,47 @@ export const createObjectTypeCheck = (
   const objectKeys = ts.createCall(ts.createPropertyAccess(ts.createIdentifier('Object'), 'keys'), [], [value]);
   const basicTypeCheck = callable
     ? createIsOfType(value, ts.createLiteral('function'))
-    : stringIndexType
+    : stringIndexType || numberIndexType
     ? createIsNotPrimitive(value)
     : createIsNotNullOrUndefined(value);
-  const indexPropertyChecks = stringIndexType
-    ? [
-        ts.createCall(
-          ts.createPropertyAccess(objectKeys, 'every'),
-          [],
-          [
-            createValueCheckFunction((key) => {
-              const propertyValue = ts.createElementAccess(value, key);
-              const propertyCheck = createObjectPropertyCheck(stringIndexType, propertyValue);
-              const explicitPropertyCheck = properties.length
-                ? createLogicalOrChain(...properties.map(({ accessor }) => ts.createStrictEquality(accessor, key)))
-                : undefined;
 
-              if (explicitPropertyCheck) {
-                return ts.createBlock([
-                  ts.createIf(explicitPropertyCheck, ts.createBlock([ts.createReturn(ts.createTrue())])),
-                  ts.createReturn(propertyCheck),
-                ]);
-              }
+  const indexPropertyChecks =
+    stringIndexType || numberIndexType
+      ? [
+          ts.createCall(
+            ts.createPropertyAccess(objectKeys, 'every'),
+            [],
+            [
+              createValueCheckFunction((key) => {
+                const propertyValue = ts.createElementAccess(value, key);
+                const numberPropertyCheck = numberIndexType
+                  ? createLogicalOrChain(
+                      createLogicalAndChain(
+                        ts.createCall(
+                          ts.createIdentifier('isNaN'),
+                          [],
+                          [ts.createCall(ts.createIdentifier('parseFloat'), [], [key])],
+                        ),
+                        ts.createStrictInequality(key, ts.createStringLiteral('NaN')),
+                      ),
+                      createObjectPropertyCheck(numberIndexType, propertyValue),
+                    )
+                  : undefined;
 
-              return propertyCheck;
-            }, 'key'),
-          ],
-        ),
-      ]
-    : [];
+                const stringPropertyCheck = stringIndexType
+                  ? createObjectPropertyCheck(stringIndexType, propertyValue)
+                  : undefined;
+
+                const checks: ts.Expression[] = [numberPropertyCheck, stringPropertyCheck].filter(
+                  Boolean,
+                ) as ts.Expression[];
+
+                return createLogicalAndChain(...checks);
+              }, 'key'),
+            ],
+          ),
+        ]
+      : [];
 
   return createLogicalAndChain(basicTypeCheck, ...propertyChecks, ...indexPropertyChecks);
 };

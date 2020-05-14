@@ -1,20 +1,20 @@
 import 'jest';
 
-// @ts-ignore
 import {
-  FilterFunction,
-  GenericReference,
   InterfaceWithDifferentPropertyOfType,
   InterfaceWithPropertiesOfTypes,
   InterfaceWithPropertyOfType,
-  aPrimitive,
+  assert,
   notAnArray,
   notAnEmptyArray,
   notAnObject,
   notOfType,
+  numeric,
   optionalOf,
-  testTypeChecks,
+  primitive,
 } from './utils';
+
+// @ts-ignore
 import { isA, typeCheckFor } from 'ts-type-checked';
 import fc from 'fast-check';
 
@@ -35,7 +35,7 @@ describe('interface types', () => {
       ),
       fc.array(fc.anything()),
       fc.date(),
-      fc.integer(),
+      numeric(),
       fc.string(),
       fc.bigInt(),
       fc.boolean(),
@@ -44,10 +44,7 @@ describe('interface types', () => {
     );
     const invalidArbitrary = fc.constantFrom(null, undefined);
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('simple property', () => {
@@ -68,17 +65,14 @@ describe('interface types', () => {
     const invalidSpecialCases = fc.constantFrom<unknown>({}, { a: false });
     const invalidArbitrary = fc.oneof(
       invalidSpecialCases,
-      fc.anything().filter(aPrimitive),
+      primitive(),
       invalidPropertyArbitrary.map((property) => Object.assign(() => true, { property })),
       fc.record({
         property: invalidPropertyArbitrary,
       }),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('with Object methods', () => {
@@ -109,10 +103,7 @@ describe('interface types', () => {
 
     const invalidArbitrary = fc.oneof(fc.constantFrom(null, undefined));
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('optional property', () => {
@@ -145,31 +136,27 @@ describe('interface types', () => {
       }),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('recursion', () => {
-    type RecursiveType = InterfaceWithPropertyOfType<RecursiveType | number>;
+    type TypeReference1 = InterfaceWithPropertyOfType<TypeReference1 | number>;
 
-    const tree: fc.Memo<RecursiveType> = fc.memo(() => node());
-    const node: fc.Memo<RecursiveType> = fc.memo((n) => {
+    const tree: fc.Memo<TypeReference1> = fc.memo(() => node());
+    const node: fc.Memo<TypeReference1> = fc.memo((n) => {
       if (n <= 1)
-        return fc.record<RecursiveType>({
-          property: fc.oneof(fc.integer(), fc.float()),
+        return fc.record<TypeReference1>({
+          property: numeric(),
         });
 
-      return fc.record<RecursiveType>({
+      return fc.record<TypeReference1>({
         property: tree(),
       });
     });
 
-    const validObjectArbitrary = tree();
-
+    const validArbitrary = tree();
     const invalidSpecialCases = fc.constantFrom({}, { property: 'number' }, { property: undefined });
-    const invalidObjectArbitrary = fc.oneof(
+    const invalidArbitrary = fc.oneof(
       invalidSpecialCases,
       fc.anything().filter(notAnObject),
       fc.record({
@@ -179,15 +166,7 @@ describe('interface types', () => {
       }),
     );
 
-    const checks: FilterFunction[] = [
-      typeCheckFor<RecursiveType>(),
-      typeCheckFor<GenericReference<RecursiveType>>(),
-      typeCheckFor<RecursiveType>(),
-      typeCheckFor<GenericReference<RecursiveType>>(),
-    ];
-
-    testTypeChecks(validObjectArbitrary, checks, true);
-    testTypeChecks(invalidObjectArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('conditional types', () => {
@@ -206,21 +185,14 @@ describe('interface types', () => {
     const validNegativeArbitrary = fc.constantFrom(undefined, void 0);
     const invalidNegativeArbitrary = fc.anything().filter(notOfType('undefined'));
 
-    const positiveChecks: FilterFunction[] = [
+    assert(validPositiveArbitrary, invalidPositiveArbitrary, [
       typeCheckFor<PositiveTypeReference>(),
       (value) => isA<PositiveTypeReference>(value),
-    ];
-
-    const negativeChecks: FilterFunction[] = [
+    ]);
+    assert(validNegativeArbitrary, invalidNegativeArbitrary, [
       typeCheckFor<NegativeReference>(),
       (value) => isA<NegativeReference>(value),
-    ];
-
-    testTypeChecks(validPositiveArbitrary, positiveChecks, true);
-    testTypeChecks(invalidPositiveArbitrary, positiveChecks, false);
-
-    testTypeChecks(validNegativeArbitrary, negativeChecks, true);
-    testTypeChecks(invalidNegativeArbitrary, negativeChecks, false);
+    ]);
   });
 
   test('multiple properties', () => {
@@ -235,14 +207,14 @@ describe('interface types', () => {
       }),
     });
     const invalidArbitrary = fc.oneof(
-      fc.anything().filter(aPrimitive),
+      primitive(),
       fc.record({
         property1: fc.anything().filter(notOfType('boolean')),
-        property2: fc.anything().filter(aPrimitive),
+        property2: primitive(),
       }),
       fc.record({
         property1: fc.boolean(),
-        property2: fc.anything().filter(aPrimitive),
+        property2: primitive(),
       }),
       fc.record({
         property1: fc.boolean(),
@@ -252,10 +224,7 @@ describe('interface types', () => {
       }),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('intersection', () => {
@@ -264,26 +233,23 @@ describe('interface types', () => {
     type TypeReference1 = NumberPropertyObjectType & StringDifferentPropertyObjectType;
 
     const validArbitrary = fc.record<TypeReference1>({
-      property: fc.integer(),
+      property: numeric(),
       differentProperty: fc.string(),
     });
     const invalidArbitrary = fc.oneof(
       fc.constantFrom({}, { property: undefined }),
-      fc.anything().filter(aPrimitive),
+      primitive(),
       fc.record({
         property: fc.anything().filter(notOfType('number')),
         differentProperty: fc.string(),
       }),
       fc.record({
-        property: fc.integer(),
+        property: numeric(),
         differentProperty: fc.anything().filter(notOfType('string')),
       }),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('callable', () => {
@@ -293,7 +259,7 @@ describe('interface types', () => {
     };
 
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc
-      .tuple(fc.func(fc.anything() as fc.Arbitrary<string>), fc.oneof(fc.integer(), fc.float()))
+      .tuple(fc.func(fc.anything() as fc.Arbitrary<string>), numeric())
       .map(([object, property]) => Object.assign(object, { property }));
 
     const invalidArbitrary = fc.oneof(
@@ -303,9 +269,6 @@ describe('interface types', () => {
         .map(([object, property]) => Object.assign(object, { property })),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 });

@@ -1,7 +1,8 @@
 import 'jest';
 
+import { assert, notALiteral } from './utils';
+
 // @ts-ignore
-import { FilterFunction, GenericReference, notALiteral, testTypeChecks } from './utils';
 import { isA, typeCheckFor } from 'ts-type-checked';
 import fc from 'fast-check';
 
@@ -18,19 +19,7 @@ describe('enums', () => {
       const validArbitrary = fc.constantFrom(Enum.A, Enum.B);
       const invalidArbitrary = fc.anything().filter(notALiteral(Enum.A, Enum.B));
 
-      const checks: FilterFunction[] = [
-        typeCheckFor<Enum>(),
-        typeCheckFor<TypeReference1>(),
-        typeCheckFor<GenericReference<Enum>>(),
-        typeCheckFor<GenericReference<TypeReference1>>(),
-        (value) => isA<Enum>(value),
-        (value) => isA<TypeReference1>(value),
-        (value) => isA<GenericReference<Enum>>(value),
-        (value) => isA<GenericReference<TypeReference1>>(value),
-      ];
-
-      testTypeChecks(validArbitrary, checks, true);
-      testTypeChecks(invalidArbitrary, checks, false);
+      assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
     });
 
     test('with values', () => {
@@ -44,19 +33,7 @@ describe('enums', () => {
       const validArbitrary = fc.constantFrom(Enum.A, Enum.B);
       const invalidArbitrary = fc.anything().filter(notALiteral(Enum.A, Enum.B));
 
-      const checks: FilterFunction[] = [
-        typeCheckFor<Enum>(),
-        typeCheckFor<TypeReference1>(),
-        typeCheckFor<GenericReference<Enum>>(),
-        typeCheckFor<GenericReference<TypeReference1>>(),
-        (value) => isA<Enum>(value),
-        (value) => isA<TypeReference1>(value),
-        (value) => isA<GenericReference<Enum>>(value),
-        (value) => isA<GenericReference<TypeReference1>>(value),
-      ];
-
-      testTypeChecks(validArbitrary, checks, true);
-      testTypeChecks(invalidArbitrary, checks, false);
+      assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
     });
   });
 
@@ -72,19 +49,7 @@ describe('enums', () => {
       const validArbitrary = fc.constantFrom(Enum.A, Enum.B);
       const invalidArbitrary = fc.anything().filter(notALiteral(Enum.A, Enum.B));
 
-      const checks: FilterFunction[] = [
-        typeCheckFor<Enum>(),
-        typeCheckFor<TypeReference1>(),
-        typeCheckFor<GenericReference<Enum>>(),
-        typeCheckFor<GenericReference<TypeReference1>>(),
-        (value) => isA<Enum>(value),
-        (value) => isA<TypeReference1>(value),
-        (value) => isA<GenericReference<Enum>>(value),
-        (value) => isA<GenericReference<TypeReference1>>(value),
-      ];
-
-      testTypeChecks(validArbitrary, checks, true);
-      testTypeChecks(invalidArbitrary, checks, false);
+      assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
     });
 
     test('with values', () => {
@@ -98,19 +63,7 @@ describe('enums', () => {
       const validArbitrary = fc.constantFrom(Enum.A, Enum.B);
       const invalidArbitrary = fc.anything().filter(notALiteral(Enum.A, Enum.B));
 
-      const checks: FilterFunction[] = [
-        typeCheckFor<Enum>(),
-        typeCheckFor<TypeReference1>(),
-        typeCheckFor<GenericReference<Enum>>(),
-        typeCheckFor<GenericReference<TypeReference1>>(),
-        (value) => isA<Enum>(value),
-        (value) => isA<TypeReference1>(value),
-        (value) => isA<GenericReference<Enum>>(value),
-        (value) => isA<GenericReference<TypeReference1>>(value),
-      ];
-
-      testTypeChecks(validArbitrary, checks, true);
-      testTypeChecks(invalidArbitrary, checks, false);
+      assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
     });
   });
 });

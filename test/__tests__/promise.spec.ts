@@ -1,7 +1,8 @@
 import 'jest';
 
+import { assert } from './utils';
+
 // @ts-ignore
-import { FilterFunction, testTypeChecks } from './utils';
 import { isA, typeCheckFor } from 'ts-type-checked';
 import fc from 'fast-check';
 
@@ -18,9 +19,6 @@ describe('Promise', () => {
     );
     const invalidArbitrary = fc.anything();
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 });
