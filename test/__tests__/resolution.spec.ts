@@ -2,15 +2,16 @@ import 'jest';
 
 import {
   ArrayReference,
-  FilterFunction,
   GenericReference,
   InterfaceWithPropertyOfType,
-  notAPrimitive,
+  assert,
   notAnArray,
   notAnEmptyArray,
   notOfType,
-  testTypeChecks,
+  numeric,
+  primitive,
 } from './utils';
+
 // @ts-ignore
 import { isA, typeCheckFor } from 'ts-type-checked';
 import fc from 'fast-check';
@@ -33,17 +34,8 @@ describe('type resolution', () => {
     const validArbitrary = fc.string();
     const invalidArbitrary = fc.anything().filter(notOfType('string'));
 
-    const checks: FilterFunction[] = [
-      typeCheckFor<string>(),
-      typeCheckFor<TypeReference1>(),
-      typeCheckFor<TypeReference2>(),
-      (value) => isA<string>(value),
-      (value) => isA<TypeReference1>(value),
-      (value) => isA<TypeReference2>(value),
-    ];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference2>(), (value) => isA<TypeReference2>(value)]);
   });
 
   test('array reference', () => {
@@ -57,19 +49,9 @@ describe('type resolution', () => {
       fc.array(fc.anything().filter(notOfType('string'))).filter(notAnEmptyArray),
     );
 
-    const checks: FilterFunction[] = [
-      typeCheckFor<string[]>(),
-      typeCheckFor<TypeReference1>(),
-      typeCheckFor<TypeReference2>(),
-      typeCheckFor<TypeReference3>(),
-      (value) => isA<string[]>(value),
-      (value) => isA<TypeReference1>(value),
-      (value) => isA<TypeReference2>(value),
-      (value) => isA<TypeReference3>(value),
-    ];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference2>(), (value) => isA<TypeReference2>(value)]);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference3>(), (value) => isA<TypeReference3>(value)]);
   });
 
   test('generic reference', () => {
@@ -80,19 +62,9 @@ describe('type resolution', () => {
     const validArbitrary = fc.string();
     const invalidArbitrary = fc.anything().filter(notOfType('string'));
 
-    const checks: FilterFunction[] = [
-      typeCheckFor<string>(),
-      typeCheckFor<TypeReference1>(),
-      typeCheckFor<TypeReference2>(),
-      typeCheckFor<TypeReference3>(),
-      (value) => isA<string>(value),
-      (value) => isA<TypeReference1>(value),
-      (value) => isA<TypeReference2>(value),
-      (value) => isA<TypeReference3>(value),
-    ];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference2>(), (value) => isA<TypeReference2>(value)]);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference3>(), (value) => isA<TypeReference3>(value)]);
   });
 
   test('reference in interface property type', () => {
@@ -104,49 +76,34 @@ describe('type resolution', () => {
     interface TypeReference4 {
       property: number;
     }
-    type TypeReference5 = TypeReference4;
 
-    const validArbitrary = fc.record<
-      TypeReference1 & TypeReference2 & TypeReference3 & TypeReference4 & TypeReference5
-    >({
-      property: fc.oneof(fc.integer(), fc.float()),
+    const validArbitrary = fc.record<TypeReference1 & TypeReference2 & TypeReference3 & TypeReference4>({
+      property: numeric(),
     });
     const invalidArbitrary = fc.oneof(
-      fc.anything().filter((value) => notAPrimitive(value)),
-      fc.tuple(fc.object(), fc.anything().filter(notOfType('number'))),
+      fc.constantFrom({}, { property: 'string' }),
+      primitive(),
+      fc.record({
+        property: fc.anything().filter(notOfType('number')),
+      }),
     );
 
-    const checks: FilterFunction[] = [
-      typeCheckFor<TypeReference1>(),
-      typeCheckFor<TypeReference2>(),
-      typeCheckFor<TypeReference3>(),
-      typeCheckFor<TypeReference4>(),
-      typeCheckFor<TypeReference5>(),
-      (value) => isA<TypeReference1>(value),
-      (value) => isA<TypeReference2>(value),
-      (value) => isA<TypeReference3>(value),
-      (value) => isA<TypeReference4>(value),
-      (value) => isA<TypeReference5>(value),
-    ];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference2>(), (value) => isA<TypeReference2>(value)]);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference3>(), (value) => isA<TypeReference3>(value)]);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference4>(), (value) => isA<TypeReference4>(value)]);
   });
 
   test('signature of a function should not be checked', () => {
     type TypeReference1 = (param: boolean) => string;
 
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.func(fc.anything() as fc.Arbitrary<any>);
-
     const invalidArbitrary = fc.oneof(
       fc.constantFrom<unknown>({}, 'string', false),
       fc.anything().filter(notOfType('function')),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('constructor types', () => {
@@ -155,10 +112,7 @@ describe('type resolution', () => {
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(instantiable);
     const invalidArbitrary = fc.oneof(fc.anything().filter(notOfType('function')));
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('interfaces with constructors', () => {
@@ -169,10 +123,7 @@ describe('type resolution', () => {
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(instantiable);
     const invalidArbitrary = fc.oneof(fc.anything().filter(notOfType('function')));
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('constructor types in unions', () => {
@@ -181,9 +132,6 @@ describe('type resolution', () => {
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(instantiable, fc.string());
     const invalidArbitrary = fc.oneof(fc.anything().filter(notOfType('function', 'string')));
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 });

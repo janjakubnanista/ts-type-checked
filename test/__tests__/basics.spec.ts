@@ -1,7 +1,8 @@
 import 'jest';
 
+import { assert, assertArbitrary, notALiteral, notOfType, numeric, primitive } from './utils';
+
 // @ts-ignore
-import { FilterFunction, aPrimitive, notALiteral, notOfType, testTypeChecks } from './utils';
 import { isA, typeCheckFor } from 'ts-type-checked';
 import fc from 'fast-check';
 
@@ -12,10 +13,7 @@ describe('basics', () => {
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom(undefined, void 0);
     const invalidArbitrary = fc.anything().filter((value) => value !== undefined);
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('any', () => {
@@ -23,9 +21,7 @@ describe('basics', () => {
 
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.anything();
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
+    assertArbitrary(validArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)], true);
   });
 
   test('string', () => {
@@ -34,10 +30,7 @@ describe('basics', () => {
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.string();
     const invalidArbitrary = fc.anything().filter(notOfType('string'));
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('String', () => {
@@ -46,34 +39,25 @@ describe('basics', () => {
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.string();
     const invalidArbitrary = fc.anything().filter(notOfType('string'));
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('number', () => {
     type TypeReference1 = number;
 
-    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(fc.integer(), fc.float());
+    const validArbitrary: fc.Arbitrary<TypeReference1> = numeric();
     const invalidArbitrary = fc.anything().filter(notOfType('number'));
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('Number', () => {
     type TypeReference1 = Number; // eslint-disable-line @typescript-eslint/ban-types
 
-    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(fc.integer(), fc.float());
+    const validArbitrary: fc.Arbitrary<TypeReference1> = numeric();
     const invalidArbitrary = fc.anything().filter(notOfType('number'));
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('boolean', () => {
@@ -82,10 +66,7 @@ describe('basics', () => {
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.boolean();
     const invalidArbitrary = fc.anything().filter(notOfType('boolean'));
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('Boolean', () => {
@@ -94,10 +75,7 @@ describe('basics', () => {
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.boolean();
     const invalidArbitrary = fc.anything().filter(notOfType('boolean'));
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('Boolean', () => {
@@ -106,10 +84,7 @@ describe('basics', () => {
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.boolean();
     const invalidArbitrary = fc.anything().filter(notOfType('boolean'));
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('bigint', () => {
@@ -117,10 +92,8 @@ describe('basics', () => {
 
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.bigInt();
     const invalidArbitrary = fc.anything().filter(notOfType('bigint'));
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
 
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('BigInt', () => {
@@ -129,10 +102,7 @@ describe('basics', () => {
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.bigInt();
     const invalidArbitrary = fc.anything().filter(notOfType('bigint'));
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('object', () => {
@@ -153,13 +123,10 @@ describe('basics', () => {
     );
     const invalidArbitrary = fc.oneof(
       fc.constantFrom<unknown>(true, false, undefined, null, 6, 'string', Symbol('a'), 1n),
-      fc.anything().filter(aPrimitive),
+      primitive(),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('Object', () => {
@@ -176,7 +143,7 @@ describe('basics', () => {
       ),
       fc.array(fc.anything()),
       fc.date(),
-      fc.integer(),
+      numeric(),
       fc.string(),
       fc.bigInt(),
       fc.boolean(),
@@ -185,10 +152,7 @@ describe('basics', () => {
     );
     const invalidArbitrary = fc.constantFrom(null, undefined);
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('Date', () => {
@@ -197,10 +161,7 @@ describe('basics', () => {
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.date();
     const invalidArbitrary = fc.anything().filter((value) => !(value instanceof Date));
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('Function', () => {
@@ -209,10 +170,7 @@ describe('basics', () => {
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.func(fc.anything());
     const invalidArbitrary = fc.anything().filter(notOfType('function'));
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('Function literal', () => {
@@ -221,10 +179,7 @@ describe('basics', () => {
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.func(fc.anything() as fc.Arbitrary<any>);
     const invalidArbitrary = fc.anything().filter(notOfType('function'));
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   // This test is not super DRY
@@ -235,21 +190,15 @@ describe('basics', () => {
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom<TypeReference1>(...literalTypeValues);
     const invalidArbitrary = fc.anything().filter(notALiteral(...literalTypeValues));
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('Error', () => {
     type TypeReference1 = Error;
 
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.string().map((message) => new Error(message));
-    const invalidArbitrary = fc.oneof(fc.anything().filter(aPrimitive), fc.constantFrom({}));
+    const invalidArbitrary = fc.oneof(primitive(), fc.constantFrom({}));
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 });

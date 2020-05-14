@@ -1,16 +1,17 @@
 import 'jest';
 
-// @ts-ignore
 import {
-  FilterFunction,
   InterfaceWithPropertyOfType,
-  aPrimitive,
+  assert,
   notALiteral,
   notAnArray,
   notAnEmptyArray,
   notOfType,
-  testTypeChecks,
+  numeric,
+  primitive,
 } from './utils';
+
+// @ts-ignore
 import { isA, typeCheckFor } from 'ts-type-checked';
 import fc from 'fast-check';
 
@@ -27,10 +28,7 @@ describe('arrays', () => {
       fc.array(fc.anything().filter(notOfType('string'))).filter(notAnEmptyArray),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('literal[]', () => {
@@ -44,10 +42,7 @@ describe('arrays', () => {
       fc.array(fc.anything().filter(notOfType('string'))).filter(notAnEmptyArray),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('interface[]', () => {
@@ -61,7 +56,7 @@ describe('arrays', () => {
     const invalidArbitrary = fc.oneof(
       fc.constantFrom({}, new Object(), [{}], [{ property: 'string' }, false], [[]]),
       fc.anything().filter(notAnArray),
-      fc.array(fc.anything().filter(aPrimitive)).filter(notAnEmptyArray),
+      fc.array(primitive()).filter(notAnEmptyArray),
       fc
         .array(
           fc.record({
@@ -71,27 +66,21 @@ describe('arrays', () => {
         .filter(notAnEmptyArray),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('tuple', () => {
     type TypeReference1 = [number, true, string];
 
-    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.tuple(fc.integer(), fc.constant(true), fc.string());
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.tuple(numeric(), fc.constant(true), fc.string());
     const invalidArbitrary = fc.oneof(
       fc.anything().filter(notAnArray),
-      fc.tuple(fc.integer(), fc.constant(true), fc.string(), fc.anything()),
+      fc.tuple(numeric(), fc.constant(true), fc.string(), fc.anything()),
       fc.tuple(fc.anything().filter(notOfType('number')), fc.constant(true), fc.string()),
-      fc.tuple(fc.integer(), fc.anything().filter(notALiteral(true)), fc.string()),
-      fc.tuple(fc.integer(), fc.constant(true), fc.anything().filter(notOfType('string'))),
+      fc.tuple(numeric(), fc.anything().filter(notALiteral(true)), fc.string()),
+      fc.tuple(numeric(), fc.constant(true), fc.anything().filter(notOfType('string'))),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 });

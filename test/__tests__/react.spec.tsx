@@ -1,16 +1,9 @@
 import 'jest';
 import React from 'react';
 
+import { assert, notALiteral, notAnObject, notOfType, numeric, primitive } from './utils';
+
 // @ts-ignore
-import {
-  FilterFunction,
-  aPrimitive,
-  notALiteral,
-  notAPrimitive,
-  notAnObject,
-  notOfType,
-  testTypeChecks,
-} from './utils';
 import { isA, typeCheckFor } from 'ts-type-checked';
 import fc from 'fast-check';
 
@@ -28,7 +21,7 @@ describe('React', () => {
     fc.string(),
     reactComponentTypeArbitrary,
   );
-  const reactKeyArbitrary = fc.option(fc.oneof(fc.string(), fc.integer(), fc.float()));
+  const reactKeyArbitrary = fc.option(fc.oneof(fc.string(), numeric(), fc.float()));
   const reactPropsArbitrary = fc.object();
 
   describe('ReactElement', () => {
@@ -61,10 +54,8 @@ describe('React', () => {
           key: reactKeyArbitrary,
         }),
       );
-      const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
 
-      testTypeChecks(validArbitrary, checks, true);
-      testTypeChecks(invalidArbitrary, checks, false);
+      assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
     });
 
     test('with props type argument', () => {
@@ -75,7 +66,7 @@ describe('React', () => {
       type TypeReference1 = React.ReactElement<TypeReferenceProps>;
 
       const validPropsArbitrary = fc.record<TypeReferenceProps>({
-        property: fc.integer(),
+        property: numeric(),
         onChange: fc.func(fc.constantFrom(undefined)),
       });
       const validArbitrary = fc.record<TypeReference1>({
@@ -104,16 +95,14 @@ describe('React', () => {
         fc.record({
           type: reactTypeArbitrary,
           props: fc.record({
-            property: fc.integer(),
+            property: numeric(),
             onChange: fc.anything().filter(notOfType('function')),
           }),
           key: reactKeyArbitrary,
         }),
       );
-      const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
 
-      testTypeChecks(validArbitrary, checks, true);
-      testTypeChecks(invalidArbitrary, checks, false);
+      assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
     });
   });
 
@@ -122,7 +111,7 @@ describe('React', () => {
 
     const validArbitrary: fc.Arbitrary<TypeReference1> = reactComponentTypeArbitrary;
     const invalidArbitrary = fc.oneof(
-      fc.anything().filter(aPrimitive),
+      primitive(),
       fc.constantFrom<unknown>(
         {},
         <div />,
@@ -132,10 +121,7 @@ describe('React', () => {
       ),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('RefObject', () => {
@@ -145,15 +131,12 @@ describe('React', () => {
       current: fc.option(fc.string()),
     });
     const invalidArbitrary = fc.oneof(
-      fc.anything().filter((value) => !notAPrimitive(value)),
+      primitive(),
       fc.record({
         current: fc.anything().filter(notOfType('string')).filter(notALiteral(null)),
       }),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 });

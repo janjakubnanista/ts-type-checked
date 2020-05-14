@@ -20,10 +20,27 @@ export interface InterfaceWithDifferentPropertyOfType<T> {
 export const optionalOf = <T>(arbitrary: Arbitrary<T>): Arbitrary<T | undefined> =>
   fc.oneof(arbitrary, fc.constant(undefined));
 
-export const recordOf = (values: fc.Arbitrary<unknown>) => fc.dictionary(fc.string(), values);
+export const numeric = (): fc.Arbitrary<number> =>
+  fc.oneof(fc.integer(), fc.float(Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY));
 
+export const primitive = (): fc.Arbitrary<Primitive> =>
+  fc.oneof(fc.string(), fc.boolean(), numeric(), fc.bigInt(), fc.constantFrom(null, undefined, Symbol('a')));
+
+// Filtering functions for arbitraries
 export type FilterFunction = (value: unknown) => boolean;
-export const testTypeChecks = <T>(arbitrary: fc.Arbitrary<T>, checks: FilterFunction[], result: boolean) => {
+type TypeOf = 'string' | 'boolean' | 'number' | 'function' | 'bigint' | 'undefined' | 'object' | 'symbol';
+type Primitive = string | boolean | number | bigint | symbol | null | undefined;
+
+export const notAnArray: FilterFunction = (value: unknown): boolean => !Array.isArray(value);
+export const notAnEmptyArray: FilterFunction = (value: unknown): boolean => !Array.isArray(value) || value.length !== 0;
+export const notAnObject: FilterFunction = (value: unknown): boolean => typeof value !== 'object' || value === null;
+export const notAnEmptyObject: FilterFunction = (value: unknown): boolean => Object.keys(value as any).length !== 0;
+export const notOfType = (...types: TypeOf[]): FilterFunction => (value) => !types.includes(typeof value);
+export const notALiteral = (...literals: unknown[]): FilterFunction => (value) => !literals.includes(value);
+export const notNumeric: FilterFunction = (value) => isNaN(parseFloat(value as any));
+
+// Helper assertion methods
+export const assertArbitrary = (arbitrary: fc.Arbitrary<unknown>, checks: FilterFunction[], result: boolean) => {
   fc.assert(
     fc.property(arbitrary, (value) => {
       checks.forEach((check) => {
@@ -33,27 +50,11 @@ export const testTypeChecks = <T>(arbitrary: fc.Arbitrary<T>, checks: FilterFunc
   );
 };
 
-// Filtering functions for arbitraries
-type Shape = Record<string, FilterFunction>;
-type TypeOf = 'string' | 'boolean' | 'number' | 'function' | 'bigint' | 'undefined' | 'object' | 'symbol';
-type Primitive = string | boolean | number | bigint | symbol | null | undefined;
-
-const PRIMITIVE_TYPES = ['string', 'boolean', 'number', 'bigint', 'symbol', 'undefined'];
-
-export const primitive = (): fc.Arbitrary<Primitive> =>
-  fc.oneof(
-    fc.string(),
-    fc.boolean(),
-    fc.integer(),
-    fc.float(),
-    fc.bigInt(),
-    fc.constantFrom(null, undefined, Symbol('a')),
-  );
-export const notAnArray: FilterFunction = (value: unknown): boolean => !Array.isArray(value);
-export const notAnEmptyArray: FilterFunction = (value: unknown): boolean => !Array.isArray(value) || value.length !== 0;
-export const notAnObject: FilterFunction = (value: unknown): boolean => typeof value !== 'object' || value === null;
-export const notAnEmptyObject: FilterFunction = (value: unknown): boolean => Object.keys(value as any).length !== 0;
-export const notOfType = (...types: TypeOf[]): FilterFunction => (value) => !types.includes(typeof value);
-export const notAPrimitive: FilterFunction = (value) => !PRIMITIVE_TYPES.includes(typeof value) && value !== null;
-export const aPrimitive: FilterFunction = (value) => !notAPrimitive(value);
-export const notALiteral = (...literals: unknown[]): FilterFunction => (value) => !literals.includes(value);
+export const assert = <T>(
+  validArbitrary: fc.Arbitrary<T>,
+  invalidArbitrary: fc.Arbitrary<unknown>,
+  checks: FilterFunction[],
+) => {
+  assertArbitrary(validArbitrary, checks, true);
+  assertArbitrary(invalidArbitrary, checks, false);
+};

@@ -1,6 +1,6 @@
 import 'jest';
 
-import { FilterFunction, aPrimitive, notOfType, testTypeChecks } from './utils';
+import { assert, notOfType, numeric, primitive } from './utils';
 // @ts-ignore
 import { isA, typeCheckFor } from 'ts-type-checked';
 import fc from 'fast-check';
@@ -23,16 +23,13 @@ describe('classes', () => {
       }),
     );
     const invalidArbitrary = fc.oneof(
-      fc.anything().filter(aPrimitive),
+      primitive(),
       fc.record({
         property: fc.anything().filter(notOfType('string')),
       }),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('public methods', () => {
@@ -53,16 +50,13 @@ describe('classes', () => {
       }),
     );
     const invalidArbitrary = fc.oneof(
-      fc.anything().filter(aPrimitive),
+      primitive(),
       fc.record({
         method: fc.anything().filter(notOfType('function')),
       }),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('public async methods', () => {
@@ -83,16 +77,13 @@ describe('classes', () => {
       }),
     );
     const invalidArbitrary = fc.oneof(
-      fc.anything().filter(aPrimitive),
+      primitive(),
       fc.record({
         method: fc.anything().filter(notOfType('function')),
       }),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   test('generic properties', () => {
@@ -107,23 +98,20 @@ describe('classes', () => {
         Object.assign(() => true, { property: NaN }),
       ),
       fc.record({
-        property: fc.oneof(fc.integer(), fc.float()),
+        property: numeric(),
       }),
     );
     const invalidArbitrary = fc.oneof(
-      fc.anything().filter(aPrimitive),
+      primitive(),
       fc.record({
         property: fc.anything().filter(notOfType('number')),
       }),
     );
 
-    const checks: FilterFunction[] = [
+    assert(validArbitrary, invalidArbitrary, [
       typeCheckFor<TypeReference1<number>>(),
       (value) => isA<TypeReference1<number>>(value),
-    ];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    ]);
   });
 
   test('property initailizers', () => {
@@ -142,16 +130,13 @@ describe('classes', () => {
       }),
     );
     const invalidArbitrary = fc.oneof(
-      fc.anything().filter(aPrimitive),
+      primitive(),
       fc.record({
         property: fc.anything().filter(notOfType('string')),
       }),
     );
 
-    const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)];
-
-    testTypeChecks(validArbitrary, checks, true);
-    testTypeChecks(invalidArbitrary, checks, false);
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
   // test.skip('private properties', () => {
@@ -167,7 +152,7 @@ describe('classes', () => {
   //     }),
   //   );
   //   const invalidArbitrary = fc.oneof(
-  //     fc.anything().filter(aPrimitive),
+  //     primitive(),
   //     fc.record({
   //       property: fc.anything().filter(notOfType('string')),
   //     }),
