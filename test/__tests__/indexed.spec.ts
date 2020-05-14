@@ -89,7 +89,7 @@ describe('indexed types', () => {
         Object.assign(() => true, { property: 'string' }),
       ),
       primitive(),
-      fc.dictionary(fc.string(), fc.anything().filter(notOfType('function'))).filter(notAnEmptyObject),
+      fc.dictionary(fc.string(), fc.anything().filter(notOfType('number'))).filter(notAnEmptyObject),
     );
 
     assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
