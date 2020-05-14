@@ -566,8 +566,17 @@ const transfomer = require('ts-type-checked/transformer').default;
       <td align="left">
         <code>Record&lt;string, T&gt;</code>,
         <br/>
+        <code>Record&lt;number, T&gt;</code>,
+        <br/>
         <code>{<br/>
           &nbsp;&nbsp;[key: string]: T;<br/>
+        }</code>
+        <code>{<br/>
+          &nbsp;&nbsp;[key: number]: T;<br/>
+        }</code>
+        <code>{<br/>
+          &nbsp;&nbsp;[key: number]: T;<br/>
+          &nbsp;&nbsp;[key: string]: U;<br/>
         }</code>
       </td>
       <td align="center">~</td>
@@ -578,10 +587,16 @@ const transfomer = require('ts-type-checked/transformer').default;
         <code>Object.keys</code> and <code>Array.every</code> methods are used to check the properties so they need to be available
         <br/>
         <br/>
-        <strong>Numeric indexes are not yet supported!</strong>
+        <strong>The support for numeric indexes works something like this:</strong> if a key can be casted to a number (not a <code>NaN</code>) <strong>OR</strong> is equal to <code>"NaN"</code> then the value is checked against the index type.
       </td>
       <td align="left">
         <code>(typeof value === 'function' || (typeof value === 'object' && value !== null)) && Object.keys(value).every(key => isA&lt;T&gt;(value[key]))</code>
+        <br/>
+        <br/>
+        Or for numeric indexes:
+        <br/>
+        <br/>
+        <code>(typeof value === 'function' || (typeof value === 'object' && value !== null)) && Object.keys(value).every(key => (isNaN(parseFloat(key)) && key !== 'NaN') || isA&lt;T&gt;(value[key]))</code>
       </td>
     </tr>
     <!-- Literal types -->
@@ -752,7 +767,6 @@ const transfomer = require('ts-type-checked/transformer').default;
 
 - **Promise resolution values** It is impossible to check what the value of a resolved promise will be
 - **Function return types and signatures** It is impossible to check anything about a function apart from the fact that it is a function
-- **Numeric indexed types** Since all the object keys are converted to strings it is tricky to define what `Record<number, any>` means in JavaScript terms - any key that is numeric is also a string. If you have an opinion, please let me know!
 
 ## Supported TypeScript versions
 
