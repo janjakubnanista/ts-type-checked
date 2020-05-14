@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "build": "ttsc",
-    "clean": "rm -rf __tests__/*.spec.js",
+    "clean": "rm -rf __tests__/*.js",
     "test": "jest"
   },
   "devDependencies": {
