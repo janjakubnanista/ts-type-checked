@@ -264,6 +264,7 @@ Check https://stackoverflow.com/questions/27746304/how-do-i-tell-if-an-object-is
     const callable = type.getCallSignatures()?.length !== 0;
 
     return (resolve) => {
+      const numberIndexType = type.getNumberIndexType();
       const stringIndexType = type.getStringIndexType();
       const properties: PropertyTypeDescriptor[] = type.getProperties().map((property) => {
         const propertyType = typeChecker.getTypeOfSymbolAtLocation(property, scope);
@@ -280,6 +281,7 @@ Check https://stackoverflow.com/questions/27746304/how-do-i-tell-if-an-object-is
         _type: 'interface',
         callable,
         properties,
+        numberIndexType: numberIndexType ? resolve(scope, numberIndexType) : undefined,
         stringIndexType: stringIndexType ? resolve(scope, stringIndexType) : undefined,
       };
     };

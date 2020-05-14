@@ -10,6 +10,7 @@ export interface InterfaceTypeDescriptor {
   _type: 'interface';
   callable?: boolean;
   properties: PropertyTypeDescriptor[];
+  numberIndexType?: TypeName;
   stringIndexType?: TypeName;
 }
 
