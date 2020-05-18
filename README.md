@@ -459,6 +459,19 @@ const transfomer = require('ts-type-checked/transformer').default;
         <code>true</code>
       </td>
     </tr>
+    <!-- never -->
+    <tr valign="top">
+      <td align="left">
+        <code>never</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        Checks for <code>never</code> will always be false
+      </td>
+      <td align="left">
+        <code>false</code>
+      </td>
+    </tr>
     <!-- object keyword -->
     <tr valign="top">
       <td align="left">

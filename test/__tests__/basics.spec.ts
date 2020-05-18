@@ -24,6 +24,14 @@ describe('basics', () => {
     assertArbitrary(validArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)], true);
   });
 
+  test('never', () => {
+    type TypeReference1 = never;
+
+    const invalidArbitrary: fc.Arbitrary<unknown> = fc.anything();
+
+    assertArbitrary(invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)], false);
+  });
+
   test('string', () => {
     type TypeReference1 = string;
 

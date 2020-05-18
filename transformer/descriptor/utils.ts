@@ -175,6 +175,9 @@ Check https://stackoverflow.com/questions/27746304/how-do-i-tell-if-an-object-is
   // Any
   if (type.flags & ts.TypeFlags.Any || type.flags & ts.TypeFlags.Unknown) return { _type: 'unspecified' };
 
+  // Never
+  if (type.flags & ts.TypeFlags.Never) return { _type: 'never' };
+
   // For the checks below we need access to the TypeNode for this type
   const typeNode = typeChecker.typeToTypeNode(type, scope);
 

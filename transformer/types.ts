@@ -69,6 +69,10 @@ export interface UnspecifiedTypeDescriptor {
   _type: 'unspecified';
 }
 
+export interface NeverTypeDescriptor {
+  _type: 'never';
+}
+
 export type TypeDescriptor =
   | KeywordTypeDescriptor
   | LiteralTypeDescriptor
@@ -81,6 +85,7 @@ export type TypeDescriptor =
   | ClassTypeDescriptor
   | UnionTypeDescriptor
   | IntersectionTypeDescriptor
+  | NeverTypeDescriptor
   | UnspecifiedTypeDescriptor;
 
 export type TypeName = string;
