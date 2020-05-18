@@ -8,6 +8,9 @@
 # The idea is to have a separate package under the `test` folder with its own package.json.
 # This package contains the test suite (as well as some test utilities) that will be run.
 
+set -x
+set -e
+
 DEBUG=
 VERSION=
 
@@ -33,6 +36,9 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+      *)
+      shift # past argument
+      ;;
   esac
 done
 
@@ -47,9 +53,6 @@ if [ -z "$VERSION" ]; then
   exit 1
 fi
 echo "Running tests for version $VERSION"
-
-set -x
-set -e
 
 # Move to the test project
 cd "$TEST_PATH"

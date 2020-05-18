@@ -122,6 +122,9 @@ export const createTypeChecker = (
       case 'unspecified':
         return ts.createTrue();
 
+      case 'never':
+        return ts.createFalse();
+
       default:
         throw new Error('Unable to create a checker for type descriptor ' + (typeDescriptor as TypeDescriptor)._type);
     }
