@@ -1,0 +1,17 @@
+{
+  "name": "@ts-type-checked-examples/ttypescript",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "build": "ttsc",
+    "clean": "rm -rf index.js",
+    "start": "ts-node --compiler ttypescript index.ts"
+  },
+  "devDependencies": {
+    "ttypescript": "^1.5.10",
+    "typescript": "3.7.3"
+  },
+  "dependencies": {
+    "ts-node": "^8.10.2"
+  }
+}

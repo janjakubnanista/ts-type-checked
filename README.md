@@ -39,6 +39,31 @@
 
 ## Wait what?
 
+As they say *an example is worth a thousand API docs* so why not start with one.
+
+```typescript
+interface WelcomeMessage {
+  name: string;
+  hobbies: string[];
+}
+
+//
+// You can now turn this
+//
+const isWelcomeMessage = (message: any): message is WelcomeMessage =>
+  !!value &&
+  typeof value.name === 'string' && 
+  Array.isArray(value.hobbies) && 
+  value.hobbies.every(hobby => typeof hobby === 'string');
+
+//
+// Into this
+//
+const isWelcomeMessage = typeCheckFor<WelcomeMessage>();
+```
+
+## Motivation
+
 TypeScript is a powerful way of enhancing your application code at compile time but, unfortunately, provides no runtime type guards out of the box - you need to [create these manually](https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards). For types like `string` or `boolean` this is easy, you can just use the `typeof` operator. It becomes more difficult for interface types, arrays, enums etc. And that is where `ts-type-checked` comes in! It automatically creates these type guards at compile time for you.
 
 This might get useful when:
@@ -378,6 +403,8 @@ module.exports = {
 
 <a id="installation--ts-node"></a>
 ### ts-node
+
+[See example here](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/ts-node)
 
 #### 1. Configure `ttypescript`
 
