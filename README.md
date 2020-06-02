@@ -25,7 +25,7 @@
   <a href="https://github.com/janjakubnanista/ts-type-checked/blob/master/LICENSE"><img alt="License" src="https://img.shields.io/npm/l/ts-type-checked"/></a>
 </p>
 
-`ts-type-checked` generates [type guards](https://www.typescriptlang.org/docs/handbook/advanced-types.html#type-guards-and-differentiating-types) based on your own (or library) TypeScript types. It is compatible with [rollup](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/rollup), [webpack](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/webpack) and [ttypescript](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/ttypescript) projects and works nicely with [jest](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/jest).
+`ts-type-checked` generates [type guards](https://www.typescriptlang.org/docs/handbook/advanced-types.html#type-guards-and-differentiating-types) based on your own (or library) TypeScript types. It is compatible with [rollup](#installation--rollup), [webpack](#installation--webpack) and [ttypescript](#installation--ttypescript) projects and works nicely with [jest](#installation--jest) and [ts-node](#installation--ts-node).
 
 <p align="center">
   <a href="#example-cases">Example cases</a>
@@ -39,6 +39,31 @@
 
 ## Wait what?
 
+As they say *an example is worth a thousand API docs* so why not start with one.
+
+```typescript
+interface WelcomeMessage {
+  name: string;
+  hobbies: string[];
+}
+
+//
+// You can now turn this
+//
+const isWelcomeMessage = (message: any): message is WelcomeMessage =>
+  !!value &&
+  typeof value.name === 'string' && 
+  Array.isArray(value.hobbies) && 
+  value.hobbies.every(hobby => typeof hobby === 'string');
+
+//
+// Into this
+//
+const isWelcomeMessage = typeCheckFor<WelcomeMessage>();
+```
+
+## Motivation
+
 TypeScript is a powerful way of enhancing your application code at compile time but, unfortunately, provides no runtime type guards out of the box - you need to [create these manually](https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards). For types like `string` or `boolean` this is easy, you can just use the `typeof` operator. It becomes more difficult for interface types, arrays, enums etc. And that is where `ts-type-checked` comes in! It automatically creates these type guards at compile time for you.
 
 This might get useful when:
@@ -50,53 +75,67 @@ This might get useful when:
 
 ## Example cases
 
-### Example 1: Data consistency checks
+### Example 1: External data checks
+
+Imagine you're interacting with an API that promises to send you JSON encoded messages in this format:
 
 ```typescript
-import { isA } from 'ts-type-checked';
-
-// Imagine a third party service that sends out JSON serialized 
-// messages that might sometimes come broken
-// and a client that handles these.
-
 interface WelcomeMessage {
-  text: 'Oh hello there!'
+  name: string;
+  greeting: string;
 }
 
-interface WhatALovelyDayMessage {
-  yesIndeed: boolean;
-  isTheSkyUnusuallyBlue?: boolean;
+interface GoodbyeMessage {
+  sayByeTo: string[];
 }
+```
 
-interface GoodbyeThenMessage {
-  sayHelloTo: string[];
-}
+Somewhere in your code there probably is a function just like  `handleMessageFromService` below:
 
-function handleMessage(data: string): string {
+```typescript
+function handleMessageFromService(data: string): string {
   const message = JSON.parse(message);
 
-  // Instead of writing the code that checks the message consistency 
-  // you can just use the ts-type-checked isA function:
-  if (isA<WelcomeMessage>(message)) {
-    return 'Good day sir!'!
+  // Now we need to find out whether the message
+  // is a WelcomeMessage, a GoodbyeMessage or something unexpected.
+  if (isWelcomeMessage(message)) {
+    return 'Good day dear ' + message.name!
   }
 
-  if (isA<WhatALovelyDayMessage>(message)) {
-    return message.isTheSkyUnusuallyBlue ? 'magnificient' : 'wonderful';
-  }
-
-  if (isA<GoodbyeThenMessage>(message)) {
-    return 'I will tell ' + message.sayHelloTo.join(' and ')
+  if (isGoodbyeMessage(message)) {
+    return 'I will say bye to ' + message.sayByeTo.join(', ');
   }
 
   throw new Error('I have no idea what you mean');
 }
+```
 
+Without `ts-type-checked` you'd need to define type guards for `WelcomeMessage` and `GoodbyeMessage` like so:
+
+```typescript
+const isWelcomeMessage = (value: unknown): value is WelcomeMessage => !!value && typeof value.name === 'string' && typeof value.greeting === 'string';
+
+const isGoodbyeMessage = (value: unknown): value is GoodbyeMessage => !!value && Array.isArray(value.sayByeTo) && value.sayByeTo.every(name => typeof name === 'string');
+```
+
+Annoying isn't it? Not only you need to define the guards yourself, you also need to make sure the types and the type guards don't drift apart as the code evolves. Let's try using `ts-type-checked`:
+
+```typescript
+import { typeCheckFor } from 'ts-type-checked';
+
+// You can use typeCheckFor type guard factory
+const isWelcomeMessage = typeCheckFor<WelcomeMessage>();
+const isGoodbyeMessage = typeCheckFor<GoodbyeMessage>();
+
+// Or use isA generic type guard directly in your code
+if (isA<WelcomeMessage>(message)) {
+  // ...
+}
 ```
 
 ### Example 2: Distniguishing between several types
 
-One more example, this time some data traversal code
+In this example we are trying to traverse a data structure that consists of several types of objects - `User`s, `Account`s and `Group`s.
 
 ```typescript
 // Group is an array of users or accounts
@@ -116,58 +155,84 @@ interface User {
 
 // And our graph consists of nodes that can be groups, accounts or users
 type Node = Account | User | Group;
+```
 
+Our task is to create a function that returns a human readable description of an object from this data structure, a function like this:
+
+```typescript
 // Our utility function gives us a description of a graph node
 function getObjectDescription(object: Node): string {
-  // We can now check what the object is without writing any 'typeof'-ish code
-  if (isA<Group>(object)) {
-    const groupObjectNames = object.map(getObjectName);
+  // If the object is a group it will list the names of all its members
+  if (isGroup(object)) {
+    const groupObjectNames = object.map(getObjectDescription);
 
     return `Group[${groupObjectNames.join()}]`;
   }
 
-  if (isA<Account>(object)) {
-    const userNames = object.users.map(getObjectName);
+  // If it is an account it will return its name and the names of all users
+  if (isAccount(object)) {
+    const userNames = object.users.map(getObjectDescription);
 
     return `Account ${object.name}[${userNames.join()}]`;
   }
 
+  // And finally for User it will return their name
   return `User ${object.firstName} ${object.lastName}`;
+}
+```
+
+Without `ts-type-checked` you'd need to write a bunch of code like this:
+
+```typescript
+const isUser = (value: unknown): value is User => 
+  !!value && 
+  typeof value.firstName === 'string' && 
+  typeof value.lastName === 'string';
+
+const isAccount = (value: unknown): value is Account => 
+  !!value && 
+  typeof value.name === 'string' && 
+  Array.isArray(value.users) && 
+  value.users.every(isUser);
+
+const isGroup = (value: unknown): value is Group => 
+  Array.isArray(value) && 
+  value.every(memeber => isUser(member) || isAccount(member));
+```
+
+Let's now try using `ts-type-checked`:
+
+```typescript
+import { typeCheckFor } from 'ts-type-checked';
+
+// You can use typeCheckFor type guard factory
+const isUser = typeCheckFor<User>();
+const isAccount = typeCheckFor<Account>();
+const isGroup = typeCheckFor<Group>();
+
+// Or use isA generic type guard directly in your code
+if (isA<Group>(object)) {
+  // ...
 }
 ```
 
 ### Example 3: Passing type guards as parameters
 
-`ts-type-checked` also exports `typeCheckFor` type guard factory. This is more or less a syntactic sugar that saves you couple of keystrokes. It is useful when you want to store the type guard into a variable or pass it as a parameter:
+`ts-type-checked` exports `typeCheckFor` type guard factory. This is more or less a syntactic sugar that saves you couple of keystrokes. It is useful when you want to store the type guard into a variable or pass it as a parameter:
 
 ```typescript
-import { typeCheckFor } from 'ts-type-checked';
+import { isA, typeCheckFor } from 'ts-type-checked';
 
-// Store type guard in a variable
+// You can either use isA directly in your code when you want to type check a value:
+if (isA<string[]>(value)) {
+  // Do things
+}
+
+// Or create a type guard and use it later
 const isStringArray = typeCheckFor<string[]>();
 
-function createMessageHandler<T>(validator: (value: unknown) => value is T) {
-  return function handleMessage(data: string) {
-    const message = JSON.parse(data);
-
-    if (validator(message)) {
-      console.log('valid message!');
-
-      // ...
-    } else {
-      console.error('invalid message!');
-    }
-  }
-}
-
-interface HelloWorldMessage {
-  hello: 'world';
-}
-
-// Or pass it as a parameter
-const handleStringMessage = createMessageHandler(typeCheckFor<string>());
-
-const handleHelloWorldMessage = createMessageHandler(typeCheckFor<HelloWorldMessage>());
+// Which is the same as saying, just shorter
+const isStringArray = (value: unknown): value is string[] => isA<string[]>(value);
 ```
 
 ### Example 4: Deduplicating generated type guards
@@ -175,13 +240,13 @@ const handleHelloWorldMessage = createMessageHandler(typeCheckFor<HelloWorldMess
 `isA` and `typeCheckFor` will both transform the code on per-file basis - in other terms a type guard function will be created in every file where either of these is used. To prevent duplication of generated code I recommend placing the type guards in a separate file and importing them when necessary:
 
 ```typescript
-// ./typeGuards.ts
+// in file typeGuards.ts
 import { typeCheckFor } from 'ts-type-checked';
 
 export const isDate = typeCheckFor<Date>();
 export const isStringRecord = typeCheckFor<Record<string, string>>();
 
-// ./myUtility.ts
+// in file myUtility.ts
 import { isDate } from './typeGuards';
 
 if (isDate(value)) {
@@ -204,6 +269,7 @@ npm install --dev ts-type-checked
 yarn add -D ts-type-checked
 ```
 
+<a id="installation--webpack"></a>
 ### Webpack
 
 [See example here](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/webpack)
@@ -234,8 +300,7 @@ const transformer = require('ts-type-checked/transformer').default;
 }
 ```
 
-#### 3. Profit :money_with_wings:
-
+<a id="installation--rollup"></a>
 ### Rollup
 
 [See example here](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/rollup)
@@ -281,12 +346,22 @@ typescript({
 }),
 ```
 
-#### 3. Profit :money_with_wings:
-
-<a id="installation/ttypescript"></a>
+<a id="installation--ttypescript"></a>
 ### TTypeScript
 
 [See example here](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/ttypescript)
+
+#### 1. Install `ttypescript`
+
+```bash
+# NPM
+npm install --dev ttypescript
+
+# Yarn
+yarn add -D ttypescript
+```
+
+#### 2. Add `ts-type-checked` transformer
 
 In order to enable `ts-type-checked` in your TTypescript project you need to configure plugins in your `tsconfig.json`.
 
@@ -300,27 +375,18 @@ In order to enable `ts-type-checked` in your TTypescript project you need to con
 }
 ```
 
+<a id="installation--jest"></a>
 ### Jest
 
 [See example here](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/jest)
 
 In order to enable `ts-type-checked` in your Jest tests you need to switch to `ttypescript` compiler.
 
-#### 1. Install `ttypescript`
+#### 1. Configure `ttypescript`
 
-```bash
-# NPM
-npm install --dev ttypescript
+See [the instructions above](#installation--ttypescript).
 
-# Yarn
-yarn add -D ttypescript
-```
-
-#### 2. Configure `ttypescript`
-
-See [the instructions above](#installation/ttypescript).
-
-#### 3. Set `ttypescript` as your compiler
+#### 2. Set `ttypescript` as your compiler
 
 In your `jest.config.js` (or `package.json`):
 
@@ -335,7 +401,30 @@ module.exports = {
 };
 ```
 
-#### 4. Profit :money_with_wings:
+<a id="installation--ts-node"></a>
+### ts-node
+
+[See example here](https://github.com/janjakubnanista/ts-type-checked/tree/master/examples/ts-node)
+
+#### 1. Configure `ttypescript`
+
+See [the instructions above](#installation--ttypescript).
+
+#### 2. Set `ttypescript` as your compiler
+
+Either using command line:
+
+```bash
+$ ts-node --compiler ttypescript ...
+```
+
+Or the programatic API:
+
+```javascript
+require('ts-node').register({
+  compiler: 'ttypescript'
+})
+```
 
 <a id="api"></a>
 ## API
