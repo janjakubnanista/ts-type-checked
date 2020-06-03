@@ -1,5 +1,6 @@
 npm-debug.log*
 node_modules
+dist
 
 # This is where the test project is executed
 sandbox

@@ -60,12 +60,15 @@ jobs:
       - checkout
       - node/with-cache:
           steps:
+            - run: 
+                name: Build
+                command: yarn build
             - run:
                 name: Authenticate for NPM
-                command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+                command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/dist/.npmrc
             - run:
                 name: Publish package
-                command: npm publish
+                command: yarn release
 
 workflows:
   test-and-deploy:

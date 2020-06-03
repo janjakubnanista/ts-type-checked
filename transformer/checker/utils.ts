@@ -17,7 +17,7 @@ export const createLogicalOrChain = (...expressions: ts.Expression[]): ts.Expres
 export const createIsOfType = (value: ts.Expression, type: ts.Expression): ts.Expression =>
   ts.createStrictEquality(ts.createTypeOf(value), type);
 
-export const createIsInstanceOf = (value: ts.Expression, className: ts.Expression) =>
+export const createIsInstanceOf = (value: ts.Expression, className: ts.Expression): ts.Expression =>
   ts.createBinary(value, ts.SyntaxKind.InstanceOfKeyword, className);
 
 export const createDoubleNegation = (value: ts.Expression): ts.Expression =>

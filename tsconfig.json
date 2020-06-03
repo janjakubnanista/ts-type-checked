@@ -2,6 +2,9 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "declaration": true,
+    "declarationDir": "dist",
+    "outDir": "dist",
+    "rootDir": ".",
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
