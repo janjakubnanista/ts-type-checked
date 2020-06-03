@@ -1,3 +1,4 @@
+import 'jest';
 import fc, { Arbitrary } from 'fast-check';
 
 export type GenericReference<T> = T;
@@ -35,12 +36,14 @@ export const notAnArray: FilterFunction = (value: unknown): boolean => !Array.is
 export const notAnEmptyArray: FilterFunction = (value: unknown): boolean => !Array.isArray(value) || value.length !== 0;
 export const notAnObject: FilterFunction = (value: unknown): boolean => typeof value !== 'object' || value === null;
 export const notAnEmptyObject: FilterFunction = (value: unknown): boolean => Object.keys(value as any).length !== 0;
-export const notOfType = (...types: TypeOf[]): FilterFunction => (value) => !types.includes(typeof value);
-export const notALiteral = (...literals: unknown[]): FilterFunction => (value) => !literals.includes(value);
+export const notOfType = (...types: TypeOf[]): FilterFunction => (value: unknown): boolean =>
+  !types.includes(typeof value);
+export const notALiteral = (...literals: unknown[]): FilterFunction => (value: unknown): boolean =>
+  !literals.includes(value);
 export const notNumeric: FilterFunction = (value) => isNaN(parseFloat(value as any));
 
 // Helper assertion methods
-export const assertArbitrary = (arbitrary: fc.Arbitrary<unknown>, checks: FilterFunction[], result: boolean) => {
+export const assertArbitrary = (arbitrary: fc.Arbitrary<unknown>, checks: FilterFunction[], result: boolean): void => {
   fc.assert(
     fc.property(arbitrary, (value) => {
       checks.forEach((check) => {
@@ -54,7 +57,7 @@ export const assert = <T>(
   validArbitrary: fc.Arbitrary<T>,
   invalidArbitrary: fc.Arbitrary<unknown>,
   checks: FilterFunction[],
-) => {
+): void => {
   assertArbitrary(validArbitrary, checks, true);
   assertArbitrary(invalidArbitrary, checks, false);
 };
