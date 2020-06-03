@@ -1,6 +1,6 @@
 import { LogLevel, createLogger } from './logger';
 import { createTypeChecker } from './checker/checker';
-import { createTypeDescriber } from './descriptor/descriptor';
+import { createTypeDescriber } from './descriptor/createTypeDescriber';
 import { visitNodeAndChildren } from './visitor';
 import ts from 'typescript';
 
