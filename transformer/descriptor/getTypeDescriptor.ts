@@ -4,6 +4,28 @@ import { functionTypeWarning, promiseTypeWarning } from './messages';
 import { getDOMElementClassName } from './getDOMElementClassName';
 import { getLibraryTypeDescriptorName } from './getLibraryTypeDescriptorName';
 import { getPropertyTypeDescriptors } from './getPropertyTypeDescriptors';
+import {
+  isAny,
+  isArray,
+  isBigInt,
+  isBoolean,
+  isDate,
+  isFalseKeyword,
+  isFunction,
+  isInterface,
+  isLiteral,
+  isMap,
+  isNever,
+  isNull,
+  isNumber,
+  isObjectKeyword,
+  isPromise,
+  isSet,
+  isString,
+  isTrueKeyword,
+  isTuple,
+  isUndefined,
+} from './assertions';
 import ts from 'typescript';
 
 export type ResolveTypeDescriptor<T = TypeDescriptor> = (resolve: TypeNameResolver) => T;
@@ -18,35 +40,37 @@ export const getTypeDescriptor = (
   logger.debug('Library descriptor name', libraryDescriptorName);
 
   // BigInt
-  if (type.flags & ts.TypeFlags.BigInt || libraryDescriptorName === 'BigInt') {
+  if (isBigInt(type, libraryDescriptorName)) {
     logger.debug('BigInt');
 
     return { _type: 'keyword', value: 'bigint' };
   }
 
   // Boolean
-  if (type.flags & ts.TypeFlags.Boolean || libraryDescriptorName === 'Boolean') {
+  if (isBoolean(type, libraryDescriptorName)) {
     logger.debug('Boolean');
 
     return { _type: 'keyword', value: 'boolean' };
   }
 
   // Number
-  if (type.flags & ts.TypeFlags.Number || libraryDescriptorName === 'Number') {
+  if (isNumber(type, libraryDescriptorName)) {
     logger.debug('Number');
 
     return { _type: 'keyword', value: 'number' };
   }
 
   // String
-  if (type.flags & ts.TypeFlags.String || libraryDescriptorName === 'String') {
+  if (isString(type, libraryDescriptorName)) {
     logger.debug('String');
 
     return { _type: 'keyword', value: 'string' };
   }
 
   // Date
-  if (libraryDescriptorName === 'Date') {
+  if (isDate(type, libraryDescriptorName)) {
+    logger.debug('Date');
+
     return { _type: 'class', value: ts.createIdentifier(libraryDescriptorName) };
   }
 
@@ -78,19 +102,18 @@ export const getTypeDescriptor = (
   const typeName = typeChecker.typeToString(type, scope);
 
   // Promise
-  if (libraryDescriptorName === 'Promise') {
+  if (isPromise(type, libraryDescriptorName)) {
+    logger.debug('Promise');
     logger.warn(promiseTypeWarning(typeName));
 
-    return (resolve) => {
-      return {
-        _type: 'promise',
-        properties: getPropertyTypeDescriptors(typeChecker, scope, type, resolve),
-      };
-    };
+    return (resolve) => ({
+      _type: 'promise',
+      properties: getPropertyTypeDescriptors(typeChecker, scope, type, resolve),
+    });
   }
 
   // Literal types
-  if (type.isLiteral() || type.flags & ts.TypeFlags.BigIntLiteral) {
+  if (isLiteral(type)) {
     logger.debug('Literal');
 
     const value = (type as ts.LiteralType).value;
@@ -102,41 +125,41 @@ export const getTypeDescriptor = (
   }
 
   // Null
-  if (type.flags & ts.TypeFlags.Null) return { _type: 'literal', value: ts.createNull() };
+  if (isNull(type)) return { _type: 'literal', value: ts.createNull() };
 
   // Undefined, Void
-  if (type.flags & ts.TypeFlags.Undefined || type.flags & ts.TypeFlags.Void) {
+  if (isUndefined(type)) {
     logger.debug('Undefined');
 
     return { _type: 'literal', value: ts.createIdentifier('undefined') };
   }
 
   // Any
-  if (type.flags & ts.TypeFlags.Any || type.flags & ts.TypeFlags.Unknown) return { _type: 'unspecified' };
+  if (isAny(type)) return { _type: 'unspecified' };
 
   // Never
-  if (type.flags & ts.TypeFlags.Never) return { _type: 'never' };
+  if (isNever(type)) return { _type: 'never' };
 
   // For the checks below we need access to the TypeNode for this type
   const typeNode = typeChecker.typeToTypeNode(type, scope);
 
-  if (typeNode?.kind === ts.SyntaxKind.ObjectKeyword) {
+  if (isObjectKeyword(typeNode)) {
     logger.debug('object (keyword)');
 
     return { _type: 'keyword', value: 'object' };
   }
 
   // True
-  if (typeNode?.kind === ts.SyntaxKind.TrueKeyword) return { _type: 'literal', value: ts.createTrue() };
+  if (isTrueKeyword(typeNode)) return { _type: 'literal', value: ts.createTrue() };
 
   // False
-  if (typeNode?.kind === ts.SyntaxKind.FalseKeyword) return { _type: 'literal', value: ts.createFalse() };
+  if (isFalseKeyword(typeNode)) return { _type: 'literal', value: ts.createFalse() };
 
   // Tuple
-  if (typeNode?.kind === ts.SyntaxKind.TupleType) {
+  if (isTuple(type, typeNode)) {
     logger.debug('Tuple');
 
-    const typeArguments = (type as ts.TypeReference).typeArguments || [];
+    const typeArguments = type.typeArguments || [];
 
     return (resolve) => ({
       _type: 'tuple',
@@ -145,12 +168,7 @@ export const getTypeDescriptor = (
   }
 
   // Function
-  if (
-    typeNode?.kind === ts.SyntaxKind.FunctionType ||
-    typeNode?.kind === ts.SyntaxKind.ConstructorType ||
-    libraryDescriptorName === 'Function' ||
-    type.getConstructSignatures()?.length
-  ) {
+  if (isFunction(type, libraryDescriptorName, typeNode)) {
     logger.debug('Function');
     logger.info(functionTypeWarning(typeName));
 
@@ -158,14 +176,10 @@ export const getTypeDescriptor = (
   }
 
   // Array
-  if (
-    typeNode?.kind === ts.SyntaxKind.ArrayType ||
-    libraryDescriptorName === 'Array' ||
-    (typeChecker as any)?.isArrayType(type)
-  ) {
+  if (isArray(typeChecker, type, libraryDescriptorName, typeNode)) {
     logger.debug('Array');
 
-    const elementType = (type as ts.TypeReference).typeArguments?.[0];
+    const elementType = type.typeArguments?.[0];
     if (!elementType) {
       throw new Error('Could not find element type for (apparently) array type ' + typeName);
     }
@@ -174,8 +188,10 @@ export const getTypeDescriptor = (
   }
 
   // Map
-  if (libraryDescriptorName === 'Map') {
-    const [keyType, valueType] = (type as ts.TypeReference).typeArguments || [];
+  if (isMap(type, libraryDescriptorName)) {
+    logger.debug('Map');
+
+    const [keyType, valueType] = type.typeArguments || [];
     if (!keyType) {
       throw new Error('Could not find key type for (apparently) Map type ' + typeName);
     }
@@ -188,8 +204,10 @@ export const getTypeDescriptor = (
   }
 
   // Set
-  if (libraryDescriptorName === 'Set') {
-    const [setType] = (type as ts.TypeReference).typeArguments || [];
+  if (isSet(type, libraryDescriptorName)) {
+    logger.debug('Set');
+
+    const [setType] = type.typeArguments || [];
     if (!setType) {
       throw new Error('Could not find key type for (apparently) Set type ' + typeName);
     }
@@ -199,11 +217,15 @@ export const getTypeDescriptor = (
 
   const domElementClassName = getDOMElementClassName(program, type);
   if (domElementClassName) {
+    logger.debug('DOM');
+
     return { _type: 'class', value: ts.createIdentifier(domElementClassName) };
   }
 
   // Interface-ish
-  if (type.flags & ts.TypeFlags.Object || libraryDescriptorName === 'Object') {
+  if (isInterface(type, libraryDescriptorName)) {
+    logger.debug('Interface');
+
     const callable = type.getCallSignatures()?.length !== 0;
     if (callable) logger.info(functionTypeWarning(typeName));
 

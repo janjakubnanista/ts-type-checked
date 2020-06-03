@@ -1,5 +1,5 @@
 import { Logger } from '../logger';
-import { ResolveTypeDescriptor, getTypeDescriptor } from './utils';
+import { ResolveTypeDescriptor, getTypeDescriptor } from './getTypeDescriptor';
 import { TypeDescriptor, TypeDescriptorMap, TypeName, TypeNameResolver } from '../types';
 import { getUniqueTypeName } from './getUniqueTypeName';
 import { objectFlags, typeFlags } from '../utils';
