@@ -1,6 +1,6 @@
 import { LogLevel, createLogger } from './logger';
 import { createTypeChecker } from './checker/checker';
-import { createTypeDescriber } from './descriptor/descriptor';
+import { createTypeDescriber } from './descriptor/createTypeDescriber';
 import { visitNodeAndChildren } from './visitor';
 import ts from 'typescript';
 
@@ -12,7 +12,14 @@ const defaultTransformerOptions: TransformerOptions = {
   logLevel: 'normal',
 };
 
-// The transformer function
+/**
+ * The main transformer function
+ *
+ * This needs to be registered as a TypeScript "before" transform
+ * in your build/test configuration.
+ *
+ * See https://www.npmjs.com/package/ts-type-checked#installation for more information
+ */
 export default (
   program: ts.Program,
   partialOptions: Partial<TransformerOptions> = {},
