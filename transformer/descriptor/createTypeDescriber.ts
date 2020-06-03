@@ -1,6 +1,7 @@
 import { Logger } from '../logger';
-import { ResolveTypeDescriptor, getTypeDescriptor, getUniqueTypeName } from './utils';
-import { TypeDescriptor, TypeDescriptorMap, TypeName, TypeNameGenerator } from '../types';
+import { ResolveTypeDescriptor, getTypeDescriptor } from './utils';
+import { TypeDescriptor, TypeDescriptorMap, TypeName, TypeNameResolver } from '../types';
+import { getUniqueTypeName } from './getUniqueTypeName';
 import { objectFlags, typeFlags } from '../utils';
 import ts from 'typescript';
 
@@ -8,7 +9,7 @@ export const createTypeDescriber = (
   logger: Logger,
   program: ts.Program,
   typeChecker: ts.TypeChecker,
-): [TypeNameGenerator, TypeDescriptorMap] => {
+): [TypeNameResolver, TypeDescriptorMap] => {
   const resolvedTypeNames: Map<ts.Type, TypeName> = new Map();
   const resolvedTypeDescriptors: TypeDescriptorMap = new Map();
 

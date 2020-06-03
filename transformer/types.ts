@@ -91,7 +91,7 @@ export type TypeDescriptor =
 
 export type TypeName = string;
 
-export type TypeNameGenerator = (root: ts.TypeNode, type: ts.Type) => TypeName;
+export type TypeNameResolver = (scope: ts.TypeNode, type: ts.Type) => TypeName;
 
 export type TypeDescriptorMap = Map<TypeName, TypeDescriptor>;
 
