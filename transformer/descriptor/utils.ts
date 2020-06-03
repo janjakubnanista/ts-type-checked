@@ -157,6 +157,7 @@ Check https://stackoverflow.com/questions/27746304/how-do-i-tell-if-an-object-is
 `,
     );
 
+    // TODO DRY This is (almost) the same as the interface descriptor
     return (resolve) => {
       const properties: PropertyTypeDescriptor[] = type.getProperties().map((property) => {
         const propertyType = typeChecker.getTypeOfSymbolAtLocation(property, scope);
@@ -170,7 +171,7 @@ Check https://stackoverflow.com/questions/27746304/how-do-i-tell-if-an-object-is
       });
 
       return {
-        _type: 'interface',
+        _type: 'promise',
         properties,
       };
     };
@@ -292,7 +293,6 @@ Check https://stackoverflow.com/questions/27746304/how-do-i-tell-if-an-object-is
   // Interface-ish
   if (type.flags & ts.TypeFlags.Object || libraryDescriptorName === 'Object') {
     const callable = type.getCallSignatures()?.length !== 0;
-
     if (callable) logger.info(functionTypeWarning(typeName));
 
     return (resolve) => {

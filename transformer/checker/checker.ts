@@ -110,7 +110,11 @@ export const createTypeChecker = (
         return createSetTypeCheck(value, (element) => createTypeCheck(typeDescriptor.type, element));
 
       case 'promise':
-        return createPromiseTypeCheck(value);
+        const promiseTypeCheckMethod = createTypeCheckFunction('Promise', (value) =>
+          createObjectTypeCheck(value, { _type: 'interface', properties: typeDescriptor.properties }, createTypeCheck),
+        );
+
+        return ts.createCall(promiseTypeCheckMethod, undefined, [value]);
 
       case 'interface':
         const objectTypeCheckMethod = createTypeCheckFunction(typeName, (value) =>

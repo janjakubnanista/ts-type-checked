@@ -37,6 +37,7 @@ export interface TupleTypeDescriptor {
 
 export interface PromiseTypeDescriptor {
   _type: 'promise';
+  properties: PropertyTypeDescriptor[];
 }
 
 export interface MapTypeDescriptor {
