@@ -1,6 +1,5 @@
 import { Logger } from '../logger';
 import { PropertyTypeDescriptor, TypeDescriptor, TypeName } from '../types';
-import { typeFlags } from '../utils';
 import ts from 'typescript';
 
 type TypeDescriptorName =
@@ -319,9 +318,7 @@ Check https://stackoverflow.com/questions/27746304/how-do-i-tell-if-an-object-is
     };
   }
 
-  throw new Error(
-    'oh noooooo no type descriptor for ' + typeChecker.typeToString(type) + ' ' + typeFlags(type).join(', '),
-  );
+  throw new Error('oh noooooo no type descriptor for ' + typeChecker.typeToString(type));
 };
 
 function getPropertyAccessor(property: ts.Symbol): ts.Expression {
