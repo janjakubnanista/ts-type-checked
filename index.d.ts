@@ -61,3 +61,61 @@ export function typeCheckFor<T>(): (value: unknown) => value is T;
  * @return {boolean} True if {@param value} is assignable to type T
  */
 export function isA<T>(value: unknown): value is T;
+
+export type TypeChecked<T> = 
+  T extends [infer E1] ? [TypeChecked<E1>] :
+  T extends [infer E1, infer E2] ? [TypeChecked<E1>, TypeChecked<E2>] :
+  T extends [infer E1, infer E2, infer E3] ? [TypeChecked<E1>, TypeChecked<E2>, TypeChecked<E3>] :
+  T extends Array<infer E> ? TypeChecked<E>[] :
+  T extends Date ? Date : 
+  T extends Node | Element ? T :
+  T extends Promise<any> ? Promise<unknown> : 
+  T extends symbol ? symbol :
+  T extends String | Number | Boolean | BigInt ? T :
+  T extends string | number | boolean | bigint ? T :
+  T extends Record<infer K, any> ? { [P in K]: TypeChecked<T[P]> } :
+  
+  T extends Function ? (...args: unknown[]) => unknown : 
+  T extends object ? object : unknown;
+
+interface Test1 {
+  property: string;
+}
+
+interface Test2 {
+  property: string[];
+}
+
+interface Test3 {
+  property: (name: string) => string;
+}
+
+interface Test4 {
+  property: Promise<Test1>;
+}
+
+interface Test5 {
+  property: Array<Test4 | string | true>;
+}
+
+type A1 = TypeChecked<'literal'>
+type A2 = TypeChecked<6>
+type A3 = TypeChecked<number>
+type A4 = TypeChecked<string>
+type A5 = TypeChecked<boolean>
+type A6 = TypeChecked<true>
+type A7 = TypeChecked<false>
+type A8 = TypeChecked<[]>
+type A9 = TypeChecked<string[]>
+type A10 = TypeChecked<object[]>
+type A11 = TypeChecked<[number]>
+type A12 = TypeChecked<[1]>
+type A13 = TypeChecked<Date>
+type A14 = TypeChecked<HTMLAnchorElement>
+type A15 = TypeChecked<Promise<HTMLAnchorElement>>
+
+type B1 = TypeChecked<Test1>
+type B2 = TypeChecked<Test2>
+type B3 = TypeChecked<Test3>
+type B4 = TypeChecked<Test4>
+type B5 = TypeChecked<Test5>
