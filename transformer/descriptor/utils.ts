@@ -31,6 +31,16 @@ const typeDescriptorNameBySymbolName: Record<string, TypeDescriptorName> = {
   Set: 'Set',
 };
 
+const functionTypeWarning = (typeName: string) => `
+
+It looks like you are trying to type check a function-like value (${typeName}). 
+Due to very nature of JavaScript it's not possible to see what the return type of a function is
+or what the signature of a function was.
+
+ts-type-checked can only check whether something is of type function, nothing more. Sorry :(
+
+`;
+
 const getFirstValidDeclaration = (declarations: ts.Declaration[] | undefined): ts.Declaration | undefined => {
   return (
     declarations?.find(
@@ -147,7 +157,23 @@ Check https://stackoverflow.com/questions/27746304/how-do-i-tell-if-an-object-is
 `,
     );
 
-    return { _type: 'promise' };
+    return (resolve) => {
+      const properties: PropertyTypeDescriptor[] = type.getProperties().map((property) => {
+        const propertyType = typeChecker.getTypeOfSymbolAtLocation(property, scope);
+        const accessor: ts.Expression = getPropertyAccessor(property);
+
+        return {
+          _type: 'property',
+          accessor,
+          type: resolve(scope, propertyType),
+        };
+      });
+
+      return {
+        _type: 'interface',
+        properties,
+      };
+    };
   }
 
   // Literal types
@@ -213,18 +239,7 @@ Check https://stackoverflow.com/questions/27746304/how-do-i-tell-if-an-object-is
     type.getConstructSignatures()?.length
   ) {
     logger.debug('Function');
-
-    logger.warn(
-      `
-
-It looks like you are trying to type check a function-like value (${typeName}). 
-Due to very nature of JavaScript it's not possible to see what the return type of a function is
-or what the signature of a function was.
-
-ts-type-checked can only check whether something is of type function, nothing more. Sorry :(
-
-`,
-    );
+    logger.info(functionTypeWarning(typeName));
 
     return { _type: 'keyword', value: 'function' };
   }
@@ -278,17 +293,7 @@ ts-type-checked can only check whether something is of type function, nothing mo
   if (type.flags & ts.TypeFlags.Object || libraryDescriptorName === 'Object') {
     const callable = type.getCallSignatures()?.length !== 0;
 
-    logger.warn(
-      `
-
-It looks like you are trying to type check a function-like value (${typeName}). 
-Due to very nature of JavaScript it's not possible to see what the return type of a function is
-or what the signature of a function was.
-
-ts-type-checked can only check whether something is of type function, nothing more. Sorry :(
-
-`,
-    );
+    if (callable) logger.info(functionTypeWarning(typeName));
 
     return (resolve) => {
       const numberIndexType = type.getNumberIndexType();
