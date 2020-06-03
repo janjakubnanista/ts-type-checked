@@ -7,7 +7,7 @@ import {
   createLogicalOrChain,
   createValueCheckFunction,
 } from './utils';
-import { createMapTypeCheck, createPromiseTypeCheck, createSetTypeCheck } from './es6';
+import { createMapTypeCheck, createSetTypeCheck } from './es6';
 import { createObjectTypeCheck } from './object';
 import { createTupleTypeCheck } from './tuple';
 import ts from 'typescript';
