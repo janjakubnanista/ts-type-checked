@@ -13,7 +13,6 @@ yarn clean
 
 # Make sure everything is okay
 yarn lint
-yarn test
 
 # Build the package
 yarn tsc
