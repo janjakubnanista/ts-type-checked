@@ -25,4 +25,5 @@ cp LICENSE "$DIST_PATH/LICENSE"
 cp index.js "$DIST_PATH/index.js"
 cp index.d.ts "$DIST_PATH/index.d.ts"
 cp package.json "$DIST_PATH/package.json"
+cp .npmrc "$DIST_PATH/.npmrc" || true
 cp *.md "$DIST_PATH/"
