@@ -3,10 +3,43 @@ version: 2.1
 orbs:
   node: circleci/node@1.1.6
 
-jobs:
-  build-and-test:
-    executor:
+defaults: &defaults
+  executor:
       name: node/default
+
+only-release: &only-release
+  filters:
+    # Ignore all branches
+    branches:
+      ignore: /.*/
+    # And only run on version tags
+    tags:
+      only: /^v(\d+)\.(\d+)\.(\d+).*/
+
+only-non-release: &only-non-release
+  filters:
+    tags:
+      ignore: /^v(\d+)\.(\d+)\.(\d+).*/
+
+jobs:
+  smoke-test:
+    <<: *defaults
+    steps:
+      - checkout
+      - node/with-cache:
+          steps:
+            - run: 
+                name: Install dependencies
+                command: yarn
+            - run: 
+                name: Build
+                command: yarn build
+            - run: 
+                name: Test
+                command: yarn test:version -v 3.1.1
+
+  test:
+    <<: *defaults
     steps:
       - checkout
       - node/with-cache:
@@ -22,8 +55,7 @@ jobs:
                 command: yarn test
 
   deploy:
-    executor:
-      name: node/default
+    <<: *defaults
     steps:
       - checkout
       - node/with-cache:
@@ -38,14 +70,13 @@ jobs:
 workflows:
   test-and-deploy:
     jobs:
-      - build-and-test
+      - smoke-test:
+          <<: *only-non-release
+
+      - test:
+          <<: *only-release
+
       - deploy:
+          <<: *only-release
           requires: 
-            - build-and-test
-          filters:
-            # Ignore all branches
-            branches:
-              ignore: /.*/
-            # And only run on version tags
-            tags:
-              only: /^v(\d+)\.(\d+)\.(\d+).*/
+            - test
