@@ -1,0 +1,49 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@1.1.6
+
+jobs:
+  build-and-test:
+    executor:
+      name: node/default
+    steps:
+      - checkout
+      - node/with-cache:
+          steps:
+            - run: 
+                name: Install dependencies
+                command: yarn
+            - run: 
+                name: Build
+                command: yarn build
+            - run: 
+                name: Test
+                command: yarn test
+
+  deploy:
+    executor:
+      name: node/default
+    steps:
+      - checkout
+      - node/with-cache:
+          steps:
+            - run:
+                name: Authenticate for NPM
+                command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+            - run:
+                name: Publish package
+                command: npm publish
+
+workflows:
+  test-and-deploy:
+    jobs:
+      - build-and-test
+      - deploy:
+          requires: 
+            - build-and-test
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              only: /^master$/
