@@ -43,7 +43,9 @@ workflows:
           requires: 
             - build-and-test
           filters:
-            tags:
-              only: /^v.*/
+            # Ignore all branches
             branches:
-              only: /^master$/
+              ignore: /.*/
+            # And only run on version tags
+            tags:
+              only: /^v(\d+)\.(\d+)\.(\d+).*/
