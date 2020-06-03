@@ -214,6 +214,18 @@ Check https://stackoverflow.com/questions/27746304/how-do-i-tell-if-an-object-is
   ) {
     logger.debug('Function');
 
+    logger.warn(
+      `
+
+It looks like you are trying to type check a function-like value (${typeName}). 
+Due to very nature of JavaScript it's not possible to see what the return type of a function is
+or what the signature of a function was.
+
+ts-type-checked can only check whether something is of type function, nothing more. Sorry :(
+
+`,
+    );
+
     return { _type: 'keyword', value: 'function' };
   }
 
@@ -265,6 +277,18 @@ Check https://stackoverflow.com/questions/27746304/how-do-i-tell-if-an-object-is
   // Interface-ish
   if (type.flags & ts.TypeFlags.Object || libraryDescriptorName === 'Object') {
     const callable = type.getCallSignatures()?.length !== 0;
+
+    logger.warn(
+      `
+
+It looks like you are trying to type check a function-like value (${typeName}). 
+Due to very nature of JavaScript it's not possible to see what the return type of a function is
+or what the signature of a function was.
+
+ts-type-checked can only check whether something is of type function, nothing more. Sorry :(
+
+`,
+    );
 
     return (resolve) => {
       const numberIndexType = type.getNumberIndexType();
