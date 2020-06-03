@@ -3,10 +3,13 @@ version: 2.1
 orbs:
   node: circleci/node@1.1.6
 
+defaults: &defaults
+  executor:
+      name: node/default
+
 jobs:
   build-and-test:
-    executor:
-      name: node/default
+    <<: *defaults
     steps:
       - checkout
       - node/with-cache:
@@ -22,8 +25,7 @@ jobs:
                 command: yarn test
 
   deploy:
-    executor:
-      name: node/default
+    <<: *defaults
     steps:
       - checkout
       - node/with-cache:
