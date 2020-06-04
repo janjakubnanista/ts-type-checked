@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "declarationDir": "dist",
     "outDir": "dist",
-    "rootDir": ".",
+    "rootDir": "src",
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
@@ -37,5 +38,5 @@
     ]
   },
   "exclude": ["node_modules"],
-  "include": ["transformer/*.ts"]
+  "include": ["src"]
 }

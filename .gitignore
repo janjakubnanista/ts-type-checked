@@ -8,8 +8,6 @@ sandbox
 test/**/*.js
 !test/.eslintrc.js
 
-transformer/**/*.js
-transformer/**/*.d.ts
 examples/index.js
 examples/index.*.js
 

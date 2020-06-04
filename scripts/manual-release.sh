@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# This is a manual version of publish workflow from CircleCI configuration
+# 
+# ONLY USE WHEN ABSOLUTELY NECESSARY!
+# 
+# 
+
 DRY_RUN=
 QUIET=
 
@@ -30,8 +36,11 @@ DIST_PATH="$ROOT_PATH/dist"
 set -e
 set -x
 
-$SCRIPTS_PATH/build.sh
-$SCRIPTS_PATH/test-all-versions.sh
+yarn clean
+yarn build
+yarn test:versions -l es5
+yarn test:versions -l es6
+yarn test:examples
 
 cd "$DIST_PATH"
 
