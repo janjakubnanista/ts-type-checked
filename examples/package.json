@@ -2,10 +2,12 @@
   "name": "@ts-type-checked-examples/root",
   "private": true,
   "scripts": {
-    "install:local": "../scripts/install.sh",
     "build": "yarn workspaces run build",
     "clean": "rm -rf index.js && yarn workspaces run clean",
     "start": "yarn workspaces run start"
+  },
+  "dependencies": {
+    "ts-type-checked": "file:../dist"
   },
   "workspaces": ["jest", "rollup", "ttypescript", "webpack"]
 }

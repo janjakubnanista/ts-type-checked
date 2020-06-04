@@ -5,7 +5,6 @@
     "sourceMap": false,
     "target": "esnext",
     "jsx": "react",
-    "lib": ["dom", "es6"],
     "plugins": [
       { "transform": "ts-type-checked/transformer", "logLevel": "normal" },
     ]

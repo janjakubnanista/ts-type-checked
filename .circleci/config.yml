@@ -3,10 +3,13 @@ version: 2.1
 orbs:
   node: circleci/node@1.1.6
 
+# Job defaults
 defaults: &defaults
+  working_directory: ~/project
   executor:
       name: node/default
 
+# Filters for jobs that only need to be run for a version tag (release)
 only-release: &only-release
   filters:
     # Ignore all branches
@@ -16,70 +19,130 @@ only-release: &only-release
     tags:
       only: /^v(\d+)\.(\d+)\.(\d+).*/
 
-only-non-release: &only-non-release
+# Filters for jobs that only need to be run for a version tag (release)
+only-release-candidate: &only-release-candidate
   filters:
-    tags:
-      ignore: /^v(\d+)\.(\d+)\.(\d+).*/
+    # Ignore all branches
+    branches:
+      only: 
+          - master
+          - /^release-.*/
 
 jobs:
+  build:
+    <<: *defaults
+    steps:
+      # Checkout the project
+      - checkout
+
+      # Build project
+      - node/with-cache:
+          steps:
+            - run: 
+                name: Install dependencies
+                command: yarn
+            - run: 
+                name: Build
+                command: yarn build
+            - persist_to_workspace:
+                root: ~/project
+                paths:
+                  - dist
+
   smoke-test:
     <<: *defaults
     steps:
+      # Checkout the project
       - checkout
+
+      # Get the build artifacts
+      - attach_workspace:
+          at: ~/project
+      
+      # Run the smoke test (one TypeScript version only)
       - node/with-cache:
           steps:
             - run: 
-                name: Install dependencies
-                command: yarn
+                name: Test with TypeScript 3.1.1 (ES5)
+                command: yarn test:version -v 3.1.1 -l es5
             - run: 
-                name: Build
-                command: yarn build
-            - run: 
-                name: Test
-                command: yarn test:version -v 3.1.1
+                name: Test with TypeScript 3.1.1 (ES6)
+                command: yarn test:version -v 3.1.1 -l es6
 
-  test:
+  e2e-test:
     <<: *defaults
     steps:
+      # Checkout the project
       - checkout
+
+      # Get the build artifacts
+      - attach_workspace:
+          at: ~/project
+      
+      # Run the smoke test (one TypeScript version only)
       - node/with-cache:
           steps:
             - run: 
-                name: Install dependencies
-                command: yarn
+                name: Test with all supported TypeScript versions (ES5)
+                command: yarn test:versions -l es5
             - run: 
-                name: Build
-                command: yarn build
-            - run: 
-                name: Test
-                command: yarn test
+                name: Test with all supported TypeScript versions (ES6)
+                command: yarn test:versions -l es6
+            - run:
+                name: Test examples
+                command: yarn test:examples
 
-  deploy:
+  publish:
     <<: *defaults
     steps:
+      # Checkout the project
       - checkout
+
+      # Get the build artifacts
+      - attach_workspace:
+          at: ~/project
+      
+      # Run the smoke test (one TypeScript version only)
       - node/with-cache:
           steps:
-            - run: 
-                name: Install dependencies
-                command: yarn
             - run:
                 name: Authenticate for NPM
-                command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+                command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > dist/.npmrc && cat dist/.npmrc
             - run:
                 name: Publish package
-                command: yarn release -q
+                command: cd dist && npm publish
 
 workflows:
-  test-and-deploy:
+  development:
     jobs:
+      - build
       - smoke-test:
-          <<: *only-non-release
+          requires:
+              - build
 
-      - test:
-          <<: *only-release
+  release-candidate:
+    jobs:
+      - build:
+          <<: *only-release-candidate
 
-      - deploy:
+      - e2e-test:
+          <<: *only-release-candidate
+          requires:
+              - build
+  
+  release:
+    jobs:
+      - build:
           <<: *only-release
-          requires: 
-            - test
+      
+      - e2e-test:
+          <<: *only-release
+          requires:
+              - build
+
+      - publish:
+          <<: *only-release
+          type: approval
+          requires:
+              - e2e-test
+              - build

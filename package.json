@@ -10,7 +10,7 @@
     "lint": "eslint . --fix --ext .ts,.tsx",
     "lint:fix": "eslint ./dist --fix --ext .js,.ts",
     "release": "./scripts/release.sh",
-    "test:examples": "cd examples && yarn && yarn install:local && yarn build && yarn start",
+    "test:examples": "cd examples && yarn && yarn build && yarn start",
     "test:version": "./scripts/test.sh",
     "test:versions": "./scripts/test-all-versions.sh",
     "test": "yarn test:versions && yarn test:examples"
