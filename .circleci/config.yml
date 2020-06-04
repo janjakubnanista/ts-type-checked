@@ -110,15 +110,18 @@ jobs:
                 command: cd dist && npm publish
 
 workflows:
-  test-and-deploy:
+  test:
     jobs:
       - build
+      - smoke-test:
+          requires:
+              - build
+  
+  test-and-publish:
+    jobs:
+      - build:
+          <<: *only-release
       
-      # - smoke-test:
-      #     <<: *only-non-release
-      #     requires:
-      #         - build
-
       - e2e-test:
           <<: *only-release
           requires:
@@ -126,6 +129,7 @@ workflows:
 
       - publish:
           <<: *only-release
+          type: approval
           requires:
               - e2e-test
               - build
