@@ -28,6 +28,13 @@ only-release-candidate: &only-release-candidate
           - master
           - /^release-.*/
 
+only-feature-branches: &only-feature-branches
+  filters:
+    branches:
+      ignore:
+          - master
+          - /^release-.*/
+
 jobs:
   build:
     <<: *defaults
@@ -115,8 +122,10 @@ jobs:
 workflows:
   development:
     jobs:
-      - build
+      - build:
+          <<: *only-feature-branches
       - smoke-test:
+          <<: *only-feature-branches
           requires:
               - build
 
