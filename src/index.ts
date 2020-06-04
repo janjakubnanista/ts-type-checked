@@ -40,7 +40,7 @@
  * @template T
  * @return {function(value: unknown): void} True if {@param value} is assignable to type T
  */
-export function typeCheckFor<T>(): (value: unknown) => value is T;
+declare function typeCheckFor<T>(): (value: unknown) => value is T;
 
 /**
  * Type guard function for type T (checks whether {@param value} is of type T).
@@ -60,4 +60,11 @@ export function typeCheckFor<T>(): (value: unknown) => value is T;
  * @param {unknown} value - The value to check
  * @return {boolean} True if {@param value} is assignable to type T
  */
-export function isA<T>(value: unknown): value is T;
+declare function isA<T>(value: unknown): value is T;
+
+// If someone forgets to register ts-type-checked/transformer then tsc
+// is going to actually import this file which will throw this error
+// for easier problem solving
+throw new Error(
+  'It looks like you have forgotten to register the transform for ts-type-checked!\n\nPlease look at the installation guide to see how to do that for your project:\n\nhttps://www.npmjs.com/package/ts-type-checked#installation',
+);
