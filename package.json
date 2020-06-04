@@ -7,7 +7,7 @@
   "scripts": {
     "build:source": "tsc",
     "build": "yarn build:source && yarn copy:meta && yarn lint:build",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist && rm -rf sandbox && rm -rf test/node_modules/ts-type-checked && rm -rf examples/node_modules/ts-type-checked",
     "copy:meta": "./scripts/copy-metadata.sh",
     "lint:source": "eslint . --fix --ext .ts,.tsx",
     "lint:build": "eslint ./dist --fix --ext .js,.ts",
