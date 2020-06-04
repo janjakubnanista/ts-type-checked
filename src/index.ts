@@ -40,7 +40,7 @@
  * @template T
  * @return {function(value: unknown): void} True if {@param value} is assignable to type T
  */
-declare function typeCheckFor<T>(): (value: unknown) => value is T;
+export declare function typeCheckFor<T>(): (value: unknown) => value is T;
 
 /**
  * Type guard function for type T (checks whether {@param value} is of type T).
@@ -60,7 +60,7 @@ declare function typeCheckFor<T>(): (value: unknown) => value is T;
  * @param {unknown} value - The value to check
  * @return {boolean} True if {@param value} is assignable to type T
  */
-declare function isA<T>(value: unknown): value is T;
+export declare function isA<T>(value: unknown): value is T;
 
 // If someone forgets to register ts-type-checked/transformer then tsc
 // is going to actually import this file which will throw this error
