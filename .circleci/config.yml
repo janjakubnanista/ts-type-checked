@@ -17,7 +17,16 @@ only-release: &only-release
       ignore: /.*/
     # And only run on version tags
     tags:
-      only: /^v.*/
+      only: /^v(\d+)\.(\d+)\.(\d+).*/
+
+# Filters for jobs that only need to be run for a version tag (release)
+only-release-candidate: &only-release-candidate
+  filters:
+    # Ignore all branches
+    branches:
+      only: 
+          - master
+          - /^release-.*/
 
 jobs:
   build:
@@ -104,14 +113,20 @@ jobs:
                 command: cd dist && npm publish
 
 workflows:
-  test:
+  development:
     jobs:
       - build
       - smoke-test:
           requires:
               - build
+
+  release-candidate:
+    jobs:
+      - build:
+          <<: *only-release-candidate
+
       - e2e-test:
-          type: approval
+          <<: *only-release-candidate
           requires:
               - build
   
