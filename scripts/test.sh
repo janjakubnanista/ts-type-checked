@@ -13,6 +13,7 @@ set -e
 
 DEBUG=
 VERSION=
+TS_LIB=es6
 
 # Get the script arguments
 # 
@@ -28,6 +29,11 @@ while [[ $# -gt 0 ]]; do
       ;;
       -t|--test)
       TEST_PATTERN="$2"
+      shift # past argument
+      shift # past value
+      ;;
+      -l|--lib)
+      TS_LIB="$2"
       shift # past argument
       shift # past value
       ;;
@@ -74,6 +80,9 @@ cp -R "$TEST_PATH/" "$SANDBOX_PATH"
 
 # Move to the untracked sandbox project
 cd "$SANDBOX_PATH"
+
+# Get the correct version of TypeScript config
+cp "tsconfig.${TS_LIB}.json" "tsconfig.json"
 
 # And add a specific version of typescript
 yarn add -dev --exact typescript@${VERSION}
