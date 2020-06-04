@@ -17,13 +17,13 @@ only-release: &only-release
       ignore: /.*/
     # And only run on version tags
     tags:
-      only: /^v(\d+)\.(\d+)\.(\d+).*/
+      only: /^v.*/
 
 # Filters for jobs that should not run for a version tag
 only-non-release: &only-non-release
   filters:
     tags:
-      ignore: /^v(\d+)\.(\d+)\.(\d+).*/
+      ignore: /^v.*/
 
 jobs:
   build:
