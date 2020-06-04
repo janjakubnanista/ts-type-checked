@@ -16,6 +16,7 @@
     "jest": "^25.1.0",
     "react": "^16.13.1",
     "ts-jest": "^25.2.1",
+    "ts-type-checked": "file:../dist",
     "tslib": "^1.10.0",
     "ttypescript": "^1.5.10",
     "typescript": "3.7.2"

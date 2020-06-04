@@ -8,6 +8,8 @@ DIST_PATH="$ROOT_PATH/dist"
 set -e
 set -x
 
+ls -al
+
 # Clean the build folder
 yarn clean
 
@@ -25,5 +27,9 @@ cp LICENSE "$DIST_PATH/LICENSE"
 cp index.js "$DIST_PATH/index.js"
 cp index.d.ts "$DIST_PATH/index.d.ts"
 cp package.json "$DIST_PATH/package.json"
-cp .npmrc "$DIST_PATH/.npmrc" || true
+
+# cp yarn.lock "$DIST_PATH/yarn.lock"
+# cp .npmrc "$DIST_PATH/.npmrc" || true
+# cp .yarnrc "$DIST_PATH/.yarnrc" || true
+
 cp *.md "$DIST_PATH/"

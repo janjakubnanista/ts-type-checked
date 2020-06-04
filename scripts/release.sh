@@ -31,9 +31,11 @@ set -e
 set -x
 
 $SCRIPTS_PATH/build.sh
-$SCRIPTS_PATH/test-all-versions.sh
+# $SCRIPTS_PATH/test-all-versions.sh
 
 cd "$DIST_PATH"
+
+ls -al
 
 if [ -z "$DRY_RUN" ]; then
   # Ask for confirmation before publishing
