@@ -114,10 +114,10 @@ workflows:
     jobs:
       - build
       
-      - smoke-test:
-          <<: *only-non-release
-          requires:
-              - build
+      # - smoke-test:
+      #     <<: *only-non-release
+      #     requires:
+      #         - build
 
       - e2e-test:
           <<: *only-release
