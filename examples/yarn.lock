@@ -5760,6 +5760,9 @@ ts-node@^8.9.1:
     source-map-support "^0.5.17"
     yn "3.1.1"
 
+"ts-type-checked@file:../dist":
+  version "0.3.5"
+
 tslib@1.11.1, tslib@^1.11.1, tslib@^1.9.0:
   version "1.11.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.11.1.tgz#eb15d128827fbee2841549e171f45ed338ac7e35"

@@ -66,9 +66,6 @@ cd "$TEST_PATH"
 # Install the test project dependencies
 yarn
 
-# Install the package in node_modules of the test project
-../$SCRIPTS_PATH/install.sh
-
 # And move back to root
 cd ..
 
