@@ -25,6 +25,7 @@
     "skipLibCheck": true,
     "sourceMap": false,
     "strict": true,
+    "jsx": "react",
     "strictFunctionTypes": true,
     "strictBindCallApply": true,
     "strictNullChecks": true,

@@ -26,6 +26,7 @@ import {
   isTuple,
   isUndefined,
 } from './assertions';
+import { typeFlags } from '../utils';
 import ts from 'typescript';
 
 export type ResolveTypeDescriptor<T = TypeDescriptor> = (resolve: TypeNameResolver) => T;
@@ -38,6 +39,14 @@ export const getTypeDescriptor = (
 ): TypeDescriptor | ResolveTypeDescriptor => {
   const libraryDescriptorName = getLibraryTypeDescriptorName(program, type);
   logger.debug('Library descriptor name', libraryDescriptorName);
+
+  logger.info('Heyyyyyyy', typeFlags(type));
+
+  if (type.flags & ts.TypeFlags.TypeParameter) {
+    logger.info('Type parameter');
+
+    debugger;
+  }
 
   // BigInt
   if (isBigInt(type, libraryDescriptorName)) {

@@ -6,7 +6,7 @@
     "target": "esnext",
     "jsx": "react",
     "plugins": [
-      { "transform": "ts-type-checked/transformer", "logLevel": "normal" },
+      { "transform": "ts-type-checked/transformer", "logLevel": "debug" },
     ]
   },
   "exclude": ["node_modules"],

@@ -75,3 +75,31 @@ export function visitNodeAndChildren(
     context,
   );
 }
+
+const isStringTag = <K extends symbol, T extends Record<K, any>>(value: K, promise: T): value is keyof T => {
+  return value === Symbol.toStringTag;
+};
+
+// const symboles: unique symbol = Symbol.toStringTag;
+
+interface Base {
+  [Symbol.toStringTag]: true;
+}
+
+type Keys<T> = {
+  [K in keyof T]: K extends symbol ? K : never;
+}[keyof T];
+
+// type IsSymbolA<T> = T extends Symbol ? T[typeof Symbol.toStringTag] : never;
+
+type M = keyof Promise<string>;
+
+type B = Keys<Promise<string>>;
+
+declare const promise: Promise<string>;
+promise[Symbol.toStringTag];
+const a = Symbol.toStringTag;
+if (isStringTag(a, promise)) {
+  promise[a];
+}
+type A = Promise<string>;
