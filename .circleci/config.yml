@@ -25,14 +25,14 @@ only-release-candidate: &only-release-candidate
     # Ignore all branches
     branches:
       only: 
-          - master
+          - main
           - /^release-.*/
 
 only-feature-branches: &only-feature-branches
   filters:
     branches:
       ignore:
-          - master
+          - main
           - /^release-.*/
 
 jobs:

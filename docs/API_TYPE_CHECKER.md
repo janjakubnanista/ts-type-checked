@@ -1,5 +1,5 @@
 <h1>
-  <img height="56px" width="auto" src="https://raw.githubusercontent.com/janjakubnanista/ts-type-checked/master/res/ts-type-checked.png" align="center"/>
+  <img height="56px" width="auto" src="https://raw.githubusercontent.com/janjakubnanista/ts-type-checked/main/res/ts-type-checked.png" align="center"/>
   <span>ts-type-checked</span>
 </h1>
 
@@ -7,7 +7,7 @@
 
 # Type checker API
 
-Two functions are exported: `isA` and `typeCheckFor`. (funny enough neither of them exist, just check [index.js](https://github.com/janjakubnanista/ts-type-checked/tree/master/src/index.ts) yourself :grinning:).
+Two functions are exported: `isA` and `typeCheckFor`. (funny enough neither of them exist, just check [index.js](https://github.com/janjakubnanista/ts-type-checked/tree/main/src/index.ts) yourself :grinning:).
 
 ```typescript
 import { isA, typeCheckFor } from 'ts-type-checked';

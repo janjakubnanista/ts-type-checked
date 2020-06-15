@@ -1,5 +1,5 @@
 <h1>
-  <img height="56px" width="auto" src="https://raw.githubusercontent.com/janjakubnanista/ts-type-checked/master/res/ts-type-checked.png" align="center"/>
+  <img height="56px" width="auto" src="https://raw.githubusercontent.com/janjakubnanista/ts-type-checked/main/res/ts-type-checked.png" align="center"/>
   <span>ts-type-checked</span>
 </h1>
 
@@ -104,7 +104,7 @@
         All objects that inherit from <code>Object</code> (i.e. everything except for <code>null</code> and <code>undefined</code>) and implement the <code>Object</code> interface.
         <br/>
         <br/>
-        Check the definition of the <code>Object</code> interface here <a href="https://github.com/microsoft/TypeScript/blob/master/src/lib/es5.d.ts">here</a>
+        Check the definition of the <code>Object</code> interface here <a href="https://github.com/microsoft/TypeScript/blob/main/src/lib/es5.d.ts">here</a>
       </td>
       <td align="left">
         <code>value !== null && value !== undefined && typeof value.toString === 'function' && ...</code>
