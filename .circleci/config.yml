@@ -17,7 +17,7 @@ only-release: &only-release
       ignore: /.*/
     # And only run on version tags
     tags:
-      only: /^v(\d+)\.(\d+)\.(\d+).*/
+      only: /^v.*/
 
 # Filters for jobs that only need to be run for a version tag (release)
 only-release-candidate: &only-release-candidate
