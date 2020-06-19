@@ -63,8 +63,11 @@ echo "Running tests for version $VERSION"
 # Move to the test project
 cd "$TEST_PATH"
 
+# Remove ts-type-checked dependency to make sure we don't get a stale version
+rm -rf node_modules/ts-type-checked
+
 # Install the test project dependencies
-yarn
+yarn --check-files
 
 # And move back to root
 cd ..

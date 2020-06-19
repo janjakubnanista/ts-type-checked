@@ -1,6 +1,4 @@
 sandbox/*
-transformer/**/*.js
 **/node_modules
-test/**/*.js
 examples/index.js
 examples/index.*.js
