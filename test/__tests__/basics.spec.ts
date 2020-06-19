@@ -113,6 +113,24 @@ describe('basics', () => {
     assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
+  test('symbol', () => {
+    type TypeReference1 = symbol;
+
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.string().map(Symbol);
+    const invalidArbitrary = fc.anything().filter(notOfType('symbol'));
+
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
+  });
+
+  test('Symbol', () => {
+    type TypeReference1 = Symbol; // eslint-disable-line @typescript-eslint/ban-types
+
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.string().map(Symbol);
+    const invalidArbitrary = fc.anything().filter(notOfType('symbol'));
+
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
+  });
+
   test('object', () => {
     type TypeReference1 = object;
 

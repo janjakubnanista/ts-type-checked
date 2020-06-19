@@ -7,6 +7,7 @@ import {
   assert,
   notAnArray,
   notAnEmptyArray,
+  notAnEmptyObject,
   notAnObject,
   notOfType,
   numeric,
@@ -252,23 +253,58 @@ describe('interface types', () => {
     assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
-  test('callable', () => {
+  test('callable interface', () => {
+    type TypeReference1 = {
+      (a: string): string;
+      (a: boolean): number;
+    };
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(
+      fc.func(fc.anything()) as fc.Arbitrary<TypeReference1>,
+    );
+    const invalidArbitrary = fc.oneof(fc.anything().filter(notOfType('function')));
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
+  });
+
+  test('callable interface with additional properties', () => {
     type TypeReference1 = {
       (): string;
-      property: number;
+      apply: number;
+      description: string;
+    };
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc
+      .tuple(fc.func(fc.anything() as fc.Arbitrary<string>), numeric(), fc.string())
+      .map(([object, apply, description]) => Object.assign(object, { apply, description }));
+    const invalidArbitrary = fc.oneof(
+      fc.func(fc.anything()),
+      fc.anything().filter(notOfType('function')),
+      fc
+        .tuple(
+          fc.func(fc.anything() as fc.Arbitrary<string>),
+          fc.anything().filter(notOfType('number')),
+          fc.anything().filter(notOfType('string')),
+        )
+        .map(([object, apply, description]) => Object.assign(object, { apply, description })),
+    );
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
+  });
+
+  test('callable interface with string index type', () => {
+    type TypeReference1 = {
+      (a: string): string;
+      [key: string]: number;
     };
 
-    const validArbitrary: fc.Arbitrary<TypeReference1> = fc
-      .tuple(fc.func(fc.anything() as fc.Arbitrary<string>), numeric())
-      .map(([object, property]) => Object.assign(object, { property }));
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(
+      fc.dictionary(fc.string(), numeric()).map((record) => Object.assign(() => 'string', record)),
+    );
 
     const invalidArbitrary = fc.oneof(
       fc.anything().filter(notOfType('function')),
       fc
-        .tuple(fc.func(fc.anything() as fc.Arbitrary<string>), fc.anything().filter(notOfType('number')))
-        .map(([object, property]) => Object.assign(object, { property })),
+        .dictionary(fc.string(), fc.anything().filter(notOfType('number')))
+        .filter(notAnEmptyObject)
+        .map((record) => Object.assign(() => 'string', record)),
     );
-
     assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 });

@@ -12,7 +12,8 @@ export type LibraryTypeDescriptorName =
   | 'Function'
   | 'Promise'
   | 'Map'
-  | 'Set';
+  | 'Set'
+  | 'Symbol';
 
 const typeDescriptorNameBySymbolName: Record<string, LibraryTypeDescriptorName> = {
   Array: 'Array',
@@ -27,6 +28,7 @@ const typeDescriptorNameBySymbolName: Record<string, LibraryTypeDescriptorName> 
   Promise: 'Promise',
   Map: 'Map',
   Set: 'Set',
+  Symbol: 'Symbol',
 };
 
 export const getLibraryTypeDescriptorName = (

@@ -41,6 +41,7 @@ export const notOfType = (...types: TypeOf[]): FilterFunction => (value: unknown
 export const notALiteral = (...literals: unknown[]): FilterFunction => (value: unknown): boolean =>
   !literals.includes(value);
 export const notNumeric: FilterFunction = (value) => isNaN(parseFloat(value as any));
+export const notNullOrUndefined: FilterFunction = (value) => value !== null && value !== undefined;
 
 // Helper assertion methods
 export const assertArbitrary = (arbitrary: fc.Arbitrary<unknown>, checks: FilterFunction[], result: boolean): void => {
