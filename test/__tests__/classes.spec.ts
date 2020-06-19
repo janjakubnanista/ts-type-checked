@@ -1,6 +1,6 @@
 import 'jest';
 
-import { assert, notOfType, numeric, primitive } from './utils';
+import { assert, notALiteral, notNullOrUndefined, notOfType, numeric, primitive } from './utils';
 // @ts-ignore
 import { isA, typeCheckFor } from 'ts-type-checked';
 import fc from 'fast-check';
@@ -114,7 +114,51 @@ describe('classes', () => {
     ]);
   });
 
-  test('property initailizers', () => {
+  test('public getters', () => {
+    class TypeReference1 {
+      get property1() {
+        return null;
+      }
+
+      public get property2(): string {
+        return '';
+      }
+    }
+
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(
+      fc.constantFrom(new TypeReference1()),
+      fc.record({
+        property1: fc.constant(null),
+        property2: fc.string(),
+      }),
+    );
+
+    const invalidArbitrary = fc.oneof(
+      primitive(),
+      fc.constantFrom(
+        {},
+        { property1: null },
+        {
+          get property1() {
+            return 'string';
+          },
+          property2: 'string',
+        },
+      ),
+      fc.record({
+        property1: fc.anything().filter(notALiteral(null)),
+        property2: fc.string(),
+      }),
+      fc.record({
+        property1: fc.constant(null),
+        property2: fc.anything().filter(notOfType('string')),
+      }),
+    );
+
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
+  });
+
+  test('property initializers', () => {
     class TypeReference1 {
       property = 'value';
     }
@@ -139,28 +183,64 @@ describe('classes', () => {
     assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
-  // test.skip('private properties', () => {
-  //   class TypeReference1 {
-  //     constructor(public property: string, private privateProperty: boolean) {}
-  //   }
+  test('private properties', () => {
+    class TypeReference1 {
+      private property = '';
+      private anotherProperty: number;
 
-  //   const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(
-  //     fc.constantFrom(new TypeReference1('string', true), new TypeReference1('string', false)),
-  //     fc.tuple(fc.string(), fc.boolean()).map(([a, b]) => new TypeReference1(a, b)),
-  //     fc.record({
-  //       property: fc.string(),
-  //     }),
-  //   );
-  //   const invalidArbitrary = fc.oneof(
-  //     primitive(),
-  //     fc.record({
-  //       property: fc.anything().filter(notOfType('string')),
-  //     }),
-  //   );
+      constructor(private privateProperty: string, anotherProperty = 1) {
+        this.anotherProperty = anotherProperty;
+      }
 
-  //   const checks: FilterFunction[] = [typeCheckFor<TypeReference1>(), value => isA<TypeReference1>(value)];
+      private privateMethod(): void {} // eslint-disable-line @typescript-eslint/no-empty-function
+      private privateMethodWithInitializer = () => {}; // eslint-disable-line @typescript-eslint/no-empty-function
 
-  //   testTypeChecks(validArbitrary, checks, true);
-  //   testTypeChecks(invalidArbitrary, checks, false);
-  // });
+      private get propertyWithGetter() {
+        return null;
+      }
+    }
+
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(
+      fc.constantFrom(new TypeReference1('string'), new TypeReference1('string', 7)),
+      fc.tuple(fc.string(), numeric()).map(([a, b]) => new TypeReference1(a, b)),
+
+      // Empty object should be valid since TypeReference1 has no public properties
+      fc.anything().filter(notNullOrUndefined) as fc.Arbitrary<TypeReference1>,
+    );
+
+    const invalidArbitrary = fc.oneof(fc.constantFrom(null, undefined));
+
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
+  });
+
+  test('protected properties', () => {
+    class TypeReference1 {
+      protected property = '';
+      protected anotherProperty: number;
+
+      constructor(protected protectedProperty: string, anotherProperty = 1) {
+        this.anotherProperty = anotherProperty;
+      }
+
+      protected protectedMethod(): void {} // eslint-disable-line @typescript-eslint/no-empty-function
+      protected protectedMethodWithInitializer = () => {}; // eslint-disable-line @typescript-eslint/no-empty-function
+
+      protected get propertyWithGetter() {
+        return null;
+      }
+    }
+
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(
+      fc.constantFrom(new TypeReference1('string'), new TypeReference1('string', 7)),
+      fc.tuple(fc.string(), numeric()).map(([a, b]) => new TypeReference1(a, b)),
+
+      // Empty object should be valid since TypeReference1 has no public properties
+      fc.anything().filter(notNullOrUndefined) as fc.Arbitrary<TypeReference1>,
+    );
+
+    // Any non-null thing should be valid since it has no properties
+    const invalidArbitrary = fc.oneof(fc.constantFrom(null, undefined));
+
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
+  });
 });
