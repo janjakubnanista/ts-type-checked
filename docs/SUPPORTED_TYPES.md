@@ -26,7 +26,8 @@
         <code>bigint</code>,<br/>
         <code>boolean</code>,<br/>
         <code>number</code>,<br/>
-        <code>string</code>
+        <code>string</code>,<br/>
+        <code>symbol</code>
       </td>
       <td align="center">✓</td>
       <td align="left">Primitive types that can be checked using the <code>typeof</code> operator</td>
@@ -34,7 +35,8 @@
         <code>typeof value === 'bigint'</code>,<br/>
         <code>typeof value === 'boolean'</code>,<br/>
         <code>typeof value === 'number'</code>,<br/>
-        <code>typeof value === 'string'</code>
+        <code>typeof value === 'string'</code>,<br/>
+        <code>typeof value === 'symbol'</code>
       </td>
     </tr>
     <!-- Boxed types -->
@@ -43,7 +45,8 @@
         <code>BigInt</code>,<br/>
         <code>Boolean</code>,<br/>
         <code>Number</code>,<br/>
-        <code>String</code>
+        <code>String</code>,<br/>
+        <code>Symbol</code>
       </td>
       <td align="center">✓</td>
       <td align="left">Boxed types are converted to their un-boxed versions and checked accordingly</td>
@@ -51,34 +54,8 @@
         <code>typeof value === 'bigint'</code>,<br/>
         <code>typeof value === 'boolean'</code>,<br/>
         <code>typeof value === 'number'</code>,<br/>
-        <code>typeof value === 'string'</code>
-      </td>
-    </tr>
-    <!-- any, unknown -->
-    <tr valign="top">
-      <td align="left">
-        <code>any</code>,<br/>
-        <code>unknown</code>
-      </td>
-      <td align="center">✓</td>
-      <td align="left">
-        Checks for these will always be true
-      </td>
-      <td align="left">
-        <code>true</code>
-      </td>
-    </tr>
-    <!-- never -->
-    <tr valign="top">
-      <td align="left">
-        <code>never</code>
-      </td>
-      <td align="center">✓</td>
-      <td align="left">
-        Checks for <code>never</code> will always be false
-      </td>
-      <td align="left">
-        <code>false</code>
+        <code>typeof value === 'string'</code>,<br/>
+        <code>typeof value === 'symbol'</code>
       </td>
     </tr>
     <!-- object keyword -->
@@ -158,6 +135,7 @@
     <!-- Interfaces -->
     <tr valign="top">
       <td align="left">
+        <a id="interfaces"></a>
         <code>interface T {<br/>
           &nbsp;&nbsp;name:&nbsp;string;<br/>
           &nbsp;&nbsp;age:&nbsp;number;<br/>
@@ -181,6 +159,20 @@
       </td>
       <td align="left">
         <code>value !== null && value !== undefined && typeof value.name === 'string' && typeof value.age === 'number' && isA&lt;T[]&gt;(value.others)</code>
+      </td>
+    </tr>
+    <!-- Classes -->
+    <tr valign="top">
+      <td align="left">
+        <code>class A</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        Classes
+      </td>
+      <td align="left">
+        Classes are checked according to the <a href="https://en.wikipedia.org/wiki/Duck_test">duck test</a>: <em>If it walks like a duck and it quacks like a duck, then it must be a duck</em>.<br/><br/>That also means that <code>private</code> and <code>protected</code> members are not checked.
+        <a href="#interfaces">See <code>interfaces</code>
       </td>
     </tr>
     <!-- Indexed types -->
@@ -380,6 +372,33 @@
         <code>value instanceof Element</code>,<br/>
         <code>value instanceof HTMLElement</code>,<br/>
         <code>value instanceof HTMLDivElement</code>
+      </td>
+    </tr>
+    <!-- any, unknown -->
+    <tr valign="top">
+      <td align="left">
+        <code>any</code>,<br/>
+        <code>unknown</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        Checks for these will always be true
+      </td>
+      <td align="left">
+        <code>true</code>
+      </td>
+    </tr>
+    <!-- never -->
+    <tr valign="top">
+      <td align="left">
+        <code>never</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        Checks for <code>never</code> will always be false
+      </td>
+      <td align="left">
+        <code>false</code>
       </td>
     </tr>
   </tbody>
