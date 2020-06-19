@@ -154,7 +154,6 @@ workflows:
           type: approval
           requires:
               - e2e-test
-              - build
 
       - publish:
           <<: *only-release
