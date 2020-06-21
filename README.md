@@ -8,13 +8,11 @@
 </h1>
 
 <p align="center">
-  Automatic type checks for TypeScript
+  Automatic type guards for TypeScript
 </p>
 
 <!-- The badges section -->
 <p align="center">
-  <!-- Travis CI build status -->
-  <a href="https://travis-ci.org/janjakubnanista/ts-type-checked"><img alt="Build Status" src="https://travis-ci.org/janjakubnanista/ts-type-checked.svg?branch=main"/></a>
   <!-- CircleCI build status -->
   <a href="https://circleci.com/gh/janjakubnanista/ts-type-checked/tree/main"><img alt="CircleCI Build Status" src="https://circleci.com/gh/janjakubnanista/ts-type-checked.svg?style=shield"></a>
   <!-- Fury.io NPM published package version -->
@@ -27,7 +25,9 @@
   <a href="https://github.com/janjakubnanista/ts-type-checked/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/npm/l/ts-type-checked"/></a>
 </p>
 
-`ts-type-checked` generates [type guards](https://www.typescriptlang.org/docs/handbook/advanced-types.html#type-guards-and-differentiating-types) based on your own (or library) TypeScript types. It is compatible with [rollup](./docs/INSTALLATION.md#installation--rollup), [webpack](./docs/INSTALLATION.md#installation--webpack), and [ttypescript](./docs/INSTALLATION.md#installation--ttypescript) projects and works nicely with [jest](./docs/INSTALLATION.md#installation--jest) or [ts-node](./docs/INSTALLATION.md#installation--ts-node).
+<p align="center">
+  <code>ts-type-checked</code> generates <a href="https://www.typescriptlang.org/docs/handbook/advanced-types.html#type-guards-and-differentiating-types">type guards</a> based on your own (or library) TypeScript types. It is compatible with <a href="./docs/INSTALLATION.md#installation--rollup">rollup</a>, <a href="./docs/INSTALLATION.md#installation--webpack">webpack</a>, and <a href="./docs/INSTALLATION.md#installation--ttypescript">ttypescript</a> projects and works nicely with <a href="./docs/INSTALLATION.md#installation--jest">jest</a> or <a href="./docs/INSTALLATION.md#installation--ts-node">ts-node</a>
+</p>
 
 <p align="center">
   <a href="#example-cases">Example cases</a>
