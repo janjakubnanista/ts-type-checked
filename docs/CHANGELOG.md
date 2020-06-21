@@ -16,3 +16,9 @@
 ### Bugfixes
 
 - `private` and `protected` members are not checked anymore
+
+## v0.4.1
+
+### Bugfixes
+
+- Checking circular structures will not end up with stack overflow anymore, instead an `Error` will be thrown when a circular structure is being checked
