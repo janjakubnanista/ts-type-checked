@@ -36,22 +36,25 @@ export default <T>(typeGuard: TypeGuard<T>): TypeGuard<T> => {
     // First we check whether the value is now already being checked
     //
     // If the value is in the heap it means that this type guard has called itself
-    // with the same value. That means that the result of a type check would depend on the result of the type check
-    // and a loop would be created
-    const heapIndex: number = heap.indexOf(value);
-    if (heapIndex !== -1) {
-      // Since the heap is shared between the calls we need to clear it before
-      // throwing an error. If we didn't, following calls to the type guard
-      // might see the stale values in the heap. This is only a problem in a very specific
-      // scenario:
-      //
-      // - Try checking a circular structure with the type guard
-      // - Catch the exception
-      // - Mutate one value in the circular structure (break the cycle)
-      // - Try checking the structure again
-      heap.splice(0, heap.length);
-
-      throw new Error(`Value that was passed to ts-type-checked contains a circular reference and cannot be checked`);
+    // with the same value, something like the chicken and egg situation.
+    //
+    // Looking at the problem from the second type guard call, the one that would start the whole
+    // type checking cascade again and again:
+    //
+    // 1. If it returns false, it must be that the value is not of a valid type.
+    //    - If it indeed was of an invalid type, other property checks must have failed,
+    //      so returning false will not affect the result of the original call.
+    //    - If the value was of a valid type though, i.e. other property checks would pass,
+    //      returning false would make the original call return false even though it was valid
+    // 2. If it returns true, it must be that the value is of a valid type
+    //    - If it indeed was of a valid type, other property checks must have passed so returning true
+    //      will not break the positive and correct result
+    //    - If it was of an invalid type, i.e. other property checks would be failing,
+    //      returning true will not affect the negative and correct result
+    //
+    // In other words,  believe this should return true
+    if (heap.indexOf(value) !== -1) {
+      return true;
     }
 
     // If the value was not in the heap then let's add it there

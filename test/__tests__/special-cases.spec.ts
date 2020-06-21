@@ -1,12 +1,10 @@
-import { assert, notALiteral } from './utils';
+import { assert, notALiteral, notOfType, numeric, primitive } from './utils';
 import fc from 'fast-check';
 
 // @ts-ignore
 import { isA, typeCheckFor } from 'ts-type-checked';
 
 describe('special-cases', () => {
-  const circularTypeError = /^Value that was passed to ts-type-checked contains a circular reference and cannot be checked$/;
-
   test('never in conditional', () => {
     type ConditionalPropertyNames<P> = {
       [K in keyof P]: P[K] extends number ? K : never;
@@ -27,126 +25,95 @@ describe('special-cases', () => {
   describe('same-type circular structure', () => {
     type TypeReference1 = {
       next?: TypeReference1;
+      property: string;
     };
 
-    const createLinkedList = (n: number, close: boolean): [TypeReference1, TypeReference1] => {
-      const head: TypeReference1 = {} as TypeReference1;
-      let tail: TypeReference1 = head;
-
-      // First we create a linear linked list
-      for (let i = 0; i < n; i++) {
-        tail = tail.next = {} as TypeReference1;
-      }
-
-      // Then we close the cycle by pointing the last element to the head
-      if (close) tail.next = head;
-
-      return [head, tail];
-    };
-
-    test('same-type circular structure should throw an error', () => {
-      const circularArbitrary = fc.integer(0, 100).map<TypeReference1>((n) => createLinkedList(n, true)[0]);
-
-      // We check the valid arbitrary on a finer-grained level than the invalid one
-      fc.assert(
-        fc.property(circularArbitrary, (value) => {
-          expect(() => typeCheckFor<TypeReference1>()(value)).toThrow(circularTypeError);
-          expect(() => isA<TypeReference1>(value)).toThrow(circularTypeError);
-        }),
-      );
+    const typeReferenceArbitrary = fc.record<TypeReference1>({
+      property: fc.string(),
     });
 
-    // The heap in the cycle breaker might need cleaning so the test should perform one
-    // check with problematic object, then change its property while not changing the object reference
-    // and call the check again
-    test('recovering after same-type circular structure check', () => {
-      const circularArbitrary = fc
-        .integer(0, 50)
-        .map<[TypeReference1, TypeReference1]>((n) => createLinkedList(n, true));
+    const circularListArbitrary: fc.Arbitrary<[TypeReference1, TypeReference1]> = fc.integer(1, 100).chain((length) =>
+      fc.array(typeReferenceArbitrary, 1, length).map((array) => {
+        const head = array[0];
+        const tail = array[array.length - 1];
 
-      // We check the valid arbitrary on a finer-grained level than the invalid one
-      fc.assert(
-        fc.property(circularArbitrary, ([head, tail]) => {
-          expect(() => typeCheckFor<TypeReference1>()(head)).toThrow(circularTypeError);
-          expect(() => isA<TypeReference1>(head)).toThrow(circularTypeError);
+        array.forEach((node, index) => {
+          node.next = array[(index + 1) % array.length];
+        });
 
-          head.next = undefined;
-          expect(typeCheckFor<TypeReference1>()(head)).toBeTruthy();
-          expect(isA<TypeReference1>(head)).toBeTruthy();
+        return [head, tail];
+      }),
+    );
 
-          head.next = tail;
-          expect(() => typeCheckFor<TypeReference1>()(head)).toThrow(circularTypeError);
-          expect(() => isA<TypeReference1>(head)).toThrow(circularTypeError);
+    test('same-type valid circular structure', () => {
+      const validArbitrary = circularListArbitrary.map<TypeReference1>(([head]) => head);
+      const invalidArbitrary = fc.oneof(
+        primitive(),
+        fc.date(),
+        fc.func(fc.anything()),
+        fc.object(),
+        // The original list with invalid property
+        fc.tuple(circularListArbitrary, fc.anything().filter(notOfType('string'))).map(([[head, tail], property]) => {
+          tail.property = property as string;
+
+          return head;
         }),
       );
+
+      assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
     });
   });
 
   describe('alternating-type circular structure', () => {
     type TypeReference1 = {
       next?: TypeReference2;
+      property1: string;
     };
     type TypeReference2 = {
-      following?: TypeReference1;
+      next?: TypeReference1;
+      property2: number;
     };
 
-    const createLinkedList = (n: number, close: boolean): [TypeReference1, TypeReference2] => {
-      const head: TypeReference1 = {} as TypeReference1;
-      let tail: TypeReference1 = head;
-
-      // First we create a linear linked list
-      for (let i = 0; i < n; i++) {
-        tail.next = {} as TypeReference2;
-        tail = tail.next.following = {} as TypeReference1;
-      }
-
-      // Then we close the cycle by pointing the last element to the head
-      if (close) {
-        tail.next = {} as TypeReference2;
-        tail.next.following = head;
-      }
-
-      return [head, tail.next!];
-    };
-
-    test('alternating-type circular structure should throw an error', () => {
-      const circularArbitrary = fc.integer(0, 100).map<TypeReference1>((n) => createLinkedList(n, true)[0]);
-
-      // We check the valid arbitrary on a finer-grained level than the invalid one
-      fc.assert(
-        fc.property(circularArbitrary, (value) => {
-          expect(() => typeCheckFor<TypeReference1>()(value)).toThrow(circularTypeError);
-          expect(() => isA<TypeReference1>(value)).toThrow(circularTypeError);
-
-          expect(() => typeCheckFor<TypeReference2>()(value.next)).toThrow(circularTypeError);
-          expect(() => isA<TypeReference2>(value.next)).toThrow(circularTypeError);
-        }),
-      );
+    const typeReferenceArbitrary = fc.record<TypeReference1 & TypeReference2>({
+      property1: fc.string(),
+      property2: numeric(),
     });
 
-    // The heap in the cycle breaker might need cleaning so the test should perform one
-    // check with problematic object, then change its property while not changing the object reference
-    // and call the check again
-    test('recovering after same-type circular structure check', () => {
-      const circularArbitrary = fc
-        .integer(0, 50)
-        .map<[TypeReference1, TypeReference2]>((n) => createLinkedList(n, true));
+    const circularListArbitrary: fc.Arbitrary<[TypeReference1, TypeReference1]> = fc.integer(1, 100).chain((length) =>
+      fc.array(typeReferenceArbitrary, 1, length).map((array) => {
+        const head = array[0];
+        const tail = array[array.length - 1];
 
-      // We check the valid arbitrary on a finer-grained level than the invalid one
-      fc.assert(
-        fc.property(circularArbitrary, ([head, tail]) => {
-          expect(() => typeCheckFor<TypeReference1>()(head)).toThrow(circularTypeError);
-          expect(() => isA<TypeReference1>(head)).toThrow(circularTypeError);
+        array.forEach((node, index) => {
+          node.next = array[(index + 1) % array.length];
+        });
 
-          tail.following = undefined;
-          expect(typeCheckFor<TypeReference1>()(head)).toBeTruthy();
-          expect(isA<TypeReference1>(head)).toBeTruthy();
+        return [head, tail];
+      }),
+    );
 
-          tail.following = head;
-          expect(() => typeCheckFor<TypeReference1>()(head)).toThrow(circularTypeError);
-          expect(() => isA<TypeReference1>(head)).toThrow(circularTypeError);
+    test('alternating-type valid circular structure', () => {
+      const validArbitrary = circularListArbitrary.map<TypeReference1>(([head]) => head);
+      const invalidArbitrary = fc.oneof(
+        primitive(),
+        fc.date(),
+        fc.func(fc.anything()),
+        fc.object(),
+        // The original list with invalid property1
+        fc.tuple(circularListArbitrary, fc.anything().filter(notOfType('string'))).map(([[head], property1]) => {
+          head.property1 = property1 as string;
+
+          return head;
+        }),
+        // The original list with invalid property2
+        fc.tuple(circularListArbitrary, fc.anything().filter(notOfType('number'))).map(([[head], property2]) => {
+          head.next!.property2 = property2 as number;
+
+          return head;
         }),
       );
+
+      assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
     });
   });
 });
