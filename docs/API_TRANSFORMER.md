@@ -26,8 +26,8 @@ Please refer to the [installation section](./INSTALLATION.md) for more informati
 
 |Name|Type|Default value|Description|
 |----|----|-------------|-----------|
-|`logLevel`|`'debug' | 'normal' | 'nosey' | 'silent'`|`'normal'`|Set the verbosity of logging when transforming|
-|`mode`|`'development' | 'production'`|`process.env.NODE_ENV`|In `production` mode the generated code is slightly smaller (the code generator does not use full names of types in the output)|
+|`logLevel`|`'debug'`<br/>`'normal'`<br/>`'nosey'`<br/>`'silent'`<br/>`'normal'`|Set the verbosity of logging when transforming|
+|`mode`|`'development'`<br/>`'production'`|`process.env.NODE_ENV`|In `production` mode the generated code is slightly smaller (the code generator does not use full names of types in the output)|
 
 ## Passing options to `transformer`
 
