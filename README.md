@@ -8,7 +8,7 @@
 </h1>
 
 <p align="center">
-  Automatic type checks for TypeScript
+  Automatic type guards for TypeScript
 </p>
 
 <!-- The badges section -->
