@@ -34,7 +34,7 @@
     "module": "commonjs",
     "jsx": "react",
     "plugins": [
-      { "transform": "ts-type-checked/transformer", "logLevel": "normal" },
+      { "transform": "ts-type-checked/transformer", "logLevel": "normal", "mode": "development" },
     ]
   },
   "exclude": ["dist"]

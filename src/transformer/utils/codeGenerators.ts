@@ -141,3 +141,12 @@ export const createIsNotNullOrUndefined = (value: ts.Expression): ts.Expression 
     ts.createStrictInequality(value, ts.createIdentifier('undefined')),
     ts.createStrictInequality(value, ts.createNull()),
   );
+
+export const createRequire = (identifier: ts.Identifier, path: string, property = 'default'): ts.Statement =>
+  createVariable(
+    identifier,
+    ts.createPropertyAccess(
+      ts.createCall(ts.createIdentifier('require'), undefined, [ts.createLiteral(path)]),
+      property,
+    ),
+  );

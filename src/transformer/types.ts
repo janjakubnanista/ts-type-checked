@@ -131,6 +131,11 @@ export type ASTVisitor = (node: ts.Node) => ts.Node | undefined;
 export type ExpressionTransformer = (value: ts.Expression) => ts.Expression;
 
 /**
+ * Helper type for type guard functions
+ */
+export type TypeGuard<T> = (value: unknown) => value is T;
+
+/**
  * TypeDescriptor is a serializable representation of a Type object.
  * It is used as an intermediate step between the type to be checked
  * and the generated type guard.
