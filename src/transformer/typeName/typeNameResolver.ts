@@ -12,7 +12,6 @@ export const createTypeNameResolver = (
   typeDescriptorGenerator: TypeDescriptorGenerator,
 ): TypeNameResolver => {
   const typeNameResolver = (scope: ts.TypeNode, type: ts.Type): TypeName => {
-    // FIXME Maybe the registry does not need to pass typeName as the first parameter to create factory
     const typeName: TypeName = registry.create(type, () => {
       const typeDescriptorOrCallback: TypeDescriptor | TypeDescriptorGeneratorCallback = typeDescriptorGenerator(
         scope,

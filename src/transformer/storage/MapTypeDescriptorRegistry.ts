@@ -38,4 +38,83 @@ export class MapTypeDescriptorRegistry implements TypeDescriptorRegistry {
 
     return typeName;
   }
+
+  private simplify(typeName: TypeName): void {
+    const typeDescriptor = this.typeDescriptorsByTypeName.get(typeName);
+    if (!typeDescriptor) {
+      throw new Error(`Could not find type descriptor for ${typeName}`);
+    }
+
+    switch (typeDescriptor._type) {
+      case 'union':
+      case 'intersection':
+        const uniqueTypeNames: TypeName[] = unique(typeDescriptor.types);
+        this.typeDescriptorsByTypeName.set(typeName, {
+          ...typeDescriptor,
+          types: uniqueTypeNames,
+        });
+
+        uniqueTypeNames.forEach((typeName) => this.simplify(typeName));
+        break;
+
+      case 'function':
+      case 'interface':
+        this.typeDescriptorsByTypeName.set(typeName, {
+          ...typeDescriptor,
+          properties: typeDescriptor.properties.map((propertyTypeDescriptor) => ({})),
+        });
+        break;
+    }
+  }
 }
+
+const unique = <T>(array: T[]): T[] => Array.from(new Set(array).values());
+
+const compareTypeDescriptors = (a: TypeDescriptor, b: TypeDescriptor): number =>
+  getTypeDescriptorComplexityScore(a) - getTypeDescriptorComplexityScore(b);
+
+const getTypeDescriptorComplexityScore = (typeDescriptor: TypeDescriptor): number => {
+  switch (typeDescriptor._type) {
+    // No comparisons
+    case 'never':
+    case 'unspecified':
+      return 0;
+
+    // One simple strict equality comparison
+    case 'literal':
+      return 1;
+
+    // One simple strict equality comparison
+    // One typeof call
+    case 'keyword':
+      return 2;
+
+    // One instanceof call
+    case 'class':
+      return 5;
+
+    // One Array.isArray function call
+    // One Array.every call
+    case 'tuple':
+    case 'array':
+      return 10;
+
+    // One instanceof call
+    // One Set.values call
+    // One Array.from call
+    // One type check per value
+    case 'set':
+      return 30;
+
+    // One instanceof call
+    // One Map.entries call
+    // One Array.from call
+    // Two type checks per key/value
+    case 'map':
+      return 50;
+
+    // TODO For now all the other ones have 100 complexity regardless of the implementation
+    default:
+      return 100;
+  }
+};
