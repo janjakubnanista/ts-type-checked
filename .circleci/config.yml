@@ -70,11 +70,11 @@ jobs:
       - node/with-cache:
           steps:
             - run: 
-                name: Test with TypeScript 3.1.1 (ES5)
-                command: yarn test:version -v 3.1.1 -l es5
+                name: Test with TypeScript 3.2.1 (ES5)
+                command: yarn test:version -v 3.2.1 -l es5
             - run: 
-                name: Test with TypeScript 3.1.1 (ES6)
-                command: yarn test:version -v 3.1.1 -l es6
+                name: Test with TypeScript 3.2.1 (ES6)
+                command: yarn test:version -v 3.2.1 -l es6
 
   e2e-test:
     <<: *defaults
