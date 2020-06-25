@@ -8,7 +8,6 @@ import {
   notAnArray,
   notAnEmptyArray,
   notAnEmptyObject,
-  notAnObject,
   notOfType,
   numeric,
   optionalOf,
@@ -134,36 +133,6 @@ describe('interface types', () => {
       fc.constantFrom(null, undefined),
       fc.record({
         property: fc.anything().filter(notOfType('string', 'undefined')),
-      }),
-    );
-
-    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
-  });
-
-  test('recursion', () => {
-    type TypeReference1 = InterfaceWithPropertyOfType<TypeReference1 | number>;
-
-    const tree: fc.Memo<TypeReference1> = fc.memo(() => node());
-    const node: fc.Memo<TypeReference1> = fc.memo((n) => {
-      if (n <= 1)
-        return fc.record<TypeReference1>({
-          property: numeric(),
-        });
-
-      return fc.record<TypeReference1>({
-        property: tree(),
-      });
-    });
-
-    const validArbitrary = tree();
-    const invalidSpecialCases = fc.constantFrom({}, { property: 'number' }, { property: undefined });
-    const invalidArbitrary = fc.oneof(
-      invalidSpecialCases,
-      fc.anything().filter(notAnObject),
-      fc.record({
-        property: fc.record({
-          property: fc.anything().filter(notOfType('number', 'object')),
-        }),
       }),
     );
 
