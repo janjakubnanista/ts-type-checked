@@ -8,7 +8,6 @@
 # The idea is to have a separate package under the `test` folder with its own package.json.
 # This package contains the test suite (as well as some test utilities) that will be run.
 
-set -x
 set -e
 
 DEBUG=
@@ -84,8 +83,15 @@ cd "$SANDBOX_PATH"
 # Get the correct version of TypeScript config
 cp "tsconfig.${TS_LIB}.json" "tsconfig.json"
 
+# Remove ts-type-checked dependency to make sure we don't get a stale version
+rm -rf node_modules/ts-type-checked
+
 # And add a specific version of typescript
-yarn add -dev --exact typescript@${VERSION}
+rm -rf node_modules/typescript
+yarn add --dev --exact typescript@${VERSION}
+
+# Install the test project dependencies
+yarn --check-files
 
 # Clear jest cache
 yarn jest --clearCache

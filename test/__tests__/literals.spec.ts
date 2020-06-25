@@ -11,7 +11,7 @@ describe('literals', () => {
     test('string', () => {
       type TypeReference1 = 'a';
 
-      const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom('a');
+      const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom<TypeReference1>('a');
       const invalidArbitrary = fc.anything().filter(notALiteral('a'));
 
       assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
@@ -20,7 +20,7 @@ describe('literals', () => {
     test('number', () => {
       type TypeReference1 = 6;
 
-      const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom(6);
+      const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom<TypeReference1>(6);
       const invalidArbitrary = fc.anything().filter(notALiteral(6));
 
       assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
@@ -29,7 +29,7 @@ describe('literals', () => {
     test('bigint', () => {
       type TypeReference1 = 1n;
 
-      const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom(1n);
+      const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom<TypeReference1>(1n);
       const invalidArbitrary = fc.anything().filter(notALiteral(1n));
 
       assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
@@ -38,7 +38,7 @@ describe('literals', () => {
     test('true', () => {
       type TypeReference1 = true;
 
-      const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom(true, !0, !!1);
+      const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom<TypeReference1>(true, !0, !!1);
       const invalidArbitrary = fc.anything().filter(notALiteral(true));
 
       assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
@@ -47,7 +47,7 @@ describe('literals', () => {
     test('false', () => {
       type TypeReference1 = false;
 
-      const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom(false, !!0, !1);
+      const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom<TypeReference1>(false, !!0, !1);
       const invalidArbitrary = fc.anything().filter(notALiteral(false));
 
       assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
@@ -80,7 +80,7 @@ describe('literals', () => {
         }),
       );
       const invalidArbitrary = fc.oneof(
-        fc.constantFrom([6], ['string', true]),
+        fc.constantFrom<unknown[]>([6], ['string', true]),
         primitive(),
         fc.array(fc.anything().filter(notOfType('string'))).filter(notAnEmptyArray),
         fc.record({
