@@ -68,12 +68,13 @@ export const isFunction = (
   !!type.getConstructSignatures()?.length ||
   !!type.getCallSignatures()?.length;
 
+const isArrayType = (typeChecker: ts.TypeChecker, type: ts.Type): boolean =>
+  typeof (typeChecker as any).isArrayType === 'function' && !!(typeChecker as any)?.isArrayType(type);
+
 export const isArray = (
   typeChecker: ts.TypeChecker,
   type: ts.Type,
   libraryDescriptorName?: LibraryTypeDescriptorName,
   typeNode?: ts.TypeNode,
 ): type is ts.TypeReference =>
-  typeNode?.kind === ts.SyntaxKind.ArrayType ||
-  libraryDescriptorName === 'Array' ||
-  !!(typeChecker as any)?.isArrayType(type);
+  typeNode?.kind === ts.SyntaxKind.ArrayType || libraryDescriptorName === 'Array' || isArrayType(typeChecker, type);
