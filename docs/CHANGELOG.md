@@ -22,3 +22,9 @@
 ### Bugfixes
 
 - Checking circular structures will not end up with stack overflow anymore, instead an `Error` will be thrown when a circular structure is being checked
+
+## v0.4.2
+
+### Bugfixes
+
+- Transformer would throw an error in older versions of TypeScript due to missing `isArrayType` method on `ts.TypeChecker`
