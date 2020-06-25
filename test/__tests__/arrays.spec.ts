@@ -20,7 +20,7 @@ describe('arrays', () => {
     type TypeReference1 = string[];
 
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.array(fc.string());
-    const invalidSpecialCases = fc.constantFrom([6], ['string', true]);
+    const invalidSpecialCases = fc.constantFrom<unknown[]>([6], ['string', true]);
 
     const invalidArbitrary = fc.oneof(
       invalidSpecialCases,
@@ -35,9 +35,9 @@ describe('arrays', () => {
     type LiteralType = 'a' | 'b';
     type TypeReference1 = LiteralType[];
 
-    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.array(fc.constantFrom('a', 'b'));
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.array(fc.constantFrom<LiteralType>('a', 'b'));
     const invalidArbitrary = fc.oneof(
-      fc.constantFrom([6], ['string', true]),
+      fc.constantFrom<unknown[]>([6], ['string', true]),
       fc.anything().filter(notAnArray),
       fc.array(fc.anything().filter(notOfType('string'))).filter(notAnEmptyArray),
     );
@@ -72,7 +72,7 @@ describe('arrays', () => {
   test('tuple', () => {
     type TypeReference1 = [number, true, string];
 
-    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.tuple(numeric(), fc.constant(true), fc.string());
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.tuple(numeric(), fc.constant<true>(true), fc.string());
     const invalidArbitrary = fc.oneof(
       fc.anything().filter(notAnArray),
       fc.tuple(numeric(), fc.constant(true), fc.string(), fc.anything()),
