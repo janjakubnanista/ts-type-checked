@@ -98,6 +98,9 @@ jobs:
             - run:
                 name: Test examples
                 command: yarn test:examples
+            - run:
+                name: Test scenarios
+                command: yarn test:scenarios
 
   publish:
     <<: *defaults
