@@ -1,0 +1,24 @@
+{
+  "name": "@ts-type-checked/test-setups--strict-null-checks-with-mocha",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "build": "ttsc",
+    "test": "mocha",
+    "test:debug": "mocha --inspect-brk"
+  },
+  "devDependencies": {
+    "@types/chai": "4.1.7",
+    "@types/mocha": "5.2.6",
+    "chai": "4.0.2",
+    "fast-check": "^1.25.1",
+    "mocha": "6.0.2",
+    "ts-node": "8.0.2",
+    "ts-type-checked": "file:../../dist",
+    "ttypescript": "^1.5.10",
+    "typescript": "3.2.4"
+  },
+  "engine": {
+    "node": "12.13.0"
+  }
+}
