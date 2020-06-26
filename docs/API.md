@@ -10,4 +10,4 @@
 `ts-type-checked` has two APIs:
 
 - [Type guard API](./API_TYPE_CHECKER.md) that you use in your code - the `isA` and `typeCheckFor` functions
-- [Transformer API](./API_TRANSFORMER.md) for integration with [rollup](./INSTALLATION.md#installation--rollup), [webpack](./INSTALLATION.md#installation--webpack), [ttypescript](./INSTALLATION.md#installation--ttypescript), [jest](./INSTALLATION.md#installation--jest) and [ts-node](./INSTALLATION.md#installation--ts-node)
+- [Transformer API](./API_TRANSFORMER.md) for integration with [Webpack](./INSTALLATION.md#installation--webpack), [Rollup](./INSTALLATION.md#installation--rollup), [ttypescript](./INSTALLATION.md#installation--ttypescript), [Jest](./INSTALLATION.md#installation--jest), [Mocha](./INSTALLATION.md#installation--jest) and [ts-node](./INSTALLATION.md#installation--ts-node)

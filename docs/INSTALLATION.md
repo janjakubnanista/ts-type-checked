@@ -7,7 +7,21 @@
 
 # Installation
 
-`ts-type-checked` is a TypeScript transformer - it generates the required type checks and injects them into your code at compile time. It is compatible with [rollup](https://github.com/janjakubnanista/ts-type-checked/tree/main/examples/rollup), [webpack](https://github.com/janjakubnanista/ts-type-checked/tree/main/examples/webpack) and [ttypescript](https://github.com/janjakubnanista/ts-type-checked/tree/main/examples/ttypescript) projects and works nicely with [jest](https://github.com/janjakubnanista/ts-type-checked/tree/main/examples/jest).
+<p>
+  <a href="#installation--webpack">Webpack</a>
+  <span>|</span>
+  <a href="#installation--rollup">Rollup</a>
+  <span>|</span>
+  <a href="#installation--ttypescript">ttypescript</a>
+  <span>|</span>
+  <a href="#installation--jest">Jest</a>
+  <span>|</span>
+  <a href="#installation--mocha">Mocha</a>
+  <span>|</span>
+  <a href="#installation--ts-node">ts-node</a>
+</p>
+
+`ts-type-checked` is a TypeScript transformer - it generates the required type checks and injects them into your code at compile time. It is compatible with [Webpack](#installation--webpack), [Rollup](#installation--rollup), and [ttypescript](#installation--ttypescript) projects and works nicely with [Jest](#installation--jest), [Mocha](#installation--mocha) and [ts-node](#installation--ts-node).
 
 You will first need to install `ts-type-checked` using `npm`, `yarn` or similar:
 
@@ -149,6 +163,28 @@ module.exports = {
     },
   },
 };
+```
+
+<a id="installation--mocha"></a>
+## Mocha
+
+[See example here](https://github.com/janjakubnanista/ts-type-checked/tree/main/examples/mocha)
+
+In order to enable `ts-type-checked` in your Jest tests you need to switch to `ttypescript` compiler.
+
+### 1. Configure `ttypescript`
+
+See [the instructions above](#installation--ttypescript).
+
+### 2. Set `ttypescript` as your compiler
+
+In your `mocha.setup.js` (or the place where you are registering `ts-node` for `mocha`):
+
+```javascript
+require('ts-node').register({
+  compiler: 'ttypescript',
+  project: './tsconfig.json',
+});
 ```
 
 <a id="installation--ts-node"></a>

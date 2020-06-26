@@ -26,7 +26,15 @@
 </p>
 
 <p align="center">
-  <code>ts-type-checked</code> generates <a href="https://www.typescriptlang.org/docs/handbook/advanced-types.html#type-guards-and-differentiating-types">type guards</a> based on your own (or library) TypeScript types. It is compatible with <a href="./docs/INSTALLATION.md#installation--rollup">rollup</a>, <a href="./docs/INSTALLATION.md#installation--webpack">webpack</a>, and <a href="./docs/INSTALLATION.md#installation--ttypescript">ttypescript</a> projects and works nicely with <a href="./docs/INSTALLATION.md#installation--jest">jest</a> or <a href="./docs/INSTALLATION.md#installation--ts-node">ts-node</a>
+  <code>ts-type-checked</code> generates <a href="https://www.typescriptlang.org/docs/handbook/advanced-types.html#type-guards-and-differentiating-types">type guards</a> based on your own (or library) TypeScript types. 
+  It is compatible with 
+  <a href="./docs/INSTALLATION.md#installation--rollup">Rollup</a>, 
+  <a href="./docs/INSTALLATION.md#installation--webpack">Webpack</a> and 
+  <a href="./docs/INSTALLATION.md#installation--ttypescript">ttypescript</a> projects 
+  and works nicely with 
+  <a href="./docs/INSTALLATION.md#installation--jest">Jest</a>, 
+  <a href="./docs/INSTALLATION.md#installation--mocha">Mocha</a> or 
+  <a href="./docs/INSTALLATION.md#installation--ts-node">ts-node</a>
 </p>
 
 <p align="center">
