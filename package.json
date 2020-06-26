@@ -12,9 +12,10 @@
     "lint:source": "eslint . --fix --ext .ts,.tsx",
     "lint:build": "eslint ./dist --fix --ext .js,.ts",
     "test:examples": "cd examples && yarn && yarn build && yarn start",
+    "test:scenarios": "./scripts/test-scenarios.sh",
     "test:version": "./scripts/test.sh",
     "test:versions": "./scripts/test-all-versions.sh",
-    "test": "yarn test:versions && yarn test:examples"
+    "test": "yarn test:scenarios && yarn test:versions && yarn test:examples"
   },
   "repository": {
     "type": "git",
