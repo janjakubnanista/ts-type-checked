@@ -31,6 +31,10 @@ export default (
   const resolvedOptions: TransformerOptions = { ...defaultTransformerOptions, ...options };
   const { mode, logLevel } = resolvedOptions;
 
+  // Without strict null checks on we need to
+  const compilerOptions = program.getCompilerOptions();
+  const strictNullChecks = !!compilerOptions.strictNullChecks;
+
   // Get a reference to a TypeScript TypeChecker in order to resolve types from type nodes
   const typeChecker = program.getTypeChecker();
 
@@ -72,7 +76,7 @@ export default (
 
     const typeDescriptorRegistry: TypeDescriptorRegistry = new MapTypeDescriptorRegistry(typeNameGenerator);
 
-    const typeGuardGenerator = createTypeGuardGenerator(typeGuardRegistry, typeDescriptorRegistry);
+    const typeGuardGenerator = createTypeGuardGenerator(typeGuardRegistry, typeDescriptorRegistry, strictNullChecks);
     const typeDescriptorCreator = createTypeDescriptorGenerator(program, logger);
     const typeNameResolver = createTypeNameResolver(typeDescriptorRegistry, typeDescriptorCreator);
     const typeGuardResolver = createTypeGuardResolver(program, typeNameResolver, typeGuardGenerator);
