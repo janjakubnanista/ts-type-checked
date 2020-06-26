@@ -28,3 +28,9 @@
 ### Bugfixes
 
 - Transformer would throw an error in older versions of TypeScript due to missing `isArrayType` method on `ts.TypeChecker`
+
+## v0.5.0
+
+### Features
+
+- Add support for codebases without `strictNullChecks` enabled in `tsconfig.json`. **Without `strictNullChecks`, `ts-type-checkd` is not very useful since it will produce a lot of false positives!** Please consider turning `strictNullChecks` on.
