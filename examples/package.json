@@ -6,8 +6,5 @@
     "clean": "rm -rf index.js && yarn workspaces run clean",
     "start": "yarn workspaces run start"
   },
-  "dependencies": {
-    "ts-type-checked": "file:../dist"
-  },
-  "workspaces": ["jest", "rollup", "ttypescript", "webpack"]
+  "workspaces": ["jest", "rollup", "mocha", "ts-node", "ttypescript", "webpack"]
 }

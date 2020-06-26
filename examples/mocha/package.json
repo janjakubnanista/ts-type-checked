@@ -1,0 +1,21 @@
+{
+  "name": "@ts-type-checked-examples/mocha",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "build": "echo 'mocha based example requires no building'",
+    "clean": "echo 'mocha based example requires no cleaning'",
+    "start": "mocha"
+  },
+  "devDependencies": {
+    "@types/chai": "4.1.7",
+    "@types/mocha": "5.2.6",
+    "chai": "4.0.2",
+    "fast-check": "^1.25.1",
+    "mocha": "6.0.2",
+    "ts-node": "8.0.2",
+    "ts-type-checked": "file:../../dist",
+    "ttypescript": "^1.5.10",
+    "typescript": "3.7.3"
+  }
+}

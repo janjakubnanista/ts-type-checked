@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "ts-loader": "^6.2.2",
+    "ts-type-checked": "file:../../dist",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11"
   }

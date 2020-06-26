@@ -8,6 +8,7 @@
     "start": "node index.js"
   },
   "devDependencies": {
+    "ts-type-checked": "file:../../dist",
     "ttypescript": "^1.5.10",
     "typescript": "3.7.3"
   }
