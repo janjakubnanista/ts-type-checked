@@ -408,3 +408,15 @@
 
 - **Promise resolution values** It is impossible to check what the value of a resolved promise will be
 - **Function return types and signatures** It is impossible to check anything about a function apart from the fact that it is a function
+
+### Pitfalls
+
+When `strictNullChecks` is disabled in you `tsconfig.json` the value of `ts-type-checked` decreases massively - if e.g. any/all properties of an object can be `null` or `undefined`, there is no difference between let's say a string `'hello world'` and an object of type `MyInterface`:
+
+```typescript
+interface MyInterface {
+  myProperty: string;
+}
+```
+
+Why? Because `string.myProperty` is `undefined`! The moral of the story: **turn `strictNullChecks` on, it's good for your code!**
