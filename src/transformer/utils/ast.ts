@@ -13,26 +13,48 @@ const hasPrivateOrProtectedModifiers = (modifiers?: ts.ModifiersArray): boolean 
 
 /**
  * Helper function that checks whether a property represented by a Symbol
+ * is optional, i.e. whether it has a question token
+ *
+ * @param property {ts.Symbol} Property symbol
+ */
+export const isOptionalProperty = (property: ts.Symbol): boolean => {
+  const declaration = property.valueDeclaration;
+
+  if (
+    declaration &&
+    (ts.isPropertySignature(declaration) ||
+      ts.isPropertyDeclaration(declaration) ||
+      ts.isMethodDeclaration(declaration) ||
+      ts.isMethodSignature(declaration) ||
+      ts.isParameter(declaration) ||
+      ts.isGetAccessor(declaration))
+  ) {
+    return !!declaration.questionToken;
+  }
+
+  return false;
+};
+
+/**
+ * Helper function that checks whether a property represented by a Symbol
  * is publicly visible, i.e. it does not have "private" or "protected" modifier
  *
  * @param property {ts.Symbol} Property symbol
  */
 export const isPublicProperty = (property: ts.Symbol): boolean => {
   const declaration = property.valueDeclaration;
-  if (!declaration) {
-    // TODO This is just a "guess", maybe the missing declaration can mean a private/protected property
-    return true;
-  }
 
   if (
-    ts.isPropertySignature(declaration) ||
-    ts.isPropertyDeclaration(declaration) ||
-    ts.isMethodDeclaration(declaration) ||
-    ts.isMethodSignature(declaration) ||
-    ts.isParameter(declaration) ||
-    ts.isGetAccessor(declaration)
-  )
+    declaration &&
+    (ts.isPropertySignature(declaration) ||
+      ts.isPropertyDeclaration(declaration) ||
+      ts.isMethodDeclaration(declaration) ||
+      ts.isMethodSignature(declaration) ||
+      ts.isParameter(declaration) ||
+      ts.isGetAccessor(declaration))
+  ) {
     return !hasPrivateOrProtectedModifiers(declaration.modifiers);
+  }
 
   return false;
 };

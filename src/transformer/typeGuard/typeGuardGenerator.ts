@@ -1,4 +1,4 @@
-import { ExpressionTransformer, TypeDescriptor, TypeName } from '../types';
+import { TypeDescriptor, TypeName } from '../types';
 import { TypeDescriptorRegistry, TypeGuardGenerator, TypeGuardRegistry } from '../types';
 import {
   createArrayTypeGuard,

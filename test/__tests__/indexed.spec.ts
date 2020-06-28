@@ -101,18 +101,18 @@ describe('indexed types', () => {
     };
 
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(
-      fc.constantFrom(
+      fc.constantFrom<TypeReference1>(
         {},
         { [Symbol('value')]: 'string' } as any,
-        { [Symbol('value')]: parseInt },
-        new Object() as TypeReference1,
-        { 6: 1, property: () => false },
-        { 6: 2344, property: 'string' },
-        Object.assign<object, Record<number, number>>(() => true, { 6: 1 }),
-        Object.assign<object, Record<string, string>>(() => true, { property: 'string' }),
+        { [Symbol('value')]: parseInt } as any,
+        new Object() as any,
+        { 6: 1, property: () => false } as any,
+        { 6: 2344, property: 'string' } as any,
+        Object.assign<object, Record<number, number>>(() => true, { 6: 1 }) as any,
+        Object.assign<object, Record<string, string>>(() => true, { property: 'string' }) as any,
       ),
-      fc.dictionary(numeric().map(String), numeric()),
-      fc.dictionary(fc.string().filter(notNumeric), fc.anything()),
+      fc.dictionary(numeric().map(String), numeric()) as fc.Arbitrary<TypeReference1>,
+      fc.dictionary(fc.string().filter(notNumeric), fc.anything()) as fc.Arbitrary<TypeReference1>,
     );
 
     const invalidArbitrary = fc.oneof(

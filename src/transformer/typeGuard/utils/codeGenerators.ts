@@ -1,4 +1,4 @@
-import { ExpressionTransformer, ObjectTypeDescriptor, TypeGuardGenerator, TypeName } from '../../types';
+import { ExpressionTransformer, ObjectTypeDescriptor, TypeGuardGenerator } from '../../types';
 import {
   createArrayEvery,
   createArrayFrom,
@@ -8,6 +8,7 @@ import {
   createIsNotPrimitive,
   createLogicalAndChain,
   createLogicalOrChain,
+  createNegation,
   createObjectKeys,
 } from '../../utils/codeGenerators';
 import ts from 'typescript';
@@ -72,9 +73,20 @@ export const createObjectTypeGuard = (
   const basicTypeGuard =
     stringIndexType || numberIndexType ? createIsNotPrimitive(value) : createIsNotNullOrUndefined(value);
 
-  const propertyChecks = properties.map(({ type, accessor }) =>
-    typeGuardGenerator(type, ts.createElementAccess(value, accessor)),
-  );
+  const propertyChecks: ts.Expression[] = properties.map(({ type, accessor, optional }) => {
+    const propertyExistenceCheck = ts.createParen(ts.createBinary(accessor, ts.SyntaxKind.InKeyword, value));
+    const propertyTypeGuard = typeGuardGenerator(type, ts.createElementAccess(value, accessor));
+
+    if (optional) {
+      return createLogicalOrChain(createNegation(propertyExistenceCheck), propertyTypeGuard);
+    }
+
+    return createLogicalAndChain(propertyExistenceCheck, propertyTypeGuard);
+    // const propertyTypeGuard = typeGuardGenerator(type, ts.createElementAccess(value, accessor));
+    // if (!optional) {
+    //   return propertyTypeGuard;
+    // }
+  });
 
   const indexPropertyChecks =
     stringIndexType || numberIndexType

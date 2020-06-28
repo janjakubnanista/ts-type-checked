@@ -40,12 +40,12 @@ describe('classes', () => {
     }
 
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(
-      fc.constantFrom(
+      fc.constantFrom<TypeReference1>(
         new TypeReference1(),
         { method: () => 'value' },
         Object.assign(() => true, { method: () => 'value' }),
       ),
-      fc.record({
+      fc.record<TypeReference1>({
         method: fc.func(fc.anything() as fc.Arbitrary<any>),
       }),
     );
@@ -67,7 +67,7 @@ describe('classes', () => {
     }
 
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(
-      fc.constantFrom(
+      fc.constantFrom<TypeReference1>(
         new TypeReference1(),
         { method: () => Promise.resolve('value') },
         Object.assign(() => true, { method: () => Promise.resolve('value') }),

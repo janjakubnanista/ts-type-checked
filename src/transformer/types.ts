@@ -185,6 +185,7 @@ export interface LiteralTypeDescriptor {
 
 export interface PropertyTypeDescriptor {
   _type: 'property';
+  optional: boolean;
   accessor: ts.Expression;
   type: TypeName;
 }

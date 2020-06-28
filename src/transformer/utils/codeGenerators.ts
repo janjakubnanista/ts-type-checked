@@ -102,7 +102,7 @@ export const createIsArray = (value: ts.Expression): ts.Expression =>
 export const createObjectKeys = (value: ts.Expression): ts.Expression =>
   ts.createCall(ts.createPropertyAccess(ts.createIdentifier('Object'), 'keys'), [], [value]);
 
-const parenthesize = (expressions: ts.Expression[]): ts.Expression[] =>
+export const parenthesize = (expressions: ts.Expression[]): ts.Expression[] =>
   expressions.map<ts.Expression>((expression) =>
     ts.isCallExpression(expression) ? expression : ts.createParen(expression),
   );
@@ -121,8 +121,10 @@ export const createIsOfType = (value: ts.Expression, type: ts.Expression): ts.Ex
 export const createIsInstanceOf = (value: ts.Expression, className: ts.Expression): ts.Expression =>
   ts.createBinary(value, ts.SyntaxKind.InstanceOfKeyword, className);
 
-export const createDoubleNegation = (value: ts.Expression): ts.Expression =>
-  ts.createPrefix(ts.SyntaxKind.ExclamationToken, ts.createPrefix(ts.SyntaxKind.ExclamationToken, value));
+export const createNegation = (value: ts.Expression): ts.Expression =>
+  ts.createPrefix(ts.SyntaxKind.ExclamationToken, value);
+
+export const createDoubleNegation = (value: ts.Expression): ts.Expression => createNegation(createNegation(value));
 
 // See
 //
