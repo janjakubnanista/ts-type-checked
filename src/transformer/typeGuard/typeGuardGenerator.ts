@@ -1,4 +1,4 @@
-import { ExpressionTransformer, TypeDescriptor, TypeName } from '../types';
+import { TypeDescriptor, TypeName } from '../types';
 import { TypeDescriptorRegistry, TypeGuardGenerator, TypeGuardRegistry } from '../types';
 import {
   createArrayTypeGuard,
@@ -6,6 +6,7 @@ import {
   createObjectTypeGuard,
   createSetTypeGuard,
   createTupleTypeGuard,
+  createTypeOfTypeGuard,
 } from './utils/codeGenerators';
 import {
   createIsInstanceOf,
@@ -21,6 +22,7 @@ export const createTypeGuardGenerator = (
   typeGuardRegistry: TypeGuardRegistry,
   typeDescriptorRegistry: TypeDescriptorRegistry,
   strictNullChecks: boolean,
+  nullIsUndefined: boolean,
 ): TypeGuardGenerator => {
   // If the strict null checks are off (which they shouldn't),
   // the optional types all pretend to be non-optional
@@ -63,11 +65,21 @@ export const createTypeGuardGenerator = (
           case 'object':
             return prefixNullChecks(createIsNotPrimitive(value), value);
 
+          case 'undefined':
+            if (nullIsUndefined) {
+              return prefixNullChecks(
+                createLogicalOrChain(
+                  ts.createStrictEquality(value, ts.createNull()),
+                  ts.createStrictEquality(value, ts.createVoidZero()),
+                ),
+                value,
+              );
+            }
+
+            return prefixNullChecks(ts.createStrictEquality(value, ts.createVoidZero()), value);
+
           default:
-            return prefixNullChecks(
-              ts.createStrictEquality(ts.createTypeOf(value), ts.createStringLiteral(typeDescriptor.value)),
-              value,
-            );
+            return prefixNullChecks(createTypeOfTypeGuard(value, typeDescriptor.value), value);
         }
 
       case 'intersection':

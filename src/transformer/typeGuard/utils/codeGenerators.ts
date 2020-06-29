@@ -1,4 +1,4 @@
-import { ExpressionTransformer, ObjectTypeDescriptor, TypeGuardGenerator, TypeName } from '../../types';
+import { ExpressionTransformer, ObjectTypeDescriptor, TypeGuardGenerator } from '../../types';
 import {
   createArrayEvery,
   createArrayFrom,
@@ -11,6 +11,9 @@ import {
   createObjectKeys,
 } from '../../utils/codeGenerators';
 import ts from 'typescript';
+
+export const createTypeOfTypeGuard = (value: ts.Expression, type: string): ts.Expression =>
+  ts.createStrictEquality(ts.createTypeOf(value), ts.createStringLiteral(type));
 
 export const createArrayTypeGuard = (value: ts.Expression, createElementCheck: ExpressionTransformer): ts.Expression =>
   createLogicalAndChain(createIsArray(value), createArrayEvery(value, createElementCheck));

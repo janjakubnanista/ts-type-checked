@@ -16,6 +16,15 @@ describe('basics', () => {
     assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
+  test('null', () => {
+    type TypeReference1 = null;
+
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom(null);
+    const invalidArbitrary = fc.anything().filter((value) => value !== null);
+
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
+  });
+
   test('any', () => {
     type TypeReference1 = any;
 

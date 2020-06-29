@@ -29,7 +29,7 @@ export default (
   options: Partial<TransformerOptions> = {},
 ): ts.TransformerFactory<ts.SourceFile> => {
   const resolvedOptions: TransformerOptions = { ...defaultTransformerOptions, ...options };
-  const { mode, logLevel } = resolvedOptions;
+  const { mode, logLevel, nullIsUndefined } = resolvedOptions;
 
   // Without strict null checks on we need to
   const compilerOptions = program.getCompilerOptions();
@@ -76,7 +76,12 @@ export default (
 
     const typeDescriptorRegistry: TypeDescriptorRegistry = new MapTypeDescriptorRegistry(typeNameGenerator);
 
-    const typeGuardGenerator = createTypeGuardGenerator(typeGuardRegistry, typeDescriptorRegistry, strictNullChecks);
+    const typeGuardGenerator = createTypeGuardGenerator(
+      typeGuardRegistry,
+      typeDescriptorRegistry,
+      strictNullChecks,
+      nullIsUndefined,
+    );
     const typeDescriptorCreator = createTypeDescriptorGenerator(program, logger);
     const typeNameResolver = createTypeNameResolver(typeDescriptorRegistry, typeDescriptorCreator);
     const typeGuardResolver = createTypeGuardResolver(program, typeNameResolver, typeGuardGenerator);
