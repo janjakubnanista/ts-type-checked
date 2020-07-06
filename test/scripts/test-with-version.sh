@@ -25,6 +25,8 @@ SETUP_PATTERN=
 # Get the script arguments
 # 
 # -d|--debug                Whether to start jest in node --inspect mode
+# -s|--setup <pattern>      The test setup pattern to run (matched against setup package.json name)
+# -t|--test <pattern>       The test pattern to run (passed to jest)
 # -v|--version <version>    The typescript version to test against
 while [[ $# -gt 0 ]]; do
   OPTION="$1"
@@ -105,7 +107,14 @@ for MATCHING_SETUP in $MATCHING_SETUPS; do
 
   # List all the setups that should be run for this TypeScript version
   printf "${DIMMED}TypeScript version verfication: ${NC}"
-  yarn workspace "$MATCHING_SETUP" run tsc --version | grep "Version $VERSION"
+  ACTUAL_VERSION=$(yarn workspace "$MATCHING_SETUP" run tsc --version | grep "Version")
+  MATCHING_VERSION=$(echo "$ACTUAL_VERSION" | grep "$VERSION")
+  if [ -z "$MATCHING_VERSION" ]; then
+    printf "${ERROR}Does not match!${NC}\n"
+    exit 1
+  else
+    printf "${SUCCESS}Matches!${NC}\n"
+  fi
 
   printf "${DIMMED}Clearing jest cache...${NC}\n"
   yarn workspace "$MATCHING_SETUP" run jest --clearCache
@@ -117,4 +126,6 @@ for MATCHING_SETUP in $MATCHING_SETUPS; do
     # In debug mode node is started with inspect flag
     yarn workspace "$MATCHING_SETUP" node --inspect-brk $(which jest) "$TEST_PATTERN" --runInBand --passWithNoTests
   fi
+
+  printf "\n\n\n"
 done
