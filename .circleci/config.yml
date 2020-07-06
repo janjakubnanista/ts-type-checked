@@ -50,34 +50,11 @@ jobs:
                 command: yarn
             - run: 
                 name: Build
-                command: yarn build
+                command: yarn workspace ts-type-checked run build
             - persist_to_workspace:
                 root: ~/project
                 paths:
-                  - dist
-
-  smoke-test:
-    <<: *defaults
-    steps:
-      # Checkout the project
-      - checkout
-
-      # Get the build artifacts
-      - attach_workspace:
-          at: ~/project
-      
-      # Run the smoke test (one TypeScript version only)
-      - node/with-cache:
-          steps:
-            - run:
-                name: Test scenarios
-                command: yarn test:scenarios
-            - run: 
-                name: Test with TypeScript 3.2.1 (ES5)
-                command: yarn test:version -v 3.2.1 -l es5
-            - run: 
-                name: Test with TypeScript 3.2.1 (ES6)
-                command: yarn test:version -v 3.2.1 -l es6
+                  - main/dist
 
   e2e-test:
     <<: *defaults
@@ -93,17 +70,8 @@ jobs:
       - node/with-cache:
           steps:
             - run: 
-                name: Test with all supported TypeScript versions (ES5)
-                command: yarn test:versions -l es5
-            - run: 
-                name: Test with all supported TypeScript versions (ES6)
-                command: yarn test:versions -l es6
-            - run:
-                name: Test examples
-                command: yarn test:examples
-            - run:
-                name: Test scenarios
-                command: yarn test:scenarios
+                name: Test package & examples
+                command: yarn test
 
   publish:
     <<: *defaults
@@ -120,28 +88,16 @@ jobs:
           steps:
             - run:
                 name: Authenticate for NPM
-                command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > dist/.npmrc && cat dist/.npmrc
+                command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > main/dist/.npmrc
             - run:
                 name: Publish package
-                command: cd dist && npm publish
+                command: cd main/dist && npm publish
 
 workflows:
-  development:
+  test:
     jobs:
-      - build:
-          <<: *only-feature-branches
-      - smoke-test:
-          <<: *only-feature-branches
-          requires:
-              - build
-
-  release-candidate:
-    jobs:
-      - build:
-          <<: *only-release-candidate
-
+      - build
       - e2e-test:
-          <<: *only-release-candidate
           requires:
               - build
   

@@ -2,9 +2,8 @@
   "name": "@ts-type-checked/test--typescript--2.7.2",
   "version": "0.0.1",
   "private": true,
-  "scripts": {
-    "test": "jest --passWithNoTests",
-    "test:debug": "node --inspect ../../node_modules/.bin/jest --runInBand --passWithNoTests"
+  "devDependencies": {
+    "ts-type-checked": "file:../../../main/dist"
   },
   "peerDependencies": {
     "typescript": ">=2.7.2"

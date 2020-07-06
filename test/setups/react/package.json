@@ -2,9 +2,8 @@
   "name": "@ts-type-checked/test--react",
   "version": "0.0.1",
   "private": true,
-  "scripts": {
-    "test": "jest --passWithNoTests",
-    "test:debug": "node --inspect-brk ../../node_modules/.bin/jest --runInBand --passWithNoTests"
+  "devDependencies": {
+    "ts-type-checked": "file:../../../main/dist"
   },
   "peerDependencies": {
     "typescript": ">=3.1.1"

@@ -2,6 +2,9 @@
   "name": "@ts-type-checked/test--typescript--2.9.1",
   "version": "0.0.1",
   "private": true,
+  "devDependencies": {
+    "ts-type-checked": "file:../../../main/dist"
+  },
   "peerDependencies": {
     "typescript": ">=2.9.1"
   }
