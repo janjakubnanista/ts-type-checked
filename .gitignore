@@ -5,13 +5,7 @@ dist
 # This is where the test project is executed
 sandbox
 
-test/**/*.js
-!test/.eslintrc.js
-
 examples/index.js
 examples/index.*.js
 
 *.log
-
-# Ignore tarballs created when testing
-*.tgz

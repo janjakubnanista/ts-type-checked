@@ -1,6 +1,6 @@
 import 'jest';
 
-import { assert, notALiteral, notAnEmptyArray, notOfType, primitive } from './utils';
+import { assert, notALiteral, notAnEmptyArray, notOfType, primitive } from '../utils/utils.v2';
 
 // @ts-ignore
 import { isA, typeCheckFor } from 'ts-type-checked';

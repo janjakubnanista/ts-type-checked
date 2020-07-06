@@ -10,7 +10,7 @@ import {
   notOfType,
   numeric,
   primitive,
-} from './utils';
+} from '../utils/utils.v3';
 
 // @ts-ignore
 import { isA, typeCheckFor } from 'ts-type-checked';

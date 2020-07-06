@@ -1,0 +1,12 @@
+{
+  "name": "@ts-type-checked/test--typescript--3.8.2",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "test": "jest  --passWithNoTests",
+    "test:debug": "node --inspect ../../node_modules/.bin/jest --runInBand --passWithNoTests"
+  },
+  "peerDependencies": {
+    "typescript": ">=3.8.2"
+  }
+}

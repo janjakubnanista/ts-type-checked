@@ -1,7 +1,7 @@
 import 'jest';
 import React from 'react';
 
-import { assert, notALiteral, notAnObject, notOfType, numeric, primitive } from './utils';
+import { assert, notALiteral, notAnObject, notOfType, numeric, primitive } from '../utils/utils.v2';
 
 // @ts-ignore
 import { isA, typeCheckFor } from 'ts-type-checked';

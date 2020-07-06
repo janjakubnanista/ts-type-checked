@@ -1,6 +1,6 @@
 import 'jest';
 
-import { assert } from './utils';
+import { assert } from '../utils/utils.v2';
 
 // @ts-ignore
 import { isA, typeCheckFor } from 'ts-type-checked';

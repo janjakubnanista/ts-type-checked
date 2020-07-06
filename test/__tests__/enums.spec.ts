@@ -1,6 +1,6 @@
 import 'jest';
 
-import { assert, notALiteral } from './utils';
+import { assert, notALiteral } from '../utils/utils.v2';
 
 // @ts-ignore
 import { isA, typeCheckFor } from 'ts-type-checked';

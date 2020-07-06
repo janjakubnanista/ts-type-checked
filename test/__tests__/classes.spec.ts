@@ -1,6 +1,6 @@
 import 'jest';
 
-import { assert, notALiteral, notNullOrUndefined, notOfType, numeric, primitive } from './utils';
+import { assert, notALiteral, notNullOrUndefined, notOfType, numeric, primitive } from '../utils/utils.v2';
 // @ts-ignore
 import { isA, typeCheckFor } from 'ts-type-checked';
 import fc from 'fast-check';

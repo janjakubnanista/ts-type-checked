@@ -1,0 +1,8 @@
+{
+  "name": "@ts-type-checked/test--typescript--2.9.1",
+  "version": "0.0.1",
+  "private": true,
+  "peerDependencies": {
+    "typescript": ">=2.9.1"
+  }
+}

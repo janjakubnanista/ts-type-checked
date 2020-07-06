@@ -1,4 +1,4 @@
-import { assert, notALiteral } from './utils';
+import { assert, notALiteral } from '../utils/utils.v3';
 import fc from 'fast-check';
 
 // @ts-ignore

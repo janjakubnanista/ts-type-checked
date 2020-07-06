@@ -1,6 +1,6 @@
 import 'jest';
 
-import { assert, assertArbitrary, notALiteral, notOfType, numeric, primitive } from './utils';
+import { assert, assertArbitrary, notALiteral, notOfType, numeric, primitive } from '../utils/utils.v2';
 
 // @ts-ignore
 import { isA, typeCheckFor } from 'ts-type-checked';

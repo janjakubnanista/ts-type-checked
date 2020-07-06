@@ -1,6 +1,7 @@
 {
-  "name": "@ts-type-checked-examples/root",
+  "name": "@ts-type-checked/examples",
   "private": true,
+  "version": "0.5.0",
   "scripts": {
     "build": "yarn workspaces run build",
     "clean": "rm -rf index.js && yarn workspaces run clean",

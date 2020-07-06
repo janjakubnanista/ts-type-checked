@@ -1,6 +1,11 @@
 {
-  "extends": "./tsconfig.common.json",
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "lib": ["dom", "es6"],
-  }
+    "outDir": "dist",
+    "rootDir": ".",
+    "plugins": [
+      { "transform": "ts-type-checked/transformer", "logLevel": "normal", "mode": "development" },
+    ]
+  },
+  "exclude": ["dist", "node_modules"]
 }
