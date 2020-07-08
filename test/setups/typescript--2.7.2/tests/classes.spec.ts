@@ -1,6 +1,15 @@
 import 'jest';
 
-import { assert, notALiteral, notNullOrUndefined, notOfType, numeric, oneOf, primitive } from '../../../utils/utils.v2';
+import {
+  assert,
+  notALiteral,
+  notNullOrUndefined,
+  notOfType,
+  nullable,
+  numeric,
+  oneOf,
+  primitive,
+} from '../../../utils/utils.v2';
 import { isA, typeCheckFor } from 'ts-type-checked';
 import fc from 'fast-check';
 
@@ -207,7 +216,7 @@ describe('classes', () => {
       fc.anything().filter(notNullOrUndefined) as fc.Arbitrary<TypeReference1>,
     );
 
-    const invalidArbitrary = oneOf(fc.constantFrom(null, undefined));
+    const invalidArbitrary = nullable();
 
     assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
@@ -238,7 +247,7 @@ describe('classes', () => {
     );
 
     // Any non-null thing should be valid since it has no properties
-    const invalidArbitrary = oneOf(fc.constantFrom(null, undefined));
+    const invalidArbitrary = nullable();
 
     assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });

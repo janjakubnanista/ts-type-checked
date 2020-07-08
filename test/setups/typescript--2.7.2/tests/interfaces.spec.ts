@@ -7,6 +7,7 @@ import {
   assert,
   notAnEmptyObject,
   notOfType,
+  nullable,
   numeric,
   oneOf,
   optionalOf,
@@ -40,7 +41,7 @@ describe('interface types', () => {
       fc.object(),
       fc.func(fc.anything()),
     );
-    const invalidArbitrary = fc.constantFrom(null, undefined);
+    const invalidArbitrary = nullable();
 
     assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
@@ -98,7 +99,7 @@ describe('interface types', () => {
       fc.object(),
     );
 
-    const invalidArbitrary = oneOf(fc.constantFrom(null, undefined));
+    const invalidArbitrary = oneOf(nullable());
 
     assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
@@ -126,7 +127,7 @@ describe('interface types', () => {
     );
 
     const invalidArbitrary = oneOf<any>(
-      fc.constantFrom(null, undefined),
+      nullable(),
       fc.record({
         property: fc.anything().filter(notOfType('string', 'undefined')),
       }),

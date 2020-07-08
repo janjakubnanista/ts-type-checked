@@ -3,7 +3,7 @@ import 'jest';
 import { assert, notOfType } from '../../../utils/utils.v3';
 
 import { isA, typeCheckFor } from 'ts-type-checked';
-import { notALiteral } from '../../../utils/utils.v2';
+import { notALiteral, nullable } from '../../../utils/utils.v2';
 import fc from 'fast-check';
 
 describe('bigint', () => {
@@ -47,7 +47,7 @@ describe('bigint', () => {
     type TypeReference1 = {};
 
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(fc.constantFrom<TypeReference1>(1n), fc.bigInt());
-    const invalidArbitrary = fc.constantFrom(null, undefined);
+    const invalidArbitrary = nullable();
 
     assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
@@ -59,7 +59,7 @@ describe('bigint', () => {
 
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(fc.constantFrom<TypeReference1>(6, 6n), fc.bigInt());
 
-    const invalidArbitrary = fc.oneof(fc.constantFrom(null, undefined));
+    const invalidArbitrary = fc.oneof(nullable());
 
     assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });

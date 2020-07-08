@@ -25,18 +25,20 @@ export const oneOf = <T>(...arbitraries: fc.Arbitrary<T>[]): fc.Arbitrary<T> =>
 export const optionalOf = <T>(arbitrary: fc.Arbitrary<T>): fc.Arbitrary<T | undefined> =>
   oneOf(arbitrary, fc.constant(undefined));
 
+export const symbol = (): fc.Arbitrary<symbol> => fc.string().map(Symbol);
+
+export const nullable = (): fc.Arbitrary<null | undefined> => fc.constantFrom(null, undefined);
+
 export const numeric = (): fc.Arbitrary<number> =>
   oneOf<number>(fc.integer(), fc.float(Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY));
 
 export const primitive = (): fc.Arbitrary<Primitive> =>
-  oneOf<Primitive>(fc.string(), fc.boolean(), numeric(), fc.constantFrom(null, undefined, Symbol('a'))) as fc.Arbitrary<
-    any
-  >;
+  oneOf<Primitive>(fc.string(), symbol(), fc.boolean(), numeric(), nullable()) as fc.Arbitrary<any>;
 
 // Filtering functions for arbitraries
 export type FilterFunction = (value: any) => boolean;
-type TypeOf = 'string' | 'boolean' | 'number' | 'function' | 'undefined' | 'object' | 'symbol';
-type Primitive = string | boolean | number | symbol | null | undefined;
+export type TypeOf = 'string' | 'boolean' | 'number' | 'function' | 'undefined' | 'object' | 'symbol';
+export type Primitive = string | boolean | number | symbol | null | undefined;
 
 export const notAnArray: FilterFunction = (value: any): boolean => !Array.isArray(value);
 export const notAnEmptyArray: FilterFunction = (value: any): boolean => !Array.isArray(value) || value.length !== 0;
@@ -48,6 +50,7 @@ export const notALiteral = (...literals: any[]): FilterFunction => (value: any):
   literals.indexOf(value) === -1;
 export const notNumeric: FilterFunction = (value) => isNaN(parseFloat(value as any));
 export const notNullOrUndefined: FilterFunction = (value) => value !== null && value !== undefined;
+export const notA = (constructor: Function): FilterFunction => (value) => !(value instanceof constructor);
 
 // Helper assertion methods
 export const assertArbitrary = (arbitrary: fc.Arbitrary<any>, checks: FilterFunction[], result: boolean): void => {

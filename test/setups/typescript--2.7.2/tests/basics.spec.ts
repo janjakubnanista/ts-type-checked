@@ -1,6 +1,15 @@
 import 'jest';
 
-import { assert, assertArbitrary, notALiteral, notOfType, numeric, primitive } from '../../../utils/utils.v2';
+import {
+  assert,
+  assertArbitrary,
+  notA,
+  notALiteral,
+  notOfType,
+  nullable,
+  numeric,
+  primitive,
+} from '../../../utils/utils.v2';
 
 import { isA, typeCheckFor } from 'ts-type-checked';
 import fc from 'fast-check';
@@ -157,7 +166,7 @@ describe('basics', () => {
       fc.object(),
       fc.func(fc.anything()),
     );
-    const invalidArbitrary = fc.constantFrom(null, undefined);
+    const invalidArbitrary = nullable();
 
     assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });

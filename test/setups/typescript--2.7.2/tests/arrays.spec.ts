@@ -1,7 +1,5 @@
 import 'jest';
 
-import ts from 'typescript';
-
 import {
   InterfaceWithPropertyOfType,
   assert,
