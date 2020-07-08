@@ -77,7 +77,7 @@ export const createElementAccess = (value: ts.Expression, property: string | num
   ts.createElementAccess(value, ts.createLiteral(property));
 
 export const createObjectWithProperties = (properties: ts.PropertyAssignment[]): ts.Expression =>
-  ts.createObjectLiteral(properties);
+  ts.createObjectLiteral(properties, true);
 
 export const createVariable = (identifier: ts.Identifier, initializer: ts.Expression): ts.Statement =>
   ts.createVariableStatement(undefined, [ts.createVariableDeclaration(identifier, undefined, initializer)]);

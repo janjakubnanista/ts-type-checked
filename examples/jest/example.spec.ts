@@ -1,6 +1,4 @@
 import 'jest';
-
-// @ts-ignore
 import { isA, typeCheckFor } from 'ts-type-checked';
 
 interface User {

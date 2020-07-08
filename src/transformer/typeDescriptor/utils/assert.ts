@@ -30,11 +30,18 @@ export const isSet = (type: ts.Type, libraryDescriptorName?: LibraryTypeDescript
 export const isPromise = (type: ts.Type, libraryDescriptorName?: LibraryTypeDescriptorName): boolean =>
   libraryDescriptorName === 'Promise';
 
+export const isRegExp = (
+  type: ts.Type,
+  libraryDescriptorName?: LibraryTypeDescriptorName,
+): libraryDescriptorName is LibraryTypeDescriptorName => libraryDescriptorName === 'RegExp';
+
 export const isInterface = (type: ts.Type, libraryDescriptorName?: LibraryTypeDescriptorName): boolean =>
   !!(type.flags & ts.TypeFlags.Object) || libraryDescriptorName === 'Object';
 
 export const isLiteral = (type: ts.Type): type is ts.LiteralType =>
-  type.isLiteral() || !!(type.flags & ts.TypeFlags.BigIntLiteral);
+  (typeof type.isLiteral === 'function' && type.isLiteral()) ||
+  !!(type.flags & ts.TypeFlags.BigIntLiteral) ||
+  !!(type.flags & ts.TypeFlags.Literal);
 
 export const isNull = (type: ts.Type): boolean => !!(type.flags & ts.TypeFlags.Null);
 
@@ -56,6 +63,20 @@ export const isFalseKeyword = (typeNode: ts.TypeNode | undefined): boolean =>
 
 export const isTuple = (type: ts.Type, typeNode: ts.TypeNode | undefined): type is ts.TupleType =>
   typeNode?.kind === ts.SyntaxKind.TupleType;
+
+export const isIntersection = (type: ts.Type, typeNode: ts.TypeNode | undefined): type is ts.IntersectionType =>
+  (typeof type.isIntersection === 'function' && type.isIntersection()) ||
+  typeNode?.kind === ts.SyntaxKind.IntersectionType;
+
+export const isUnion = (type: ts.Type, typeNode: ts.TypeNode | undefined): type is ts.UnionType =>
+  (typeof type.isUnion === 'function' && type.isUnion()) ||
+  typeNode?.kind === ts.SyntaxKind.UnionType ||
+  !!(type.getFlags() & ts.TypeFlags.Union);
+
+export const isClassOrInterface = (type: ts.Type, typeNode?: ts.TypeNode): type is ts.InterfaceType =>
+  (typeof type.isClassOrInterface === 'function' && type.isClassOrInterface()) ||
+  typeNode?.kind === ts.SyntaxKind.InterfaceDeclaration ||
+  !!(type.flags & ts.TypeFlags.Object);
 
 export const isFunction = (
   type: ts.Type,

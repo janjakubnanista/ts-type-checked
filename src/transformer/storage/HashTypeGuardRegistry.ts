@@ -75,7 +75,7 @@ export class HashTypeGuardRegistry implements TypeGuardRegistry {
 
     // In order not to create the cycle breaker in every file we import it from our module
     const wrapperIdentifier = ts.createIdentifier('__typeGuardCycleBreaker__');
-    const wrapperImport = createRequire(wrapperIdentifier, 'ts-type-checked/transformer/helpers/typeGuardCycleBreaker');
+    const wrapperImport = createRequire(wrapperIdentifier, 'ts-type-checked/runtime', 'typeGuardCycleBreaker');
     const wrapTypeGuard: ExpressionTransformer = (typeGuard: ts.Expression): ts.Expression =>
       ts.createCall(wrapperIdentifier, undefined, [typeGuard]);
 
@@ -92,7 +92,7 @@ export class HashTypeGuardRegistry implements TypeGuardRegistry {
       // if it is cyclic we need to wrap the type guard in a cycle-breaking code
       const wrappedTypeGuard = isCyclic ? wrapTypeGuard(typeGuard) : typeGuard;
 
-      return ts.createPropertyAssignment(ts.createStringLiteral(typeName), wrappedTypeGuard);
+      return ts.createPropertyAssignment(ts.createLiteral(typeName), wrappedTypeGuard);
     });
 
     return [

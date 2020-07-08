@@ -11,6 +11,7 @@ export type LibraryTypeDescriptorName =
   | 'Object'
   | 'Function'
   | 'Promise'
+  | 'RegExp'
   | 'Map'
   | 'Set'
   | 'Symbol';
@@ -26,9 +27,17 @@ const typeDescriptorNameBySymbolName: Record<string, LibraryTypeDescriptorName> 
   Boolean: 'Boolean',
   Object: 'Object',
   Promise: 'Promise',
+  RegExp: 'RegExp',
   Map: 'Map',
   Set: 'Set',
   Symbol: 'Symbol',
+};
+
+export const isSourceFileDefaultLibrary = (program: ts.Program, file: ts.SourceFile): boolean => {
+  if (program.isSourceFileDefaultLibrary(file)) return true;
+  if (file.fileName.match(/typescript\/lib\/lib\..*\.d\.ts$/)) return true;
+
+  return false;
 };
 
 export const getLibraryTypeDescriptorName = (
@@ -38,7 +47,7 @@ export const getLibraryTypeDescriptorName = (
   const declaration = getFirstValidDeclaration(type.symbol?.declarations);
   const sourceFile = declaration?.getSourceFile();
 
-  if (!sourceFile || !program.isSourceFileDefaultLibrary(sourceFile)) return undefined;
+  if (!sourceFile || !isSourceFileDefaultLibrary(program, sourceFile)) return undefined;
 
   return typeDescriptorNameBySymbolName[type.symbol?.name];
 };

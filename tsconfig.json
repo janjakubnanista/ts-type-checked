@@ -1,16 +1,12 @@
 {
   "compilerOptions": {
-    "allowJs": true,
     "allowSyntheticDefaultImports": true,
-    "declaration": true,
-    "declarationDir": "dist",
-    "outDir": "dist",
-    "rootDir": "src",
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
+    "declaration": true,
     "noEmit": false,
     "noErrorTruncation": true,
     "noFallthroughCasesInSwitch": true,
@@ -20,13 +16,11 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "preserveConstEnums": true,
-    "resolveJsonModule": true,
     "removeComments": false,
     "skipLibCheck": true,
     "sourceMap": false,
     "strict": true,
     "strictFunctionTypes": true,
-    "strictBindCallApply": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "suppressImplicitAnyIndexErrors": false,
@@ -34,9 +28,9 @@
     "target": "es6",
     "module": "commonjs",
     "lib": [
+      "dom",
       "es6"
     ]
   },
-  "exclude": ["node_modules"],
-  "include": ["src"]
+  "exclude": ["node_modules", "dist"]
 }

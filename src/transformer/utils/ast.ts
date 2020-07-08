@@ -11,6 +11,9 @@ const hasPrivateOrProtectedModifiers = (modifiers?: ts.ModifiersArray): boolean 
     (modifier) => modifier.kind === ts.SyntaxKind.PrivateKeyword || modifier.kind === ts.SyntaxKind.ProtectedKeyword,
   );
 
+const isPrivateIdentifier = (node: ts.Node): boolean =>
+  typeof ts.isPrivateIdentifier === 'function' ? ts.isPrivateIdentifier(node) : false;
+
 /**
  * Helper function that checks whether a property represented by a Symbol
  * is publicly visible, i.e. it does not have "private" or "protected" modifier
@@ -31,8 +34,11 @@ export const isPublicProperty = (property: ts.Symbol): boolean => {
     ts.isMethodSignature(declaration) ||
     ts.isParameter(declaration) ||
     ts.isGetAccessor(declaration)
-  )
+  ) {
+    if (isPrivateIdentifier(declaration.name)) return false;
+
     return !hasPrivateOrProtectedModifiers(declaration.modifiers);
+  }
 
   return false;
 };
@@ -85,7 +91,9 @@ export const getPropertyAccessor = (
       ts.isMethodDeclaration(declaration) ||
       ts.isMethodSignature(declaration))
   ) {
-    if (ts.isComputedPropertyName(declaration.name)) return declaration.name.expression;
+    if (ts.isComputedPropertyName(declaration.name)) {
+      return ts.createIdentifier(declaration.name.expression.getFullText());
+    }
   }
 
   return getPropertyName(property, typeChecker, scope);

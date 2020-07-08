@@ -1,4 +1,0 @@
-{
-	"require": "mocha.conf.js",
-	"spec": "__tests__/**/*.spec.ts"
-}

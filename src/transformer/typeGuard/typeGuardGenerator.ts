@@ -1,4 +1,4 @@
-import { ExpressionTransformer, TypeDescriptor, TypeName } from '../types';
+import { TypeDescriptor, TypeName } from '../types';
 import { TypeDescriptorRegistry, TypeGuardGenerator, TypeGuardRegistry } from '../types';
 import {
   createArrayTypeGuard,
@@ -65,7 +65,7 @@ export const createTypeGuardGenerator = (
 
           default:
             return prefixNullChecks(
-              ts.createStrictEquality(ts.createTypeOf(value), ts.createStringLiteral(typeDescriptor.value)),
+              ts.createStrictEquality(ts.createTypeOf(value), ts.createLiteral(typeDescriptor.value)),
               value,
             );
         }
@@ -138,7 +138,7 @@ export const createTypeGuardGenerator = (
         return ts.createCall(promiseTypeCheckMethod, undefined, [value]);
 
       case 'function':
-        const functionTypeCheck = ts.createStrictEquality(ts.createTypeOf(value), ts.createStringLiteral('function'));
+        const functionTypeCheck = ts.createStrictEquality(ts.createTypeOf(value), ts.createLiteral('function'));
 
         // If this is just a simple function with no additional properties then return the typeof check immediately
         if (!typeDescriptor.properties.length && !typeDescriptor.stringIndexType && !typeDescriptor.numberIndexType) {

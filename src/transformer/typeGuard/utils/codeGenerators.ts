@@ -1,4 +1,4 @@
-import { ExpressionTransformer, ObjectTypeDescriptor, TypeGuardGenerator, TypeName } from '../../types';
+import { ExpressionTransformer, ObjectTypeDescriptor, TypeGuardGenerator } from '../../types';
 import {
   createArrayEvery,
   createArrayFrom,
@@ -60,7 +60,7 @@ export const createTupleTypeGuard = (
 const createIsNotNumeric = (value: ts.Expression): ts.Expression =>
   createLogicalAndChain(
     ts.createCall(ts.createIdentifier('isNaN'), [], [ts.createCall(ts.createIdentifier('parseFloat'), [], [value])]),
-    ts.createStrictInequality(value, ts.createStringLiteral('NaN')),
+    ts.createStrictInequality(value, ts.createLiteral('NaN')),
   );
 
 export const createObjectTypeGuard = (

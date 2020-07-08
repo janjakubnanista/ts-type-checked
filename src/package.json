@@ -1,0 +1,47 @@
+{
+  "name": "ts-type-checked",
+  "version": "0.5.0",
+  "description": "Type checking utilities for TypeScript.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/janjakubnanista/ts-type-checked.git"
+  },
+  "keywords": [
+    "TypeScript",
+    "type checking",
+    "type checks",
+    "duck typing",
+    "type guards"
+  ],
+  "author": "Jan Jakub Nanista <jan.jakub.nanista@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/janjakubnanista/ts-type-checked/issues"
+  },
+  "homepage": "https://github.com/janjakubnanista/ts-type-checked#readme",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^8.1.0",
+    "@wessberg/rollup-plugin-ts": "^1.2.27",
+    "rollup": "^2.20.0",
+    "typescript": "^3.9.6"
+  },
+  "peerDependencies": {
+    "typescript": ">=2.7.2"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "transformer.js",
+    "transformer.d.ts"
+  ],
+  "scripts": {
+    "build": "yarn build:compile && yarn build:lint",
+    "build:compile": "rollup -c",
+    "build:lint": "eslint . --fix --ext .js,.d.ts",
+    "clean": "find ./src -type f \\( -name '*js' -or -name '*d.ts' \\) -not \\( -name 'rollup.config.js' \\) -delete",
+    "test": "echo 'No test command defined'",
+    "watch": "rollup -cw"
+  }
+}

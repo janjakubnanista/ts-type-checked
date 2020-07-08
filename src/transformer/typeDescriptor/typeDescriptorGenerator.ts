@@ -71,27 +71,38 @@ export const createTypeDescriptorGenerator = (program: ts.Program, logger: Logge
     return { _type: 'class', value: ts.createIdentifier(libraryDescriptorName) };
   }
 
-  // Union
-  if (type.isUnion()) {
-    logger.debug('Union type');
+  // RegExp
+  if (assert.isRegExp(type, libraryDescriptorName)) {
+    logger.debug('RegExp');
 
-    return (resolve: TypeNameResolver) => ({
-      _type: 'union',
-      types: type.types.map((type) => resolve(scope, type)),
-    });
+    return { _type: 'class', value: ts.createIdentifier(libraryDescriptorName) };
   }
 
-  // Intersection
-  if (type.isIntersection()) {
-    logger.debug('Intersection type');
+  // Null
+  if (assert.isNull(type)) return { _type: 'literal', value: ts.createNull() };
 
-    return (resolve: TypeNameResolver) => ({
-      _type: 'intersection',
-      types: type.types.map((type) => resolve(scope, type)),
-    });
+  // Undefined, Void
+  if (assert.isUndefined(type)) {
+    logger.debug('Undefined');
+
+    return { _type: 'literal', value: ts.createIdentifier('undefined') };
   }
 
+  // Any
+  if (assert.isAny(type)) return { _type: 'unspecified' };
+
+  // Never
+  if (assert.isNever(type)) return { _type: 'never' };
+
+  // For the checks below we need access to the TypeNode for this type
+  const typeNode = typeChecker.typeToTypeNode(type, scope);
   const typeName = typeChecker.typeToString(type, scope);
+
+  // True
+  if (assert.isTrueKeyword(typeNode)) return { _type: 'literal', value: ts.createTrue() };
+
+  // False
+  if (assert.isFalseKeyword(typeNode)) return { _type: 'literal', value: ts.createFalse() };
 
   // Promise
   //
@@ -119,36 +130,32 @@ export const createTypeDescriptorGenerator = (program: ts.Program, logger: Logge
     return { _type: 'literal', value: ts.createLiteral(value) };
   }
 
-  // Null
-  if (assert.isNull(type)) return { _type: 'literal', value: ts.createNull() };
+  // Intersection
+  if (assert.isIntersection(type, typeNode)) {
+    logger.debug('Intersection type');
 
-  // Undefined, Void
-  if (assert.isUndefined(type)) {
-    logger.debug('Undefined');
-
-    return { _type: 'literal', value: ts.createIdentifier('undefined') };
+    return (resolve: TypeNameResolver) => ({
+      _type: 'intersection',
+      types: type.types.map((type) => resolve(scope, type)),
+    });
   }
 
-  // Any
-  if (assert.isAny(type)) return { _type: 'unspecified' };
+  // Union
+  if (assert.isUnion(type, typeNode)) {
+    logger.debug('Union type');
 
-  // Never
-  if (assert.isNever(type)) return { _type: 'never' };
+    return (resolve: TypeNameResolver) => ({
+      _type: 'union',
+      types: type.types.map((type) => resolve(scope, type)),
+    });
+  }
 
-  // For the checks below we need access to the TypeNode for this type
-  const typeNode = typeChecker.typeToTypeNode(type, scope);
-
+  // object
   if (assert.isObjectKeyword(typeNode)) {
     logger.debug('object (keyword)');
 
     return { _type: 'keyword', value: 'object' };
   }
-
-  // True
-  if (assert.isTrueKeyword(typeNode)) return { _type: 'literal', value: ts.createTrue() };
-
-  // False
-  if (assert.isFalseKeyword(typeNode)) return { _type: 'literal', value: ts.createFalse() };
 
   // Tuple
   if (assert.isTuple(type, typeNode)) {

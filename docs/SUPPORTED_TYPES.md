@@ -355,6 +355,19 @@
         <code>!!value && typeof value.then === 'function' && typeof value.catch === 'function'</code>
       </td>
     </tr>
+    <!-- RegExp -->
+    <tr valign="top">
+      <td align="left">
+        <code>RegExp</code>
+      </td>
+      <td align="center">✓</td>
+      <td align="left">
+        RegExp objects
+      </td>
+      <td align="left">
+        <code>value instanceof RegExp</code>
+      </td>
+    </tr>
     <!-- DOM types -->
     <tr valign="top">
       <td align="left">

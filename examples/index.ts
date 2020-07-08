@@ -1,4 +1,3 @@
-// @ts-ignore
 import { typeCheckFor } from 'ts-type-checked';
 
 interface User {

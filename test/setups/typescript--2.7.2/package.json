@@ -1,0 +1,11 @@
+{
+  "name": "@ts-type-checked/test--typescript--2.7.2",
+  "version": "0.0.1",
+  "private": true,
+  "peerDependencies": {
+    "typescript": ">=2.7.2"
+  },
+  "dependencies": {
+    "ts-type-checked": "file:../../../dist"
+  }
+}
