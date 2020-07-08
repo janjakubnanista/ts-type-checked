@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
-    "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
+    "declaration": true,
     "noEmit": false,
     "noErrorTruncation": true,
     "noFallthroughCasesInSwitch": true,
@@ -32,5 +32,5 @@
       "es6"
     ]
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "dist"]
 }

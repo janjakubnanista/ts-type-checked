@@ -1,11 +1,10 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": ".",
     "plugins": [
       { "transform": "ts-type-checked/transformer", "logLevel": "normal", "mode": "development" },
     ]
   },
-  "exclude": ["dist", "node_modules"]
+  "include": ["setups", "utils"],
+  "exclude": ["node_modules"]
 }

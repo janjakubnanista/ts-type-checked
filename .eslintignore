@@ -1,4 +1,3 @@
-sandbox/*
 **/node_modules
 examples/index.js
-examples/index.*.js
+examples/**/index.js

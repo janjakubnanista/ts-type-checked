@@ -5,10 +5,11 @@
   "scripts": {
     "build": "webpack",
     "clean": "rm -rf index.js",
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "yarn build && yarn start"
   },
   "devDependencies": {
-    "ts-loader": "^6.2.2",
+    "ts-loader": "^7.0.5",
     "ts-type-checked": "file:../../dist",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11"

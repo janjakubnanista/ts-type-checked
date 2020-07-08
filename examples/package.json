@@ -5,7 +5,14 @@
   "scripts": {
     "build": "yarn workspaces run build",
     "clean": "rm -rf index.js && yarn workspaces run clean",
-    "start": "yarn workspaces run start"
+    "test": "yarn workspaces run test"
   },
-  "workspaces": ["jest", "rollup", "mocha", "ts-node", "ttypescript", "webpack"]
+  "workspaces": [
+    "jest",
+    "mocha",
+    "rollup",
+    "ts-node",
+    "ttypescript",
+    "webpack"
+  ]
 }

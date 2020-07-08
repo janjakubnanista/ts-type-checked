@@ -5,7 +5,8 @@
   "scripts": {
     "build": "rollup -c",
     "clean": "rm -rf index.js",
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "yarn build && yarn start"
   },
   "devDependencies": {
     "@wessberg/rollup-plugin-ts": "^1.2.24",
@@ -13,6 +14,6 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-typescript2": "^0.27.0",
     "ts-type-checked": "file:../../dist",
-    "typescript": "3.7.3"
+    "typescript": "^3.9.6"
   }
 }

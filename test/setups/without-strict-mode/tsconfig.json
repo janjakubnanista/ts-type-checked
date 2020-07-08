@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "ES6",
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false
+  }
+}

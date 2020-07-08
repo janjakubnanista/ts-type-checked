@@ -103,6 +103,13 @@ yarn --check-files > /dev/null
 MATCHING_SETUPS=$($SCRIPTS_PATH/list-setups-for-typescript.js "$VERSION" "$SETUP_PATTERN")
 
 for MATCHING_SETUP in $MATCHING_SETUPS; do
+  # Yes the double --silent is necessary :)
+  MATCHING_TESTS=$(yarn workspace --silent "$MATCHING_SETUP" --silent run jest "$TEST_PATTERN" --listTests)
+  if [ -z "$MATCHING_TESTS" ]; then
+    printf "${DIMMED}No matching tests in ${HIGHLIGHT}${MATCHING_SETUP}:${NC}\n"
+    continue
+  fi
+
   printf "${DIMMED}Running setup in ${HIGHLIGHT}${MATCHING_SETUP}:${NC}\n"
 
   # List all the setups that should be run for this TypeScript version
@@ -121,10 +128,10 @@ for MATCHING_SETUP in $MATCHING_SETUPS; do
 
   if [ -z "$DEBUG" ]; then
     # In non-debug mode the jest bin is used
-    yarn workspace "$MATCHING_SETUP" run jest "$TEST_PATTERN" --passWithNoTests
+    yarn workspace "$MATCHING_SETUP" run jest "$TEST_PATTERN"
   else
     # In debug mode node is started with inspect flag
-    yarn workspace "$MATCHING_SETUP" node --inspect-brk $(which jest) "$TEST_PATTERN" --runInBand --passWithNoTests
+    yarn workspace "$MATCHING_SETUP" node --inspect-brk $(which jest) "$TEST_PATTERN" --runInBand
   fi
 
   printf "\n\n\n"

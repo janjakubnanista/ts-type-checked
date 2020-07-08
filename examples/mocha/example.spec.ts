@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-// @ts-ignore
 import { isA, typeCheckFor } from 'ts-type-checked';
 
 interface User {
@@ -17,7 +16,7 @@ const getTypeName = (value: unknown): string => {
 };
 
 describe('example tests', () => {
-  it('should work with jest', () => {
+  it('should work with mocha', () => {
     expect(getTypeName('hey')).to.equal('String');
     expect(getTypeName('')).to.equal('String');
 

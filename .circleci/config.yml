@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@1.1.6
+  node: circleci/node@3.0.1
 
 # Job defaults
 defaults: &defaults
@@ -19,22 +19,6 @@ only-release: &only-release
     tags:
       only: /^v(\d+)\.(\d+)\.(\d+).*/
 
-# Filters for jobs that only need to be run for a version tag (release)
-only-release-candidate: &only-release-candidate
-  filters:
-    # Ignore all branches
-    branches:
-      only: 
-          - main
-          - /^release-.*/
-
-only-feature-branches: &only-feature-branches
-  filters:
-    branches:
-      ignore:
-          - main
-          - /^release-.*/
-
 jobs:
   build:
     <<: *defaults
@@ -42,19 +26,34 @@ jobs:
       # Checkout the project
       - checkout
 
-      # Build project
-      - node/with-cache:
-          steps:
-            - run: 
-                name: Install dependencies
-                command: yarn
-            - run: 
-                name: Build
-                command: yarn workspace ts-type-checked run build
-            - persist_to_workspace:
-                root: ~/project
-                paths:
-                  - main/dist
+      # Restore NPM modules from cache
+      - restore_cache:
+          keys:
+            - v1-root-{{ checksum "yarn.lock" }}
+            - v1-root
+
+      - run: 
+          name: Install dependencies
+          command: make install
+      
+      - run: 
+          name: Build
+          command: make build
+      
+      - run: 
+          name: Lint
+          command: make lint
+
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - dist
+
+      # Restore NPM modules from cache
+      - save_cache:
+          key: v1-root-{{ checksum "yarn.lock" }}
+          paths:
+            - node_modules
 
   e2e-test:
     <<: *defaults
@@ -65,13 +64,34 @@ jobs:
       # Get the build artifacts
       - attach_workspace:
           at: ~/project
+
+      - restore_cache:
+          keys:
+            - v1-test-{{ checksum "test/yarn.lock" }}
+            - v1-test
       
-      # Run the smoke test (one TypeScript version only)
-      - node/with-cache:
-          steps:
-            - run: 
-                name: Test package & examples
-                command: yarn test
+      - run: 
+          name: Test package
+          command: make test
+
+      - save_cache:
+          key: v1-test-{{ checksum "test/yarn.lock" }}
+          paths:
+            - test/node_modules
+
+      - restore_cache:
+          keys:
+            - v1-examples-{{ checksum "examples/yarn.lock" }}
+            - v1-examples
+
+      - run: 
+          name: Test examples
+          command: make examples
+
+      - save_cache:
+          key: v1-examples-{{ checksum "examples/yarn.lock" }}
+          paths:
+            - examples/node_modules
 
   publish:
     <<: *defaults
@@ -83,15 +103,13 @@ jobs:
       - attach_workspace:
           at: ~/project
       
-      # Run the smoke test (one TypeScript version only)
-      - node/with-cache:
-          steps:
-            - run:
-                name: Authenticate for NPM
-                command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > main/dist/.npmrc
-            - run:
-                name: Publish package
-                command: cd main/dist && npm publish
+      - run:
+          name: Authenticate for NPM
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > dist/.npmrc
+
+      - run:
+          name: Publish package
+          command: make publish
 
 workflows:
   test:

@@ -5,11 +5,12 @@
   "scripts": {
     "build": "ttsc",
     "clean": "rm -rf index.js",
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "yarn build && yarn start"
   },
   "devDependencies": {
     "ts-type-checked": "file:../../dist",
     "ttypescript": "^1.5.10",
-    "typescript": "3.7.3"
+    "typescript": "^3.9.6"
   }
 }

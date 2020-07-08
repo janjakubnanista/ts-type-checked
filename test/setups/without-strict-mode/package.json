@@ -1,9 +1,9 @@
 {
-  "name": "@ts-type-checked/test--typescript--2.9.1",
+  "name": "@ts-type-checked/test--without-strict-mode",
   "version": "0.0.1",
   "private": true,
   "peerDependencies": {
-    "typescript": ">=2.9.1"
+    "typescript": ">=2.7.2"
   },
   "dependencies": {
     "ts-type-checked": "file:../../../dist"

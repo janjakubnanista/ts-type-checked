@@ -5,17 +5,17 @@
   "scripts": {
     "build": "echo 'mocha based example requires no building'",
     "clean": "echo 'mocha based example requires no cleaning'",
-    "start": "mocha"
+    "test": "mocha"
   },
   "devDependencies": {
-    "@types/chai": "4.1.7",
-    "@types/mocha": "5.2.6",
-    "chai": "4.0.2",
+    "@types/chai": "^4.2.11",
+    "@types/mocha": "^7.0.2",
+    "chai": "^4.2.0",
     "fast-check": "^1.25.1",
     "mocha": "8.0.1",
-    "ts-node": "8.0.2",
+    "ts-node": "8.10.2",
     "ts-type-checked": "file:../../dist",
     "ttypescript": "^1.5.10",
-    "typescript": "3.7.3"
+    "typescript": "^3.9.6"
   }
 }
