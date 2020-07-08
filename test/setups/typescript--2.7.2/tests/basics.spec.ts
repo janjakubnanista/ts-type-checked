@@ -121,6 +121,15 @@ describe('basics', () => {
     assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
   });
 
+  test('RegExp', () => {
+    type TypeReference1 = RegExp;
+
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom(/^hey$/, new RegExp('hey hello'));
+    const invalidArbitrary = fc.anything().filter(notA(RegExp));
+
+    assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
+  });
+
   test('object', () => {
     type TypeReference1 = object;
 
