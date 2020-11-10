@@ -24,6 +24,7 @@ describe('string-indexed types', () => {
         new Object() as TypeReference1,
         (() => true) as any,
         { 6: 7, property: 12 },
+        { [Symbol('value-dashed')]: 12 },
         { [Symbol('value')]: 12 },
         { [Symbol('value')]: 'invalid string' },
         Object.assign<object, Record<string, number>>(() => true, { age: 6 }),
