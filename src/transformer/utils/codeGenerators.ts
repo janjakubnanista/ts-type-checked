@@ -74,7 +74,7 @@ export const createSingleParameterFunction = (
  * @param property {String | Number} The property name / element index
  */
 export const createElementAccess = (value: ts.Expression, property: string | number): ts.Expression =>
-  ts.createPropertyAccess(value, property.toString());
+  ts.createElementAccess(value, ts.createLiteral(property.toString()));
 
 export const createObjectWithProperties = (properties: ts.PropertyAssignment[]): ts.Expression =>
   ts.createObjectLiteral(properties, true);
