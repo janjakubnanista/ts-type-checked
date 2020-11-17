@@ -45,6 +45,6 @@ examples:
 
 # Publish built package
 publish:
-	cd dist; npm publish --dry-run
+	cd dist; npm publish
 
 release: clean build lint test examples publish
