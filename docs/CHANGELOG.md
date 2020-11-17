@@ -34,3 +34,9 @@
 ### Features
 
 - Add support for codebases without `strictNullChecks` enabled in `tsconfig.json`. **Without `strictNullChecks`, `ts-type-checkd` is not very useful since it will produce a lot of false positives!** Please consider turning `strictNullChecks` on.
+
+## v0.6.2
+
+### Bugs
+
+- #46 Object keys that contain dashes produce errors
