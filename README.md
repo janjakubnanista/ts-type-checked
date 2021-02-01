@@ -26,14 +26,14 @@
 </p>
 
 <p align="center">
-  <code>ts-type-checked</code> generates <a href="https://www.typescriptlang.org/docs/handbook/advanced-types.html#type-guards-and-differentiating-types">type guards</a> based on your own (or library) TypeScript types. 
-  It is compatible with 
-  <a href="./docs/INSTALLATION.md#installation--rollup">Rollup</a>, 
-  <a href="./docs/INSTALLATION.md#installation--webpack">Webpack</a> and 
-  <a href="./docs/INSTALLATION.md#installation--ttypescript">ttypescript</a> projects 
-  and works nicely with 
-  <a href="./docs/INSTALLATION.md#installation--jest">Jest</a>, 
-  <a href="./docs/INSTALLATION.md#installation--mocha">Mocha</a> or 
+  <code>ts-type-checked</code> generates <a href="https://www.typescriptlang.org/docs/handbook/advanced-types.html#type-guards-and-differentiating-types">type guards</a> based on your own (or library) TypeScript types.
+  It is compatible with
+  <a href="./docs/INSTALLATION.md#installation--rollup">Rollup</a>,
+  <a href="./docs/INSTALLATION.md#installation--webpack">Webpack</a> and
+  <a href="./docs/INSTALLATION.md#installation--ttypescript">ttypescript</a> projects
+  and works nicely with
+  <a href="./docs/INSTALLATION.md#installation--jest">Jest</a>,
+  <a href="./docs/INSTALLATION.md#installation--mocha">Mocha</a> or
   <a href="./docs/INSTALLATION.md#installation--ts-node">ts-node</a>
 </p>
 
@@ -60,10 +60,10 @@ interface WelcomeMessage {
 //
 // You can now turn this
 //
-const isWelcomeMessage = (message: any): message is WelcomeMessage =>
+const isWelcomeMessage = (value: any): message is WelcomeMessage =>
   !!value &&
-  typeof value.name === 'string' && 
-  Array.isArray(value.hobbies) && 
+  typeof value.name === 'string' &&
+  Array.isArray(value.hobbies) &&
   value.hobbies.every(hobby => typeof hobby === 'string');
 
 //
@@ -81,7 +81,7 @@ if (isA<WelcomeMessage>(value)) {
 
 ## Motivation
 
-TypeScript is a powerful way of enhancing your application code at compile time but, unfortunately, provides no runtime type guards out of the box - you need to [create these manually](https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards). For types like `string` or `boolean` this is easy, you can just use the `typeof` operator. It becomes more difficult for interface types, arrays, enums etc. 
+TypeScript is a powerful way of enhancing your application code at compile time but, unfortunately, provides no runtime type guards out of the box - you need to [create these manually](https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards). For types like `string` or `boolean` this is easy, you can just use the `typeof` operator. It becomes more difficult for interface types, arrays, enums etc.
 
 **And that is where `ts-type-checked` comes in!** It automatically creates these type guards at compile time for you.
 
@@ -113,7 +113,7 @@ Somewhere in your code there probably is a function just like  `handleResponse` 
 
 ```typescript
 function handleResponse(data: string): string {
-  const message = JSON.parse(message);
+  const message = JSON.parse(data);
 
   if (isWelcomeMessage(message)) {
     return 'Good day dear ' + message.name!
