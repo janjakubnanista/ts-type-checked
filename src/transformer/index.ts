@@ -33,7 +33,8 @@ export default (
 
   // Without strict null checks on we need to
   const compilerOptions = program.getCompilerOptions();
-  const strictNullChecks = !!compilerOptions.strictNullChecks;
+  const strictNullChecks =
+    compilerOptions.strictNullChecks === undefined ? !!compilerOptions.strict : !!compilerOptions.strictNullChecks;
 
   // Get a reference to a TypeScript TypeChecker in order to resolve types from type nodes
   const typeChecker = program.getTypeChecker();

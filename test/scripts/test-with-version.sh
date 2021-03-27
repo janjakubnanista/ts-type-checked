@@ -23,7 +23,7 @@ TEST_PATTERN=
 SETUP_PATTERN=
 
 # Get the script arguments
-# 
+#
 # -d|--debug                Whether to start jest in node --inspect mode
 # -s|--setup <pattern>      The test setup pattern to run (matched against setup package.json name)
 # -t|--test <pattern>       The test pattern to run (passed to jest)
@@ -65,7 +65,7 @@ if [ -z "$VERSION" ]; then
 fi
 
 # This function will be executed when the script is terminated
-# 
+#
 # It needs to clean
 function cleanup {
   # Restore snapshots of package.json and yarn.lock
