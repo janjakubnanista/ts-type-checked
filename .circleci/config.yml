@@ -32,15 +32,15 @@ jobs:
             - v1-root-{{ checksum "yarn.lock" }}
             - v1-root
 
-      - run: 
+      - run:
           name: Install dependencies
           command: make install
-      
-      - run: 
+
+      - run:
           name: Build
           command: make build
-      
-      - run: 
+
+      - run:
           name: Lint
           command: make lint
 
@@ -69,8 +69,8 @@ jobs:
           keys:
             - v1-test-{{ checksum "test/yarn.lock" }}
             - v1-test
-      
-      - run: 
+
+      - run:
           name: Test package
           command: make test
 
@@ -84,7 +84,7 @@ jobs:
             - v1-examples-{{ checksum "examples/yarn.lock" }}
             - v1-examples
 
-      - run: 
+      - run:
           name: Test examples
           command: make examples
 
@@ -102,7 +102,7 @@ jobs:
       # Get the build artifacts
       - attach_workspace:
           at: ~/project
-      
+
       - run:
           name: Authenticate for NPM
           command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > dist/.npmrc
@@ -112,18 +112,19 @@ jobs:
           command: make publish
 
 workflows:
+  version: 2
   test:
     jobs:
       - build
       - e2e-test:
           requires:
               - build
-  
+
   release:
     jobs:
       - build:
           <<: *only-release
-      
+
       - e2e-test:
           <<: *only-release
           requires:
