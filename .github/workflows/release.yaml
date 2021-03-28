@@ -1,0 +1,38 @@
+name: Release
+
+# This workflow is triggered manually
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      # Module cache setup
+      - name: Cache node modules
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: v1-npm-deps-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: v1-npm-deps-
+
+      # Module installation
+      - name: Install dependencies
+        run: make install
+
+      # The actual build
+      - name: Build project
+        run: make build
+
+      # Some linting
+      - name: Lint project
+        run: make lint
+
+      # Some testing
+      - name: Test project
+        run: make test
+
+      # Now publish!
+      - name: Publish NPM package
+        run: make publish
