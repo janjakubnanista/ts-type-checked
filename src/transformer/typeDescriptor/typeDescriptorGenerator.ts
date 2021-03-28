@@ -7,6 +7,7 @@ import { getDOMElementClassName } from './utils/getDOMElementClassName';
 import { getLibraryTypeDescriptorName } from './utils/getLibraryTypeDescriptorName';
 import { getPropertyTypeDescriptors } from './utils/getPropertyTypeDescriptors';
 import ts from 'typescript';
+import { typeFlags } from '../utils/debug';
 
 /**
  * A factory for TypeDescriptorGenerator functions.
@@ -99,10 +100,10 @@ export const createTypeDescriptorGenerator = (program: ts.Program, logger: Logge
   const typeName = typeChecker.typeToString(type, scope);
 
   // True
-  if (assert.isTrueKeyword(typeNode)) return { _type: 'literal', value: ts.createTrue() };
+  if (assert.isTrue(type, typeNode)) return { _type: 'literal', value: ts.createTrue() };
 
   // False
-  if (assert.isFalseKeyword(typeNode)) return { _type: 'literal', value: ts.createFalse() };
+  if (assert.isFalse(type, typeNode)) return { _type: 'literal', value: ts.createFalse() };
 
   // Promise
   //
@@ -118,16 +119,15 @@ export const createTypeDescriptorGenerator = (program: ts.Program, logger: Logge
     });
   }
 
+
+
   // Literal types
   if (assert.isLiteral(type)) {
-    logger.debug('Literal');
-
-    const value = (type as ts.LiteralType).value;
-    if (value === undefined) {
+    if (type.value === undefined) {
       throw new Error('Could not find value for a literal type ' + typeName);
     }
 
-    return { _type: 'literal', value: ts.createLiteral(value) };
+    return { _type: 'literal', value: ts.createLiteral(type.value) };
   }
 
   // Intersection

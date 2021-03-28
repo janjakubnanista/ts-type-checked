@@ -2,7 +2,8 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "plugins": [
-      { "transform": "ts-type-checked/transformer", "logLevel": "normal", "mode": "development" },
+      { "transform": "ts-reflection/transformer" },
+      { "transform": "ts-type-checked/transformer", "logLevel": "debug", "mode": "development" },
     ]
   },
   "include": ["setups", "utils"],

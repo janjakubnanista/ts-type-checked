@@ -14,6 +14,6 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-typescript2": "^0.27.0",
     "ts-type-checked": "file:../../dist",
-    "typescript": "^3.9.6"
+    "typescript": "^4.0.7"
   }
 }

@@ -11,6 +11,6 @@
   "devDependencies": {
     "ts-type-checked": "file:../../dist",
     "ttypescript": "^1.5.10",
-    "typescript": "^3.9.6"
+    "typescript": "^4.0.7"
   }
 }
