@@ -13,8 +13,8 @@
 
 <!-- The badges section -->
 <p align="center">
-  <!-- CircleCI build status -->
-  <a href="https://circleci.com/gh/janjakubnanista/ts-type-checked/tree/main"><img alt="CircleCI Build Status" src="https://circleci.com/gh/janjakubnanista/ts-type-checked.svg?style=shield"></a>
+  <!-- GitHub build status -->
+  <a href="https://github.com/janjakubnanista/ts-type-checked/actions/workflows/test.yaml"><img alt="GitHub build status" src="https://github.com/janjakubnanista/ts-type-checked/actions/workflows/test.yml/badge.svg?branch=main"/></a>
   <!-- Fury.io NPM published package version -->
   <a href="https://www.npmjs.com/package/ts-type-checked"><img alt="NPM Version" src="https://badge.fury.io/js/ts-type-checked.svg"/></a>
   <!-- Shields.io dev dependencies status -->
