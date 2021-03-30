@@ -1,13 +1,13 @@
 import * as assert from './utils/assert';
 import { Logger } from '../utils/logger';
-import { TypeDescriptor } from '../types';
+import { TypeDescriptor, TypeName } from '../types';
 import { TypeDescriptorGenerator, TypeDescriptorGeneratorCallback, TypeNameResolver } from '../types';
 import { functionTypeWarning, promiseTypeWarning } from './utils/messages';
 import { getDOMElementClassName } from './utils/getDOMElementClassName';
 import { getLibraryTypeDescriptorName } from './utils/getLibraryTypeDescriptorName';
 import { getPropertyTypeDescriptors } from './utils/getPropertyTypeDescriptors';
-import ts from 'typescript';
 import { typeFlags } from '../utils/debug';
+import ts from 'typescript';
 
 /**
  * A factory for TypeDescriptorGenerator functions.
@@ -96,7 +96,7 @@ export const createTypeDescriptorGenerator = (program: ts.Program, logger: Logge
   if (assert.isNever(type)) return { _type: 'never' };
 
   // For the checks below we need access to the TypeNode for this type
-  const typeNode = typeChecker.typeToTypeNode(type, scope);
+  const typeNode = typeChecker.typeToTypeNode(type, scope, undefined);
   const typeName = typeChecker.typeToString(type, scope);
 
   // True
@@ -118,8 +118,6 @@ export const createTypeDescriptorGenerator = (program: ts.Program, logger: Logge
       properties: getPropertyTypeDescriptors(typeChecker, scope, type.getProperties(), resolve),
     });
   }
-
-
 
   // Literal types
   if (assert.isLiteral(type)) {
@@ -157,11 +155,35 @@ export const createTypeDescriptorGenerator = (program: ts.Program, logger: Logge
     return { _type: 'keyword', value: 'object' };
   }
 
+  if (typeNode && ts.isTupleTypeNode(typeNode)) {
+    const typeElementNodes = typeNode.elements;
+    const typeArguments = (type as ts.TupleType).typeArguments || [];
+    debugger;
+
+    // const types = typeNode.elements.map<TypeName | [TypeName]>(unitType => {
+    //   // return resolve(scope, unitType.type)
+    // });
+
+    return (resolve: TypeNameResolver) => ({
+      _type: 'tuple',
+      types: typeArguments.map((type, index) => {
+        const typeElementNode = typeElementNodes[index];
+        if (ts.isRestTypeNode(typeElementNode)) {
+          console.warn('rest type node', typeName, index);
+
+          return [resolve(scope, type)];
+        }
+
+        return resolve(scope, type);
+      }),
+    });
+  }
+
   // Tuple
   if (assert.isTuple(type, typeNode)) {
-    logger.debug('Tuple');
-
     const typeArguments = type.typeArguments || [];
+    typeArguments.forEach((arg) => console.log('type', typeFlags(arg)));
+    debugger;
 
     return (resolve: TypeNameResolver) => ({
       _type: 'tuple',

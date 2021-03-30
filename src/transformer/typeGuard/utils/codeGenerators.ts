@@ -49,12 +49,11 @@ export const createTupleTypeGuard = (
   length: number,
   createElementCheck: (value: ts.Expression, index: number) => ts.Expression,
 ): ts.Expression => {
-  const arrayLengthCheck = ts.createStrictEquality(ts.createPropertyAccess(value, 'length'), ts.createLiteral(length));
   const elementChecks = Array.from({ length }).map((_, index) =>
     createElementCheck(ts.createElementAccess(value, index), index),
   );
 
-  return createLogicalAndChain(createIsArray(value), arrayLengthCheck, ...elementChecks);
+  return createLogicalAndChain(createIsArray(value), ...elementChecks);
 };
 
 const createIsNotNumeric = (value: ts.Expression): ts.Expression =>
