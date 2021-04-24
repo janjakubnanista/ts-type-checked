@@ -1,6 +1,6 @@
 {
   "name": "ts-type-checked",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "Type checking utilities for TypeScript.",
   "repository": {
     "type": "git",
