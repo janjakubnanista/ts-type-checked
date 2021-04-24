@@ -7,6 +7,7 @@ import { getDOMElementClassName } from './utils/getDOMElementClassName';
 import { getLibraryTypeDescriptorName } from './utils/getLibraryTypeDescriptorName';
 import { getPropertyTypeDescriptors } from './utils/getPropertyTypeDescriptors';
 import ts from 'typescript';
+import { typeFlags } from '../utils/debug';
 
 /**
  * A factory for TypeDescriptorGenerator functions.
@@ -263,5 +264,5 @@ export const createTypeDescriptorGenerator = (program: ts.Program, logger: Logge
     });
   }
 
-  throw new Error('Unable to describe type ' + typeName);
+  throw new Error('Unable to describe type ' + typeName + '\n\n' + typeFlags(type));
 };
