@@ -1,5 +1,5 @@
 import { LibraryTypeDescriptorName } from './getLibraryTypeDescriptorName';
-import ts from 'typescript';
+import ts, { isLiteralTypeNode } from 'typescript';
 
 export const isBigInt = (type: ts.Type, libraryDescriptorName?: LibraryTypeDescriptorName): boolean =>
   !!(type.flags & ts.TypeFlags.BigInt) || libraryDescriptorName === 'BigInt';
@@ -61,17 +61,33 @@ export const isTrueKeyword = (typeNode: ts.TypeNode | undefined): boolean =>
 export const isFalseKeyword = (typeNode: ts.TypeNode | undefined): boolean =>
   typeNode?.kind === ts.SyntaxKind.FalseKeyword;
 
-export const isTuple = (type: ts.Type, typeNode: ts.TypeNode | undefined): type is ts.TupleType =>
+export const isTuple = (type: ts.Type, typeNode?: ts.TypeNode): type is ts.TupleType =>
   typeNode?.kind === ts.SyntaxKind.TupleType;
 
-export const isIntersection = (type: ts.Type, typeNode: ts.TypeNode | undefined): type is ts.IntersectionType =>
+export const isIntersection = (type: ts.Type, typeNode?: ts.TypeNode): type is ts.IntersectionType =>
   (typeof type.isIntersection === 'function' && type.isIntersection()) ||
   typeNode?.kind === ts.SyntaxKind.IntersectionType;
 
-export const isUnion = (type: ts.Type, typeNode: ts.TypeNode | undefined): type is ts.UnionType =>
+export const isUnion = (type: ts.Type, typeNode?: ts.TypeNode): type is ts.UnionType =>
   (typeof type.isUnion === 'function' && type.isUnion()) ||
   typeNode?.kind === ts.SyntaxKind.UnionType ||
   !!(type.getFlags() & ts.TypeFlags.Union);
+
+export const isFalse = (type: ts.Type, typeNode?: ts.TypeNode): type is ts.LiteralType => {
+  if (isFalseKeyword(typeNode)) return true;
+  if (isLiteral(type) && (type.value as unknown) === false) return true;
+  if (typeNode && isLiteralTypeNode(typeNode) && typeNode.literal.kind === ts.SyntaxKind.FalseKeyword) return true;
+
+  return false;
+}
+
+export const isTrue = (type: ts.Type, typeNode?: ts.TypeNode): type is ts.LiteralType => {
+  if (isTrueKeyword(typeNode)) return true;
+  if (isLiteral(type) && (type.value as unknown) === true) return true;
+  if (typeNode && isLiteralTypeNode(typeNode) && typeNode.literal.kind === ts.SyntaxKind.TrueKeyword) return true;
+
+  return false;
+}
 
 export const isClassOrInterface = (type: ts.Type, typeNode?: ts.TypeNode): type is ts.InterfaceType =>
   (typeof type.isClassOrInterface === 'function' && type.isClassOrInterface()) ||

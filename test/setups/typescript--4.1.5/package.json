@@ -1,0 +1,14 @@
+{
+  "name": "@ts-type-checked/test--typescript--4.1.5",
+  "version": "0.0.1",
+  "private": true,
+  "peerDependencies": {
+    "typescript": ">=4.1.5"
+  },
+  "dependencies": {
+    "ts-type-checked": "file:../../../dist"
+  },
+  "devDependencies": {
+    "ts-reflection": "^0.3.0"
+  }
+}

@@ -1,11 +1,12 @@
 import * as assert from './utils/assert';
 import { Logger } from '../utils/logger';
-import { TypeDescriptor } from '../types';
+import { TypeDescriptor, TypeName } from '../types';
 import { TypeDescriptorGenerator, TypeDescriptorGeneratorCallback, TypeNameResolver } from '../types';
 import { functionTypeWarning, promiseTypeWarning } from './utils/messages';
 import { getDOMElementClassName } from './utils/getDOMElementClassName';
 import { getLibraryTypeDescriptorName } from './utils/getLibraryTypeDescriptorName';
 import { getPropertyTypeDescriptors } from './utils/getPropertyTypeDescriptors';
+import { typeFlags } from '../utils/debug';
 import ts from 'typescript';
 
 /**
@@ -95,14 +96,14 @@ export const createTypeDescriptorGenerator = (program: ts.Program, logger: Logge
   if (assert.isNever(type)) return { _type: 'never' };
 
   // For the checks below we need access to the TypeNode for this type
-  const typeNode = typeChecker.typeToTypeNode(type, scope);
+  const typeNode = typeChecker.typeToTypeNode(type, scope, undefined);
   const typeName = typeChecker.typeToString(type, scope);
 
   // True
-  if (assert.isTrueKeyword(typeNode)) return { _type: 'literal', value: ts.createTrue() };
+  if (assert.isTrue(type, typeNode)) return { _type: 'literal', value: ts.createTrue() };
 
   // False
-  if (assert.isFalseKeyword(typeNode)) return { _type: 'literal', value: ts.createFalse() };
+  if (assert.isFalse(type, typeNode)) return { _type: 'literal', value: ts.createFalse() };
 
   // Promise
   //
@@ -120,14 +121,11 @@ export const createTypeDescriptorGenerator = (program: ts.Program, logger: Logge
 
   // Literal types
   if (assert.isLiteral(type)) {
-    logger.debug('Literal');
-
-    const value = (type as ts.LiteralType).value;
-    if (value === undefined) {
+    if (type.value === undefined) {
       throw new Error('Could not find value for a literal type ' + typeName);
     }
 
-    return { _type: 'literal', value: ts.createLiteral(value) };
+    return { _type: 'literal', value: ts.createLiteral(type.value) };
   }
 
   // Intersection
@@ -157,11 +155,35 @@ export const createTypeDescriptorGenerator = (program: ts.Program, logger: Logge
     return { _type: 'keyword', value: 'object' };
   }
 
+  if (typeNode && ts.isTupleTypeNode(typeNode)) {
+    const typeElementNodes = typeNode.elements;
+    const typeArguments = (type as ts.TupleType).typeArguments || [];
+    debugger;
+
+    // const types = typeNode.elements.map<TypeName | [TypeName]>(unitType => {
+    //   // return resolve(scope, unitType.type)
+    // });
+
+    return (resolve: TypeNameResolver) => ({
+      _type: 'tuple',
+      types: typeArguments.map((type, index) => {
+        const typeElementNode = typeElementNodes[index];
+        if (ts.isRestTypeNode(typeElementNode)) {
+          console.warn('rest type node', typeName, index);
+
+          return [resolve(scope, type)];
+        }
+
+        return resolve(scope, type);
+      }),
+    });
+  }
+
   // Tuple
   if (assert.isTuple(type, typeNode)) {
-    logger.debug('Tuple');
-
     const typeArguments = type.typeArguments || [];
+    typeArguments.forEach((arg) => console.log('type', typeFlags(arg)));
+    debugger;
 
     return (resolve: TypeNameResolver) => ({
       _type: 'tuple',

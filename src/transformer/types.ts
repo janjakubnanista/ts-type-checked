@@ -196,7 +196,7 @@ export interface ArrayTypeDescriptor {
 
 export interface TupleTypeDescriptor {
   _type: 'tuple';
-  types: TypeName[];
+  types: Array<TypeName | [TypeName]>;
 }
 
 export interface PromiseTypeDescriptor {

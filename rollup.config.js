@@ -1,12 +1,17 @@
 import copy from 'rollup-plugin-copy';
 import resolve from '@rollup/plugin-node-resolve';
 import ts from '@wessberg/rollup-plugin-ts';
+import tsReflection from 'ts-reflection/transformer';
 
 const defaults = {
   external: ['child_process', 'path', 'typescript'],
   plugins: [
     resolve({ preferBuiltins: true }),
-    ts(),
+    ts({ transformers: [
+      ({ program }) => ({
+        before: tsReflection(program),
+      }),
+    ], }),
     copy({
       targets: [{ src: ['package.json', 'LICENSE', 'README.md'], dest: './dist' }],
     }),

@@ -1,4 +1,5 @@
 import ts from 'typescript';
+import { propertiesOf } from 'ts-reflection';
 
 /**
  * Helper debugging function that takes a type as a parameter and returns
@@ -9,9 +10,13 @@ import ts from 'typescript';
  * @returns {String[]} Array of type flags names
  */
 export const typeFlags = (type: ts.Type): string[] => {
-  return Object.keys(ts.TypeFlags).filter(
-    (flagName) => !!((ts.TypeFlags[flagName as ts.TypeFlags] as number) & type.flags),
+  return propertiesOf<typeof ts.TypeFlags>().filter(
+    (flagName) => !!(ts.TypeFlags[flagName] & type.flags),
   );
+};
+
+export const kindOf = (typeNode: ts.TypeNode): string => {
+  return ts.SyntaxKind[typeNode.kind];
 };
 
 /**
@@ -26,8 +31,8 @@ export const objectFlags = (type: ts.Type): string[] => {
   const objectFlags = (type as ts.TypeReference).objectFlags;
   if (typeof objectFlags !== 'number') return [];
 
-  return Object.keys(ts.ObjectFlags).filter(
-    (flagName) => !!((ts.ObjectFlags[flagName as ts.ObjectFlags] as number) & objectFlags),
+  return propertiesOf<typeof ts.ObjectFlags>().filter(
+    (flagName) => !!(ts.ObjectFlags[flagName] & objectFlags),
   );
 };
 
@@ -40,7 +45,7 @@ export const objectFlags = (type: ts.Type): string[] => {
  * @returns {String[]} Array of symbol flags names
  */
 export const symbolFlags = (symbol: ts.Symbol): string[] => {
-  return Object.keys(ts.SymbolFlags).filter(
-    (flagName) => !!((ts.SymbolFlags[flagName as ts.SymbolFlags] as number) & symbol.flags),
+  return propertiesOf<typeof ts.SymbolFlags>().filter(
+    (flagName) => !!(ts.SymbolFlags[flagName] & symbol.flags),
   );
 };
