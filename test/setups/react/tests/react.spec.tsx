@@ -119,7 +119,7 @@ describe('React', () => {
     const validArbitrary: fc.Arbitrary<TypeReference1> = reactComponentTypeArbitrary;
     const invalidArbitrary = oneOf(
       primitive(),
-      fc.constantFrom<any>({}, <div />, <TestFunctionComponent />, <TestClassComponent />, <TestPureClassComponent />),
+      fc.constantFrom<any[]>({}, <div />, <TestFunctionComponent />, <TestClassComponent />, <TestPureClassComponent />),
     );
 
     assert(validArbitrary, invalidArbitrary, [

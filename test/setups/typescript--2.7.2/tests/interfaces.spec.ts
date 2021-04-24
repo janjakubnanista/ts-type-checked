@@ -22,7 +22,7 @@ describe('interface types', () => {
     type TypeReference1 = {};
 
     const validArbitrary: fc.Arbitrary<TypeReference1> = oneOf<TypeReference1>(
-      fc.constantFrom<TypeReference1>(
+      fc.constantFrom<TypeReference1[]>(
         {},
         [],
         ['string'],
@@ -61,7 +61,7 @@ describe('interface types', () => {
     );
 
     const invalidPropertyArbitrary = fc.anything().filter(notOfType('string'));
-    const invalidSpecialCases = fc.constantFrom<any>({}, { a: false });
+    const invalidSpecialCases = fc.constantFrom<any[]>({}, { a: false });
     const invalidArbitrary = oneOf(
       invalidSpecialCases,
       primitive(),
@@ -79,7 +79,7 @@ describe('interface types', () => {
       toString: () => string;
     }
 
-    const validSpecialCases: fc.Arbitrary<TypeReference1> = fc.constantFrom<TypeReference1>(
+    const validSpecialCases: fc.Arbitrary<TypeReference1> = fc.constantFrom<TypeReference1[]>(
       {},
       new Object(),
       () => true,
@@ -109,7 +109,7 @@ describe('interface types', () => {
       property?: string;
     }
 
-    const validSpecialCases: fc.Arbitrary<TypeReference1> = fc.constantFrom<TypeReference1>(
+    const validSpecialCases: fc.Arbitrary<TypeReference1> = fc.constantFrom<TypeReference1[]>(
       {},
       new Object(),
       { property: undefined },

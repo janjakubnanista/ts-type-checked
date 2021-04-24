@@ -19,7 +19,7 @@ describe('arrays', () => {
     type TypeReference1 = string[];
 
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.array(fc.string());
-    const invalidSpecialCases = fc.constantFrom<any[]>([6], ['string', true]);
+    const invalidSpecialCases = fc.constantFrom<any[][]>([6], ['string', true]);
 
     const invalidArbitrary = fc.oneof(
       invalidSpecialCases,
@@ -34,9 +34,9 @@ describe('arrays', () => {
     type LiteralType = 'a' | 'b';
     type TypeReference1 = LiteralType[];
 
-    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.array(fc.constantFrom<LiteralType>('a', 'b'));
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.array(fc.constantFrom<LiteralType[]>('a', 'b'));
     const invalidArbitrary = fc.oneof(
-      fc.constantFrom<any[]>([6], ['string', true]),
+      fc.constantFrom<any[][]>([6], ['string', true]),
       fc.anything().filter(notAnArray),
       fc.array(fc.anything().filter(notOfType('string'))).filter(notAnEmptyArray),
     );

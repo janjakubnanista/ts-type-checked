@@ -14,7 +14,7 @@ describe('Map', () => {
       fc.array(fc.tuple(numeric(), fc.string())).map((entries) => new Map(entries)),
     );
     const invalidArbitrary = oneOf(
-      fc.constantFrom<any>({}, new Map([['key', 'value']]), new Set(), new Date()),
+      fc.constantFrom<any[]>({}, new Map([['key', 'value']]), new Set(), new Date()),
       primitive(),
     );
 

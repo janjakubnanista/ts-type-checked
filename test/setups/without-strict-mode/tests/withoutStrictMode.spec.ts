@@ -97,7 +97,7 @@ describe('without strict mode', () => {
 
     const validArbitrary: fc.Arbitrary<AWSSNSEvent> = oneOf(
       eventArbitrary(),
-      fc.constantFrom<AWSSNSEvent>({ Records: null }, { Records: undefined }, null, undefined),
+      fc.constantFrom<AWSSNSEvent[]>({ Records: null }, { Records: undefined }, null, undefined),
       // Without strict null checks TypeScript is kinda useless - if in this case "Records"
       // is null or undefined the check should return true. But that is the case
       // for virtually any type - numbers, strings, booleans etc all have undefined "Records" property!

@@ -134,7 +134,7 @@ describe('basics', () => {
     type TypeReference1 = object;
 
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(
-      fc.constantFrom<TypeReference1>(
+      fc.constantFrom<TypeReference1[]>(
         {},
         new Object(),
         () => true,
@@ -147,7 +147,7 @@ describe('basics', () => {
       fc.func(fc.anything()),
     );
     const invalidArbitrary = fc.oneof(
-      fc.constantFrom<any>(true, false, undefined, null, 6, 'string', Symbol('a')),
+      fc.constantFrom<any[]>(true, false, undefined, null, 6, 'string', Symbol('a')),
       primitive(),
     );
 
@@ -158,7 +158,7 @@ describe('basics', () => {
     type TypeReference1 = Object; // eslint-disable-line @typescript-eslint/ban-types
 
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(
-      fc.constantFrom<TypeReference1>(
+      fc.constantFrom<TypeReference1[]>(
         {},
         new Object(),
         new String(),
@@ -212,7 +212,7 @@ describe('basics', () => {
     type TypeReference1 = 'a' | 'b' | 'c' | 9 | false | true;
     const literalTypeValues: TypeReference1[] = ['a', 'b', 'c', 9, false, true];
 
-    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom<TypeReference1>(...literalTypeValues);
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom<TypeReference1[]>(...literalTypeValues);
     const invalidArbitrary = fc.anything().filter(notALiteral(...literalTypeValues));
 
     assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
