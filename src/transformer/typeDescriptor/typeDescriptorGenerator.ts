@@ -95,7 +95,7 @@ export const createTypeDescriptorGenerator = (program: ts.Program, logger: Logge
   if (assert.isNever(type)) return { _type: 'never' };
 
   // For the checks below we need access to the TypeNode for this type
-  const typeNode = typeChecker.typeToTypeNode(type, scope);
+  const typeNode = typeChecker.typeToTypeNode(type, scope, undefined);
   const typeName = typeChecker.typeToString(type, scope);
 
   // True

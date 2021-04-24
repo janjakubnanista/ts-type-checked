@@ -11,7 +11,7 @@ describe('React', () => {
   class TestClassComponent extends React.Component {}
   class TestPureClassComponent extends React.PureComponent {}
 
-  const reactComponentTypeArbitrary: fc.Arbitrary<React.ComponentType> = fc.constantFrom<React.ComponentType>(
+  const reactComponentTypeArbitrary: fc.Arbitrary<React.ComponentType> = fc.constantFrom<React.ComponentType<{}>[]>(
     TestFunctionComponent,
     TestClassComponent,
     TestPureClassComponent,
