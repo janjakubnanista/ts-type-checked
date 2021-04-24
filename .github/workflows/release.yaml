@@ -25,6 +25,14 @@ jobs:
       - name: Build project
         run: make build
 
+      # Publish to NPM [DRY RUN]
+      - uses: JS-DevTools/npm-publish@v1
+        with:
+          package: ./dist/package.json
+          token: ${{ secrets.NPM_TOKEN }}
+          dry-run: true
+          check-version: true
+
       # Some linting
       - name: Lint project
         run: make lint
@@ -33,6 +41,6 @@ jobs:
       - name: Test project
         run: make test
 
-      # Now publish!
-      - name: Publish NPM package
-        run: make publish
+      # Some more testing
+      - name: Test example projects
+        run: make examples
