@@ -25,6 +25,27 @@ jobs:
       - name: Build project
         run: make build
 
+      # Now let's store the build
+      - name: Store build artefacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: dist
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: Public Github
+      url: https://www.npmjs.com/package/ts-type-checked?activeTab=versions
+    steps:
+      # Get the build
+      - name: Download the build
+        uses: actions/download-artifact@v2
+        with:
+          name: build
+          path: dist
+
       # Publish to NPM [DRY RUN]
       - uses: JS-DevTools/npm-publish@v1
         with:
@@ -32,15 +53,3 @@ jobs:
           token: ${{ secrets.NPM_TOKEN }}
           dry-run: true
           check-version: true
-
-      # Some linting
-      - name: Lint project
-        run: make lint
-
-      # Some testing
-      - name: Test project
-        run: make test
-
-      # Some more testing
-      - name: Test example projects
-        run: make examples
