@@ -25,7 +25,7 @@ describe('type resolution', () => {
     bProperty = 'Britney Spears';
   }
 
-  const instantiable = fc.constantFrom<new () => any>(Object, Array, Number, Boolean, Function, Date, Error, A, B);
+  const instantiable = fc.constantFrom<(new () => any)[]>(Object, Array, Number, Boolean, Function, Date, Error, A, B);
 
   test('simple reference', () => {
     type TypeReference1 = string;
@@ -99,7 +99,7 @@ describe('type resolution', () => {
 
     const validArbitrary: fc.Arbitrary<TypeReference1> = fc.func(fc.anything() as fc.Arbitrary<any>);
     const invalidArbitrary = oneOf(
-      fc.constantFrom<any>({}, 'string', false),
+      fc.constantFrom<any[]>({}, 'string', false),
       fc.anything().filter(notOfType('function')),
     );
 

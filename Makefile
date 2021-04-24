@@ -31,7 +31,7 @@ clean:
 
 # Lint (source & built)
 lint:
-	yarn eslint . --fix --ext .js,.ts
+	yarn eslint . ./test ./examples --fix --ext .js,.ts
 
 # Run the complete test suite from test project
 test:

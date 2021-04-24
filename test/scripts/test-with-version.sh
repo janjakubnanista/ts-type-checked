@@ -131,7 +131,7 @@ for MATCHING_SETUP in $MATCHING_SETUPS; do
     yarn workspace "$MATCHING_SETUP" run jest "$TEST_PATTERN"
   else
     # In debug mode node is started with inspect flag
-    yarn workspace "$MATCHING_SETUP" node --inspect-brk $(which jest) "$TEST_PATTERN" --runInBand
+    yarn workspace "$MATCHING_SETUP" node --inspect $(which jest) "$TEST_PATTERN" --runInBand
   fi
 
   printf "\n\n\n"

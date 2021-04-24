@@ -11,7 +11,7 @@ describe('React', () => {
   class TestClassComponent extends React.Component {}
   class TestPureClassComponent extends React.PureComponent {}
 
-  const reactComponentTypeArbitrary: fc.Arbitrary<React.ComponentType> = fc.constantFrom<React.ComponentType>(
+  const reactComponentTypeArbitrary: fc.Arbitrary<React.ComponentType> = fc.constantFrom<React.ComponentType<{}>[]>(
     TestFunctionComponent,
     TestClassComponent,
     TestPureClassComponent,
@@ -119,7 +119,7 @@ describe('React', () => {
     const validArbitrary: fc.Arbitrary<TypeReference1> = reactComponentTypeArbitrary;
     const invalidArbitrary = oneOf(
       primitive(),
-      fc.constantFrom<any>({}, <div />, <TestFunctionComponent />, <TestClassComponent />, <TestPureClassComponent />),
+      fc.constantFrom<any[]>({}, <div />, <TestFunctionComponent />, <TestClassComponent />, <TestPureClassComponent />),
     );
 
     assert(validArbitrary, invalidArbitrary, [

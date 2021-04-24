@@ -42,7 +42,7 @@ describe('conditional types', () => {
       string: string;
     };
     type TypeReference1 = ConditionalPropertyNames<Interface>;
-    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(fc.constantFrom<TypeReference1>('numeric'));
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(fc.constantFrom<TypeReference1[]>('numeric'));
     const invalidArbitrary: fc.Arbitrary<any> = fc.oneof(
       fc.constantFrom('string'),
       fc.anything().filter(notALiteral('numeric')),

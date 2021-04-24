@@ -33,7 +33,7 @@ describe('number-indexed types', () => {
     );
 
     const invalidArbitrary = fc.oneof(
-      fc.constantFrom<any>(
+      fc.constantFrom<any[]>(
         { 1: 'string' },
         Object.assign(() => true, { 3: 'string' }),
       ),
@@ -65,7 +65,7 @@ describe('number-indexed types', () => {
     );
 
     const invalidArbitrary = fc.oneof(
-      fc.constantFrom<any>(
+      fc.constantFrom<any[]>(
         { 6: 'string' },
         Object.assign(() => true, { 7: 'string' }),
       ),
@@ -96,7 +96,7 @@ describe('number-indexed types', () => {
     );
 
     const invalidArbitrary = fc.oneof(
-      fc.constantFrom<any>(
+      fc.constantFrom<any[]>(
         { 6: 'string' },
         { 6: 'literal', property: () => false },
         Object.assign(() => true, { 7: 'string' }),

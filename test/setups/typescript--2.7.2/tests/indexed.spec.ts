@@ -33,7 +33,7 @@ describe('string-indexed types', () => {
     );
 
     const invalidArbitrary = oneOf<any>(
-      fc.constantFrom<any>(
+      fc.constantFrom<any[]>(
         { property: 'string' },
         Object.assign(() => true, { property: 'string' }),
       ),
@@ -64,7 +64,7 @@ describe('string-indexed types', () => {
     );
 
     const invalidArbitrary = oneOf(
-      fc.constantFrom<any>(
+      fc.constantFrom<any[]>(
         { property: 'string' },
         Object.assign(() => true, { property: 'string' }),
       ),
@@ -96,7 +96,7 @@ describe('string-indexed types', () => {
     );
 
     const invalidArbitrary = oneOf(
-      fc.constantFrom<any>(
+      fc.constantFrom<any[]>(
         { 6: 'string' },
         Object.assign(() => true, { 7: 'string' }),
       ),
@@ -127,7 +127,7 @@ describe('string-indexed types', () => {
     );
 
     const invalidArbitrary = oneOf(
-      fc.constantFrom<any>(
+      fc.constantFrom<any[]>(
         { 6: 'string' },
         { 6: 'literal', property: () => false },
         Object.assign(() => true, { 7: 'string' }),

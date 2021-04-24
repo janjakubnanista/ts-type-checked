@@ -28,7 +28,7 @@ describe('bigint', () => {
   test('bigint literal', () => {
     type TypeReference1 = 1n;
 
-    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom<TypeReference1>(1n);
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom<TypeReference1[]>(1n);
     const invalidArbitrary = fc.anything().filter(notALiteral(1n));
 
     assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
@@ -37,7 +37,7 @@ describe('bigint', () => {
   test('bigint literal in union', () => {
     type TypeReference1 = 'a' | 6 | false | 7n;
 
-    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom<TypeReference1>('a', 6, false, 7n);
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.constantFrom<TypeReference1[]>('a', 6, false, 7n);
     const invalidArbitrary = fc.anything().filter(notALiteral('a', 6, false, 7n));
 
     assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
@@ -46,7 +46,7 @@ describe('bigint', () => {
   test('{}', () => {
     type TypeReference1 = {};
 
-    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(fc.constantFrom<TypeReference1>(1n), fc.bigInt());
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(fc.constantFrom<TypeReference1[]>(1n), fc.bigInt());
     const invalidArbitrary = nullable();
 
     assert(validArbitrary, invalidArbitrary, [typeCheckFor<TypeReference1>(), (value) => isA<TypeReference1>(value)]);
@@ -57,7 +57,7 @@ describe('bigint', () => {
       toString: () => string;
     }
 
-    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(fc.constantFrom<TypeReference1>(6, 6n), fc.bigInt());
+    const validArbitrary: fc.Arbitrary<TypeReference1> = fc.oneof(fc.constantFrom<TypeReference1[]>(6, 6n), fc.bigInt());
 
     const invalidArbitrary = fc.oneof(nullable());
 
