@@ -51,5 +51,4 @@ jobs:
         with:
           package: ./dist/package.json
           token: ${{ secrets.NPM_TOKEN }}
-          dry-run: true
           check-version: true
