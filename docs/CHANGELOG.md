@@ -40,3 +40,9 @@
 ### Bugs
 
 - #46 Object keys that contain dashes produce errors
+
+## v0.6.5
+
+### Bugs
+
+- #79 Boolean literals were not recognised in TypeScript 4
