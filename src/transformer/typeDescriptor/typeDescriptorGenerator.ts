@@ -123,7 +123,13 @@ export const createTypeDescriptorGenerator = (program: ts.Program, logger: Logge
     logger.debug('Literal');
 
     const value = (type as ts.LiteralType).value;
+
     if (value === undefined) {
+      if (type.getFlags() & ts.TypeFlags.BooleanLiteral) {
+        if (typeName === 'false') return { _type: 'literal', value: ts.createLiteral(false) };
+        if (typeName === 'true') return { _type: 'literal', value: ts.createLiteral(true) };
+      }
+
       throw new Error('Could not find value for a literal type ' + typeName);
     }
 
